@@ -1,0 +1,334 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --color-void: #1e110a;
+  --color-bone-white: #fcfaf5;
+  --color-ash-gray: #a89485;
+  --color-silver-mist: #d9d2c9;
+  --color-electric-iris: #ff8533;
+  --color-saffron-spark: #ffb829;
+  --color-deep-verdant: #5c7f5c;
+  --font-ppneuemontreal: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  --text-caption: 12px;
+  --text-nav-label: 14px;
+  --text-body: 18px;
+  --text-heading-2xs: 24px;
+  --text-heading-xs: 27px;
+  --text-subheading: 36px;
+  --text-heading-sm: 42px;
+  --text-heading: 48px;
+  --text-heading-lg: 78px;
+  --text-display: 113px;
+  --font-weight-extralight: 300;
+  --font-weight-regular: 400;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --spacing-unit: 6px;
+  --page-max-width: 1280px;
+  --section-gap: clamp(60px, 8vw, 120px);
+  --radius-nav: 24px;
+  --radius-tags: 9999px;
+  --radius-cards: 24px;
+  --radius-buttons: 24px;
+  color-scheme: dark;
+}
+
+@theme {
+  /* Colors — Woodland Cozy Tokens */
+  --color-void: #1e110a;
+  --color-bone-white: #fcfaf5;
+  --color-ash-gray: #a89485;
+  --color-silver-mist: #d9d2c9;
+  --color-electric-iris: #ff8533;
+  --color-saffron-spark: #ffb829;
+  --color-deep-verdant: #5c7f5c;
+
+  /* Typography — Font Families */
+  --font-sans: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Spacing Scale (6px base) */
+  --spacing-6: 6px;
+  --spacing-12: 12px;
+  --spacing-18: 18px;
+  --spacing-24: 24px;
+  --spacing-30: 30px;
+  --spacing-36: 36px;
+  --spacing-60: 60px;
+  --spacing-96: 96px;
+  --spacing-120: 120px;
+
+  /* Border Radius */
+  --radius-3xl: 24px;
+  --radius-full: 9999px;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: #1e110a;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: radial-gradient(circle at 50% 30%, #442a1b 0%, #1e110a 100%);
+    background-attachment: fixed;
+    color: #fcfaf5;
+    font-family: var(--font-ppneuemontreal);
+    font-weight: 300;
+    font-size: 18px;
+    line-height: 1.5;
+    margin: 0;
+    min-width: 320px;
+  }
+
+  /* Soft serif look for display headers */
+  h1, h2, h3, h4,
+  .text-display, .text-heading-lg, .text-heading, .text-heading-sm, .text-subheading, .text-heading-xs, .text-heading-2xs {
+    font-family: 'Playfair Display', Georgia, serif !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.02em !important;
+  }
+
+  p {
+    font-weight: 300;
+  }
+
+  button, input, select, textarea { font: inherit; }
+  button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible {
+    outline: 2px solid var(--color-electric-iris) !important;
+    outline-offset: 3px;
+  }
+}
+
+/* Scrollbars — void aesthetic */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1e110a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #442a1b;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ff8533;
+}
+
+/* Primary Action Button — Warm Cozy Orange filled */
+.btn-primary {
+  background-color: #ff8533 !important;
+  color: #1e110a !important;
+  border-radius: 9999px !important;
+  padding: 14px 28px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  border: none !important;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  background-color: #ff9d5c !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 133, 51, 0.3) !important;
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Ghost Button — no background, no border */
+.btn-ghost {
+  background: none;
+  border: none;
+  color: #a89485;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  padding: 8px 12px;
+}
+
+.btn-ghost:hover {
+  color: #fcfaf5;
+}
+
+/* Display typography utility classes with soft letter spacing */
+.text-display {
+  font-size: 113px;
+  line-height: 1.1;
+  letter-spacing: -2px !important;
+  font-weight: 700 !important;
+}
+
+.text-heading-lg {
+  font-size: 78px;
+  line-height: 1.1;
+  letter-spacing: -1.5px !important;
+  font-weight: 700 !important;
+}
+
+.text-heading {
+  font-size: 48px;
+  line-height: 1.1;
+  letter-spacing: -1px !important;
+  font-weight: 700 !important;
+}
+
+.text-heading-sm {
+  font-size: 42px;
+  line-height: 1.2;
+  letter-spacing: -1px !important;
+  font-weight: 700 !important;
+}
+
+.text-subheading {
+  font-size: 36px;
+  line-height: 1.2;
+  font-weight: 600 !important;
+}
+
+.text-heading-xs {
+  font-size: 27px;
+  line-height: 1.1;
+  font-weight: 600 !important;
+}
+
+.text-heading-2xs {
+  font-size: 24px;
+  line-height: 1.25;
+  letter-spacing: -0.2px !important;
+  font-weight: 600 !important;
+}
+
+.text-body {
+  font-size: 18px !important;
+  line-height: 1.5;
+  font-weight: 300 !important;
+}
+
+.text-nav-label {
+  font-size: 14px;
+  line-height: 1.2;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.text-caption {
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+/* Ambient particle field — subtle floating shapes */
+@keyframes float-particle {
+  0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.1; }
+  50% { transform: translateY(-20px) rotate(180deg); opacity: 0.2; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 133, 51, 0); }
+  50% { box-shadow: 0 0 20px 4px rgba(255, 133, 51, 0.15); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+/* Woodland surface utilities */
+.surface-void {
+  background-color: #1e110a;
+}
+
+.surface-elevated {
+  background-color: rgba(252, 250, 245, 0.04);
+  border: 1px solid rgba(252, 250, 245, 0.08);
+}
+
+.surface-iris {
+  background-color: #ff8533;
+}
+
+/* Dala-inspired composition */
+.void-nav {
+  background: transparent !important;
+  border: 0 !important;
+  backdrop-filter: none !important;
+  max-width: var(--page-max-width);
+  width: 100%;
+  margin-inline: auto;
+}
+
+.brand-mark {
+  flex: none;
+  background: linear-gradient(145deg, #ff8533 20%, #ffb829 100%);
+  clip-path: circle(50% at 50% 50%);
+}
+
+.auth-stage {
+  width: min(100%, var(--page-max-width));
+  margin-inline: auto;
+  align-items: flex-start;
+}
+
+.auth-lockup { max-width: 620px; margin-top: clamp(36px, 10vh, 120px); }
+.auth-lockup h1 { font-size: clamp(42px, 7vw, 78px); line-height: .9; letter-spacing: -.02em !important; }
+.auth-stage #login-signup-viewport { margin-inline: 0; }
+
+/* Keep flat cozy look but preserve some soft rounded styling */
+[class*="shadow-"], .shadow-xl, .shadow-2xl, .shadow-inner { box-shadow: none !important; }
+[class*="bg-[#121214]"], [class*="bg-[#1a1a"] { background-color: #26160d !important; }
+
+@media (max-width: 767px) {
+  .text-display { font-size: 56px; }
+  .text-heading-lg { font-size: 48px; }
+  .text-heading, .text-heading-sm { font-size: 36px; }
+  .auth-lockup { margin-top: 18px; }
+  .auth-stage #login-signup-viewport { margin-top: 24px; padding-inline: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Selection colors */
+::selection {
+  background-color: rgba(128, 82, 255, 0.3);
+  color: #ffffff;
+}

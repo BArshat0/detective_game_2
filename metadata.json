@@ -1,0 +1,6 @@
+{
+  "name": "Social Detective",
+  "description": "Learn Digital Safety and Social Awareness by Solving Interactive Cases. Investigate cyberbullying, online scams, digital harassment, and misinformation in this interactive educational game.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
