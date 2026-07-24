@@ -6,6 +6,10 @@ export interface Evidence {
   content: string;
   isLocked: boolean;
   unlockCondition?: string; // e.g., 'interview_witness_id'
+  dateCollected?: string;
+  source?: string;
+  category?: string;
+  importance?: 'High' | 'Medium' | 'Critical';
 }
 
 export interface Witness {
@@ -33,6 +37,40 @@ export interface Clue {
   isDiscovered: boolean;
 }
 
+export interface StoryScene {
+  id: string;
+  sceneNumber: number;
+  title: string;
+  locationName?: string;
+  mediaType: 'dialogue' | 'phone_call' | 'text_chat' | 'news_alert' | 'email_preview' | 'cctv_log' | 'police_dispatch';
+  speaker?: {
+    name: string;
+    role: string;
+    avatar?: string;
+    mood?: 'worried' | 'suspicious' | 'confident' | 'panicked' | 'neutral' | 'urgent';
+  };
+  narration?: string;
+  dialogueText?: string;
+  mediaContent?: {
+    header?: string;
+    sender?: string;
+    recipient?: string;
+    body?: string;
+    timestamp?: string;
+    image?: string;
+  };
+  keyTakeaway?: string;
+  soundEffect?: 'notification' | 'phone_ring' | 'siren' | 'keyboard' | 'static' | 'suspense';
+}
+
+export interface StoryIntro {
+  summary: string;
+  victimName: string;
+  victimRole: string;
+  incidentTime: string;
+  scenes: StoryScene[];
+}
+
 export interface Case {
   id: string;
   title: string;
@@ -44,6 +82,7 @@ export interface Case {
   timeLimit: string;
   imageUrl: string;
   introduction: string;
+  storyIntro?: StoryIntro;
   learningObjectives: string[];
   warningSigns: string[];
   manipulationTechniques: string[];

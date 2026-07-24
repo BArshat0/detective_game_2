@@ -173,7 +173,7 @@ export default function TimelineBuilder({ caseData, placements, onUpdatePlacemen
       <div className="mt-5 flex items-start gap-2.5 bg-white/5 border border-white/5 rounded-[24px] p-4 text-xs font-mono text-[#bdbdbd]">
         <FileClock className="h-4 w-4 shrink-0 text-[#ffb829] mt-0.5" />
         <p className="leading-relaxed">
-          <span className="font-extrabold uppercase text-[#ffb829] mr-1.5">FORENSIC RULE:</span> Reconstructing the chronological sequence of events exposes malicious coordination, premeditation, and the exact timeline of social manipulation.
+          <span className="font-extrabold uppercase text-[#ffb829] mr-1.5">INVESTIGATION RULE:</span> Reconstructing the chronological sequence of events exposes malicious coordination, premeditation, and the exact timeline of social manipulation.
         </p>
       </div>
     </div>

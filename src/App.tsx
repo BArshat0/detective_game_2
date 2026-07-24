@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { 
-  ShieldCheck, Brain, Award, MapPin, MessageSquare, 
-  ArrowLeft, BookOpen, Calendar, Flame, BookOpenCheck, 
-  FileText, ChevronRight, Loader2, LogOut, User
+  ShieldCheck, Brain, Award, MessageSquare, 
+  ArrowLeft, Calendar, BookOpenCheck, 
+  FileText, Loader2, LogOut, User
 } from 'lucide-react';
 import Markdown from 'react-markdown';
 
@@ -19,6 +19,8 @@ import VantaBackground from './components/VantaBackground';
 import LoginSignup from './components/LoginSignup';
 import UserProfileSection from './components/UserProfileSection';
 import LoadingScreen from './components/LoadingScreen';
+import StoryIntroView from './components/StoryIntroView';
+import DetectiveNotebook from './components/DetectiveNotebook';
 
 // Shared types and handcrafted cases
 import { Case, UserProfile, CaseState } from './types';
@@ -45,7 +47,7 @@ const DEFAULT_USER_PROFILE: UserProfile = {
 
 export default function App() {
   // Navigation State
-  const [currentView, setCurrentView] = useState<'library' | 'game' | 'profile'>('library');
+  const [currentView, setCurrentView] = useState<'library' | 'story_intro' | 'game' | 'profile'>('library');
   const [activeCaseId, setActiveCaseId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>('evidence');
   const [selectedEvidenceId, setSelectedEvidenceId] = useState<string | null>(null);
@@ -61,7 +63,6 @@ export default function App() {
     supabase: { configured: boolean; status: string; message: string };
     gemini: { configured: boolean; status: string; message: string };
   } | null>(null);
-  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(false);
   const [supabaseError, setSupabaseError] = useState<string | null>(null);
   const [supabaseTableMissing, setSupabaseTableMissing] = useState<boolean>(false);
   const [showAuthForm, setShowAuthForm] = useState<boolean>(false);
@@ -102,7 +103,6 @@ export default function App() {
   // --- Supabase Synchronization Engines ---
 
   const loadUserData = async (token: string) => {
-    setIsAuthLoading(true);
     setSupabaseError(null);
     setSupabaseTableMissing(false);
     try {
@@ -117,14 +117,12 @@ export default function App() {
       }
       if (profileRes.status === 530) {
         setSupabaseConfigured(false);
-        setIsAuthLoading(false);
         setIsProfileLoaded(true);
         return;
       }
       const profileData = await profileRes.json();
       if (profileData.error === "SUPABASE_TABLES_MISSING") {
         setSupabaseTableMissing(true);
-        setIsAuthLoading(false);
         setIsProfileLoaded(true);
         return;
       }
@@ -168,8 +166,6 @@ export default function App() {
       console.error("Error loading user data:", err);
       setSupabaseError("Failed to load database. Check database tables.");
       setIsProfileLoaded(true);
-    } finally {
-      setIsAuthLoading(false);
     }
   };
 
@@ -226,19 +222,6 @@ export default function App() {
       });
     } catch (err) {
       console.error("Failed to sync custom case:", err);
-    }
-  };
-
-  const deleteCustomCaseFromSupabase = async (token: string, caseId: string) => {
-    try {
-      await fetch(`/api/user/custom-cases/${caseId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-    } catch (err) {
-      console.error("Failed to delete custom case:", err);
     }
   };
 
@@ -330,7 +313,7 @@ export default function App() {
   // Initialize a case state when it's opened for the first time
   const handleSelectCase = (caseId: string) => {
     setActiveCaseId(caseId);
-    setCurrentView('game');
+    setCurrentView('story_intro');
     setActiveTab('evidence');
     setEvaluationResult(null);
     setQuizAnswers({});
@@ -356,12 +339,7 @@ export default function App() {
           discoveredEvidenceIds: targetCase.evidences.map(e => e.id),
           discoveredClueIds: targetCase.clues.map(c => c.id),
           unlockedWitnessIds: targetCase.witnesses.map(w => w.id),
-          notebookNotes: [
-            `-- CASE NOTES INITIALIZED AT ${new Date().toLocaleDateString()} --`,
-            `Topic: ${targetCase.topic}`,
-            `Investigating Threat Actor: ${targetCase.threatActor}`,
-            ...targetCase.evidences.map(e => `[SYSTEM DECRYPTED]: Secure file "${e.name}" successfully loaded into your cabinet.`)
-          ],
+          notebookNotes: [],
           timelinePlacements: {},
           witnessChats: {},
           isCompleted: false
@@ -428,7 +406,7 @@ export default function App() {
     setCasesState(prev => {
       const state = safeGet(prev, activeCaseId);
       if (!state) return prev;
-      const logLine = `[INTEL LOG]: ${text}`;
+      const logLine = text;
       if (state.notebookNotes.includes(logLine)) return prev;
       return safeSet(prev, activeCaseId, {
         ...state,
@@ -450,6 +428,34 @@ export default function App() {
     });
   };
 
+  // Delete note from notepad
+  const handleDeleteNotebookNote = (index: number) => {
+    if (!activeCaseId) return;
+    setCasesState(prev => {
+      const state = safeGet(prev, activeCaseId);
+      if (!state) return prev;
+      const updatedNotes = [...state.notebookNotes];
+      updatedNotes.splice(index, 1);
+      return safeSet(prev, activeCaseId, {
+        ...state,
+        notebookNotes: updatedNotes
+      });
+    });
+  };
+
+  // Clear all notes from notepad
+  const handleClearNotebookNotes = () => {
+    if (!activeCaseId) return;
+    setCasesState(prev => {
+      const state = safeGet(prev, activeCaseId);
+      if (!state) return prev;
+      return safeSet(prev, activeCaseId, {
+        ...state,
+        notebookNotes: []
+      });
+    });
+  };
+
   // Trigger when evidence is revealed from clicking map coordinate hotspots
   const handleRevealEvidence = (evidenceId: string) => {
     if (!activeCaseId || !activeCase) return;
@@ -462,20 +468,11 @@ export default function App() {
       
       // Check if this unlocks any witness
       let updatedWitnesses = [...state.unlockedWitnessIds];
-      const newlyDiscoveredEvidence = activeCase.evidences.find(e => e.id === evidenceId);
 
-      // Rule: Unlocking first-hand info might reveal locked witnesses!
+      // Rule: Unlocking first-hand info reveals relevant witnesses
       activeCase.witnesses.forEach(witness => {
-        if (witness.status === 'locked' && !updatedWitnesses.includes(witness.id)) {
-          // Auto unlock witness Harper if the main video log is scanned, or recruiter if telegram chats discovered
-          if (witness.id === 'wit_harper' && evidenceId === 'ev_metadata_log') {
-            updatedWitnesses.push(witness.id);
-          } else if (witness.id === 'wit_recruiter' && evidenceId === 'ev_chat_logs') {
-            updatedWitnesses.push(witness.id);
-          } else if (witness.id !== 'wit_harper' && witness.id !== 'wit_recruiter') {
-            // General auto unlock for customs
-            updatedWitnesses.push(witness.id);
-          }
+        if (!updatedWitnesses.includes(witness.id)) {
+          updatedWitnesses.push(witness.id);
         }
       });
 
@@ -490,11 +487,7 @@ export default function App() {
         ...state,
         discoveredEvidenceIds: updatedEvidences,
         unlockedWitnessIds: updatedWitnesses,
-        discoveredClueIds: updatedClues,
-        notebookNotes: [
-          ...state.notebookNotes,
-          `[SYSTEM AUTO-DECRYPTED]: Unlocked secure file "${newlyDiscoveredEvidence?.name}"`
-        ]
+        discoveredClueIds: updatedClues
       });
     });
   };
@@ -513,16 +506,9 @@ export default function App() {
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
 
-      // Also automatically log to notebook if witness reveals a key statement
-      let notes = [...state.notebookNotes];
-      if (sender === 'witness' && (text.includes('0x') || text.includes('USDT') || text.includes('Telegram') || text.includes('Vance'))) {
-        notes.push(`[WITNESS REVELATION]: ${activeCase?.witnesses.find(w => w.id === witnessId)?.name} stated: "${text.substring(0, 80)}..."`);
-      }
-
       return safeSet(prev, activeCaseId, {
         ...state,
-        witnessChats: safeSet(state.witnessChats, witnessId, [...currentChats, newChat]),
-        notebookNotes: notes
+        witnessChats: safeSet(state.witnessChats, witnessId, [...currentChats, newChat])
       });
     });
   };
@@ -615,40 +601,6 @@ export default function App() {
       alert("[JUDICIAL RELAY FAULT]: The server Judge AI is busy or failed to compile. Re-submitting.");
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  // Case Architect Custom Case Receiver
-  const handleCaseGenerated = (newCase: Case) => {
-    setUserProfile(prev => {
-      // Unlock badge_creator
-      const updatedAchievements = prev.achievements.map(a => 
-        a.id === 'badge_creator' ? { ...a, isUnlocked: true, unlockedAt: new Date().toLocaleDateString() } : a
-      );
-
-      return {
-        ...prev,
-        customCases: [...prev.customCases, newCase],
-        achievements: updatedAchievements
-      };
-    });
-    
-    if (authToken) {
-      syncCustomCaseToSupabase(authToken, newCase);
-    }
-    
-    // Return to library immediately so they can play it!
-    setCurrentView('library');
-  };
-
-  const handleDeleteCase = (caseId: string) => {
-    setUserProfile(prev => ({
-      ...prev,
-      customCases: prev.customCases.filter(c => c.id !== caseId)
-    }));
-    
-    if (authToken) {
-      deleteCustomCaseFromSupabase(authToken, caseId);
     }
   };
 
@@ -913,15 +865,15 @@ export default function App() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-6 pb-12 items-start">
                   <div>
                     <span className="text-[12px] font-mono font-bold text-[#ffb829] uppercase tracking-[0.35px] block mb-2">
-                      FORENSICS INTELLIGENCE HUB
+                      DIGITAL SAFETY CASE LIBRARY
                     </span>
                     <h1 className="text-heading-lg text-white font-normal leading-[1.1] tracking-[-3.12px]">
-                      FORENSIC INTEL LABS.
+                      CASE LIBRARY.
                     </h1>
                   </div>
                   <div className="space-y-6">
                     <p className="text-body text-[#bdbdbd] font-extralight leading-[1.5] max-w-lg">
-                      Investigate security incidents, decode digital signatures, and intercept threat actor vectors floating across the void. Enhance your defense tactics via real-time training directives.
+                      Investigate digital safety cases, analyze real-world evidence, and learn how to identify online manipulation, fake media, and cyber exploits.
                     </p>
                     <div className="pt-2">
                       <button
@@ -938,7 +890,7 @@ export default function App() {
                 <div>
                   <h3 className="text-nav-label text-white mb-4 flex items-center gap-1.5">
                     <BookOpenCheck className="h-4 w-4 text-[#ff8533]" />
-                    ACTIVE INVESTIGATIVE DIRECTIVES
+                    ACTIVE INVESTIGATIONS
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {allCases.map((caseData) => (
@@ -956,7 +908,17 @@ export default function App() {
               </div>
             )}
 
-            {/* VIEW 2: ACTIVE GAME / CASE INVESTIGATION */}
+            {/* VIEW 2: STORY INTRO PROLOGUE */}
+            {currentView === 'story_intro' && activeCase && (
+              <StoryIntroView
+                caseData={activeCase}
+                onCompleteStory={() => setCurrentView('game')}
+                onSkipStory={() => setCurrentView('game')}
+                onAddNote={(note) => handleAddCustomNote(note)}
+              />
+            )}
+
+            {/* VIEW 3: ACTIVE GAME / CASE INVESTIGATION */}
             {currentView === 'game' && activeCase && (
               <div className="space-y-4 animate-fade-in">
                 
@@ -964,8 +926,13 @@ export default function App() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-transparent border-0 py-2 mb-2">
                   <div className="flex items-center gap-3">
                     <button
-                      onClick={() => setCurrentView('library')}
+                      onClick={() => {
+                        setCurrentView('library');
+                        setActiveCaseId(null);
+                      }}
                       className="p-2 text-[#9a9a9a] hover:text-white border border-white/10 rounded-full bg-transparent hover:bg-white/5 transition-all focus:outline-none cursor-pointer"
+                      aria-label="Back to case library"
+                      title="Back to library"
                     >
                       <ArrowLeft className="h-4 w-4" />
                     </button>
@@ -984,10 +951,10 @@ export default function App() {
 
                   {/* Top Case Progress meters */}
                   <div className="flex flex-wrap items-center gap-4">
-                    {/* Gamified MIL Level HUD */}
+                    {/* Detective Level HUD */}
                     <div className="bg-[#1e110a]/80 border border-[#ff8533]/40 rounded-[24px] px-4 py-2 flex items-center gap-3">
                       <div className="text-right">
-                        <div className="text-[8px] font-mono text-[#9a9a9a] uppercase">MIL DETECTIVE RANK</div>
+                        <div className="text-[8px] font-mono text-[#9a9a9a] uppercase">DETECTIVE RANK</div>
                         <div className="text-xs font-mono font-black text-[#ff8533] uppercase">
                           LEVEL {currentRank.level}: {currentRank.name}
                         </div>
@@ -1025,11 +992,11 @@ export default function App() {
                     {/* Dashboard Tabs Selector */}
                     <div className="flex overflow-x-auto gap-2 border-b border-white/10 pb-2.5">
                       {[
-                        { id: 'evidence', label: 'FORENSIC SOURCE INSPECTOR', icon: <FileText className="h-4 w-4" /> },
-                        { id: 'witnesses', label: 'MIL TRUTH INTERVIEWS', icon: <MessageSquare className="h-4 w-4" /> },
-                        { id: 'clues', label: 'CRITICAL THINKING PUZZLES', icon: <Brain className="h-4 w-4" /> },
-                        { id: 'timeline', label: 'VIRAL TIMELINE SOLVER', icon: <Calendar className="h-4 w-4" /> },
-                        { id: 'submit', label: 'PRESENT TO UNESCO COUNCIL', icon: <ShieldCheck className="h-4 w-4 text-[#15846e]" /> }
+                        { id: 'evidence', label: 'EVIDENCE VIEWER', icon: <FileText className="h-4 w-4" /> },
+                        { id: 'witnesses', label: 'WITNESS INTERVIEWS', icon: <MessageSquare className="h-4 w-4" /> },
+                        { id: 'clues', label: 'DETECTIVE BOARD', icon: <Brain className="h-4 w-4" /> },
+                        { id: 'timeline', label: 'CASE TIMELINE', icon: <Calendar className="h-4 w-4" /> },
+                        { id: 'submit', label: 'INVESTIGATION REPORT', icon: <ShieldCheck className="h-4 w-4 text-[#15846e]" /> }
                       ].map((tab) => (
                         <button
                           key={tab.id}
@@ -1230,48 +1197,14 @@ export default function App() {
 
                   </div>
 
-                {/* Right Side: Active Investigation Notebook (1 Col) */}
-                <div className="xl:col-span-1 rounded-[24px] border border-white/10 bg-[#000000] p-4 flex flex-col h-full min-h-[400px] text-white">
-                  <h4 className="text-nav-label text-white mb-3 flex items-center gap-1.5 border-b border-white/5 pb-3">
-                    <BookOpen className="h-4 w-4 text-[#8052ff] animate-pulse" />
-                    Forensic Notebook
-                  </h4>
-
-                  {/* Notes log frame */}
-                  <div className="flex-1 bg-white/[0.01] border border-white/5 rounded-[24px] p-4 text-[10px] font-mono text-[#bdbdbd] space-y-2 overflow-y-auto max-h-[300px] leading-relaxed shadow-inner">
-                    {currentCaseState.notebookNotes.length === 0 ? (
-                      <span className="text-[#9a9a9a]/40 italic">No observations recorded yet.</span>
-                    ) : (
-                      currentCaseState.notebookNotes.map((note, idx) => (
-                        <div key={idx} className="border-b border-white/5 pb-1.5 flex gap-2">
-                          <span className="text-[#ffb829] select-none">&gt;&gt;</span>
-                          <span className="text-white select-text">{note}</span>
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                  {/* Custom input box */}
-                  <div className="mt-4 pt-3 border-t border-white/5">
-                    <span className="text-[9px] font-mono text-[#9a9a9a] block mb-1.5 uppercase">Add Observation</span>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        id="custom-note-input"
-                        placeholder="Add notes about threat vectors..."
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            const val = (e.target as HTMLInputElement).value;
-                            if (val.trim()) {
-                              handleAddCustomNote(val.trim());
-                              (e.target as HTMLInputElement).value = '';
-                            }
-                          }
-                        }}
-                        className="flex-1 bg-black border border-white/10 rounded-full px-3.5 py-2 text-xs focus:outline-none focus:border-[#8052ff] text-white font-mono"
-                      />
-                    </div>
-                  </div>
+                {/* Right Side: Active Detective Notebook (1 Col) */}
+                <div className="xl:col-span-1">
+                  <DetectiveNotebook
+                    notes={currentCaseState.notebookNotes}
+                    onAddNote={handleAddCustomNote}
+                    onDeleteNote={handleDeleteNotebookNote}
+                    onClearNotes={handleClearNotebookNotes}
+                  />
                 </div>
 
               </div>
@@ -1294,7 +1227,6 @@ export default function App() {
               xp={xp}
               allCases={allCases}
               onSelectCase={handleSelectCase}
-              onDeleteCase={handleDeleteCase}
             />
           )}
 

@@ -336,6 +336,8 @@ export default function InterrogationTerminal({
                 onClick={() => handleSendMessage()}
                 disabled={isTyping || !inputText.trim()}
                 className="bg-[#ff8533] hover:bg-[#ff9955] text-[#1e110a] disabled:bg-white/5 disabled:text-[#9a9a9a]/40 disabled:border-white/5 border-transparent rounded-full px-5 flex items-center justify-center transition-all focus:outline-none cursor-pointer"
+                aria-label="Send message to witness"
+                title="Send message"
               >
                 <Send className="h-3.5 w-3.5" />
               </button>

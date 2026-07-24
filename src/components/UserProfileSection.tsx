@@ -1,6 +1,6 @@
 import React from 'react';
 import { 
-  Award, Shield, BookOpen, Flame, Trash, Play, 
+  Award, BookOpen, 
   ShieldCheck, Lock, CheckCircle2, ChevronRight, User, Star
 } from 'lucide-react';
 import { Case, UserProfile } from '../types';
@@ -16,7 +16,6 @@ interface UserProfileSectionProps {
   xp: number;
   allCases: Case[];
   onSelectCase: (caseId: string) => void;
-  onDeleteCase: (caseId: string) => void;
 }
 
 export default function UserProfileSection({ 
@@ -24,8 +23,7 @@ export default function UserProfileSection({
   currentRank, 
   xp, 
   allCases, 
-  onSelectCase, 
-  onDeleteCase 
+  onSelectCase
 }: UserProfileSectionProps) {
   
   // Calculate progress percent to next rank from 0
@@ -208,7 +206,7 @@ export default function UserProfileSection({
                 <BookOpen className="h-8 w-8 text-[#a89485]/40 mx-auto" />
                 <h4 className="text-xs font-mono font-bold text-white uppercase">Registry is currently empty</h4>
                 <p className="text-xs text-[#a89485] max-w-sm mx-auto leading-relaxed">
-                  Start an active directive inside the Forensic Labs to unlock certificates and logs here!
+                  Start an active investigation inside the Case Library to unlock certificates and logs here!
                 </p>
               </div>
             ) : (

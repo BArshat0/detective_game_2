@@ -110,7 +110,11 @@ export default function LoadingScreen({ isDataReady, onComplete }: LoadingScreen
             />
           </div>
 
-          <div className="flex flex-col items-center gap-1 font-mono text-[10px] text-[#a89485] text-center">
+          <div 
+            className="flex flex-col items-center gap-1 font-mono text-[10px] text-[#a89485] text-center"
+            role="status"
+            aria-live="polite"
+          >
             <span className="text-white transition-all duration-300">
               {statusMessage}
             </span>

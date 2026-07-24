@@ -58,7 +58,7 @@ function handleSupabaseError(error: any, res: any, contextMsg: string) {
   }
   return res.status(500).json({
     error: "SUPABASE_ERROR",
-    message: error?.message || `Failed to perform database operation: ${contextMsg}`,
+    message: "A database query error occurred while processing your request.",
   });
 }
 
@@ -499,7 +499,7 @@ function handleGeminiError(error: any, res: any, contextMsg: string) {
   }
   return res.status(500).json({
     error: "AI_ERROR",
-    message: error?.message || `Failed to perform AI analysis: ${contextMsg}`,
+    message: "Failed to perform AI analysis. The system is temporarily unavailable.",
   });
 }
 
@@ -646,7 +646,7 @@ Your guidelines:
 
     const ai = getGemini();
     const response = await callGeminiWithRetry(() => ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-2.5-flash",
       contents: `${conversation}\nInvestigator: ${userQuestion}\n${witnessName}:`,
       config: {
         systemInstruction,
@@ -685,7 +685,7 @@ Your guidelines:
 
     const ai = getGemini();
     const response = await callGeminiWithRetry(() => ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-2.5-flash",
       contents: `${conversation}\nInvestigator: ${userQuestion}\nLead Mentor:`,
       config: {
         systemInstruction,
@@ -729,7 +729,7 @@ You must analyze their submission:
 
     const ai = getGemini();
     const response = await callGeminiWithRetry(() => ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-2.5-flash",
       contents: "Evaluate this detective's submission and output a detailed evaluation in JSON format.",
       config: {
         systemInstruction,
@@ -782,12 +782,16 @@ Ensure:
 6. Create 3 Clues that correspond to discovering the evidences.
 7. Create a 'solution' containing 2-3 precise questions with 4 choices each, a correct answer (matching one of the choices exactly), and an educational explanation.
 8. Define a 'location' containing 2-3 hotspots that reveal locked or unlocked evidence.
-9. Write the story, metadata, and questions with premium professional quality, highlighting psychological manipulation and social influence vectors.
+9. Naming & Presentation Rules:
+   - Case Titles must be story-driven and curiosity-inducing (e.g., "The Fake Scholarship Trap", "The Midnight Voice Call") rather than generic terms.
+   - Evidence Names must be realistic document/media titles (e.g., "Scholarship Award Email", "WhatsApp Group Chat Transcript", "Audio Spectrograph Report") rather than filenames like "evidence1.txt".
+   - Include realistic category, dateCollected, source, and importance fields on every evidence item.
+10. Write the story, metadata, and questions with premium professional quality, highlighting psychological manipulation and social influence vectors.
     `;
 
     const ai = getGemini();
     const response = await callGeminiWithRetry(() => ai.models.generateContent({
-       model: "gemini-3.5-flash",
+       model: "gemini-2.5-flash",
        contents: `Generate a new case for Topic: ${topic}, Difficulty: ${difficulty}, Environment: ${environment}.`,
        config: {
          systemInstruction,

@@ -18,6 +18,12 @@ export default function EvidenceViewer({
   onCopyToNotebook
 }: EvidenceViewerProps) {
   const [copiedTextId, setCopiedTextId] = useState<string | null>(null);
+  const [activeAnalysis, setActiveAnalysis] = useState<{ type: 'source' | 'emotion' | 'fact' | null; content: string | null }>({ type: null, content: null });
+
+  // Reset verification pane when active evidence changes
+  React.useEffect(() => {
+    setActiveAnalysis({ type: null, content: null });
+  }, [activeEvidenceId]);
 
   const getEvidenceIcon = (type: string) => {
     switch (type) {
@@ -43,8 +49,10 @@ export default function EvidenceViewer({
     }
   };
 
-  const handleCopyText = (content: string) => {
-    onCopyToNotebook(content);
+  const handleCopyText = () => {
+    if (!activeEvidence) return;
+    const excerpt = activeEvidence.content.split('\n')[0];
+    onCopyToNotebook(`Evidence "${activeEvidence.name}": ${excerpt}`);
     setCopiedTextId('copied');
     setTimeout(() => setCopiedTextId(null), 2000);
   };
@@ -133,24 +141,34 @@ export default function EvidenceViewer({
         {activeEvidence && discoveredEvidenceIds.includes(activeEvidence.id) ? (
           <div className="flex flex-col h-full animate-fade-in">
             {/* Active File Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start gap-4 border-b border-white/10 pb-4 mb-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-4 border-b border-white/10 pb-4 mb-3">
               <div>
-                <div className="flex items-center gap-2 mb-1.5">
+                <div className="flex flex-wrap items-center gap-2 mb-1.5">
                   <span className="p-1 rounded-full bg-white/5 border border-white/10">
                     {getEvidenceIcon(activeEvidence.type)}
                   </span>
                   <span className="text-[9px] font-mono tracking-wider text-[#ff8533] bg-[#ff8533]/10 px-2.5 py-0.5 rounded-full border border-[#ff8533]/30 uppercase font-extrabold">
-                    {getEvidenceTypeName(activeEvidence.type)}
+                    {activeEvidence.category || getEvidenceTypeName(activeEvidence.type)}
                   </span>
+                  {activeEvidence.importance && (
+                    <span className={`text-[9px] font-mono px-2 py-0.5 rounded-full border uppercase font-extrabold ${
+                      activeEvidence.importance === 'Critical' 
+                        ? 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+                        : activeEvidence.importance === 'High'
+                          ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                          : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                    }`}>
+                      {activeEvidence.importance} Importance
+                    </span>
+                  )}
                 </div>
                 <h4 className="text-heading-xs tracking-[-0.48px] text-white">{activeEvidence.name}</h4>
-                <p className="text-[10px] text-[#9a9a9a] font-mono mt-0.5">EVIDENCE ID: {activeEvidence.id.toUpperCase()}</p>
               </div>
 
               {/* Action utilities */}
               <button
-                onClick={() => handleCopyText(activeEvidence.content)}
-                className={`flex items-center gap-1.5 text-xs font-mono border px-3 py-1.5 rounded-full transition-all focus:outline-none font-bold cursor-pointer ${
+                onClick={handleCopyText}
+                className={`flex items-center gap-1.5 text-xs font-mono border px-3 py-1.5 rounded-full transition-all focus:outline-none font-bold cursor-pointer shrink-0 ${
                   copiedTextId === 'copied'
                     ? 'bg-[#5c7f5c]/10 border-[#5c7f5c]/40 text-[#5c7f5c]'
                     : 'bg-[#ff8533] hover:bg-[#ff9955] border-transparent text-[#1e110a]'
@@ -170,9 +188,27 @@ export default function EvidenceViewer({
               </button>
             </div>
 
+            {/* Metadata Bar */}
+            {(activeEvidence.source || activeEvidence.dateCollected) && (
+              <div className="grid grid-cols-2 gap-2 mb-3 bg-white/5 border border-white/5 rounded-2xl p-2.5 text-[11px] font-mono">
+                {activeEvidence.source && (
+                  <div>
+                    <span className="text-[#9a9a9a]">Source: </span>
+                    <span className="text-white font-semibold">{activeEvidence.source}</span>
+                  </div>
+                )}
+                {activeEvidence.dateCollected && (
+                  <div>
+                    <span className="text-[#9a9a9a]">Collected: </span>
+                    <span className="text-[#ffb829] font-semibold">{activeEvidence.dateCollected}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Evidence Description */}
             <p className="text-xs text-[#bdbdbd] bg-white/[0.02] border border-white/5 rounded-[24px] p-4.5 mb-4 leading-relaxed">
-              <span className="text-[#ffb829] font-mono font-bold uppercase mr-1.5">CASE DETAIL:</span> 
+              <span className="text-[#ffb829] font-mono font-bold uppercase mr-1.5">WHY IT MATTERS:</span> 
               {activeEvidence.description}
             </p>
 
@@ -197,7 +233,7 @@ export default function EvidenceViewer({
             <div className="bg-[#1e110a]/50 border border-[#ff8533]/20 rounded-[24px] p-4 space-y-3.5">
               <div className="flex items-center justify-between border-b border-[#ff8533]/15 pb-2">
                 <span className="text-[10px] font-mono font-extrabold text-[#ff8533] uppercase tracking-wider flex items-center gap-1.5">
-                  🛡️ MIL FORENSIC TOOLKIT
+                  🛡️ EVIDENCE VERIFICATION TOOLKIT
                 </span>
                 <span className="text-[9px] font-mono text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full font-bold">
                   +50 XP PER COMPLETED ANALYSIS
@@ -207,20 +243,19 @@ export default function EvidenceViewer({
               {/* Action Buttons Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <button
+                  type="button"
                   onClick={() => {
                     const testId = `${activeEvidence.id}_source`;
                     if (!localStorage.getItem(testId)) {
                       localStorage.setItem(testId, 'true');
-                      // Trigger a custom event to update XP in App.tsx
                       window.dispatchEvent(new CustomEvent('mil-xp-earned', { detail: { xp: 50, msg: 'Source Credibility Audited' } }));
                     }
-                    alert(
-                      activeEvidence.id === 'ev_spliced_video'
-                        ? "🔍 SOURCE AUDIT RESULT:\n\n- Context-Splicing Detected: A 10-second snippet was carved from a 2-hour forum recording.\n- Metadata Check: Found artificial audio-wave cuts.\n- Credibility Score: 12% (Highly Distorted)"
-                        : activeEvidence.id === 'ev_whois_record'
-                        ? "🔍 SOURCE AUDIT RESULT:\n\n- Ownership Verification: ecoshieldnews.com is anonymously registered.\n- Hidden Affiliation: Billing profile lists Marcus Sterling (AquaGuard Filter Marketing).\n- Credibility Score: 0% (Direct Corporate Conflict of Interest!)"
-                        : "🔍 SOURCE AUDIT RESULT:\n\n- Digital Signature: Synthesized file signature verified.\n- Audio Harvesting: Voice cloning model compiled via scraped YouTube addresses.\n- Credibility Score: 15% (Fabricated Biometrics)"
-                    );
+                    const text = activeEvidence.id === 'ev_spliced_video'
+                      ? "🔍 SOURCE AUDIT RESULT:\n\n- Context-Splicing Detected: A 10-second snippet was carved from a 2-hour forum recording.\n- Metadata Check: Found artificial audio-wave cuts.\n- Credibility Score: 12% (Highly Distorted)"
+                      : activeEvidence.id === 'ev_whois_record'
+                      ? "🔍 SOURCE AUDIT RESULT:\n\n- Ownership Verification: ecoshieldnews.com is anonymously registered.\n- Hidden Affiliation: Billing profile lists Marcus Sterling (AquaGuard Filter Marketing).\n- Credibility Score: 0% (Direct Corporate Conflict of Interest!)"
+                      : "🔍 SOURCE AUDIT RESULT:\n\n- Digital Signature: Synthesized file signature verified.\n- Audio Harvesting: Voice cloning model compiled via scraped YouTube addresses.\n- Credibility Score: 15% (Fabricated Biometrics)";
+                    setActiveAnalysis({ type: 'source', content: text });
                   }}
                   className="py-2.5 px-3 rounded-full bg-black hover:bg-[#ff8533]/15 border border-[#ff8533]/30 hover:border-[#ff8533] text-xs font-mono font-bold text-white transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer focus:outline-none"
                 >
@@ -228,17 +263,17 @@ export default function EvidenceViewer({
                 </button>
 
                 <button
+                  type="button"
                   onClick={() => {
                     const testId = `${activeEvidence.id}_bait`;
                     if (!localStorage.getItem(testId)) {
                       localStorage.setItem(testId, 'true');
                       window.dispatchEvent(new CustomEvent('mil-xp-earned', { detail: { xp: 50, msg: 'Emotional Bait Analyzed' } }));
                     }
-                    alert(
-                      activeEvidence.id === 'ev_eco_article'
-                        ? "🧠 EMOTIONAL BIAS RADAR:\n\n- Sensation Meter: 98% (CRITICAL ALERT)\n- Hostility Level: Extreme\n- Manipulation Cues: Outrage spikes ('⚠️ URGENT WATER CRISIS', 'corrosive to skin', 'supermarket bottled-water panic'). Designed to bypass user logic through visceral terror."
-                        : "🧠 EMOTIONAL BIAS RADAR:\n\n- Sensation Meter: 85% (HIGH)\n- Triggers Detected: Fabricated panic ('embezzlement emergency', 'classes cancelled', 'deep anxiety'). Utilized artificial authority voice vectors to bypass safety protocols."
-                    );
+                    const text = activeEvidence.id === 'ev_eco_article'
+                      ? "🧠 EMOTIONAL BIAS RADAR:\n\n- Sensation Meter: 98% (CRITICAL ALERT)\n- Hostility Level: Extreme\n- Manipulation Cues: Outrage spikes ('⚠️ URGENT WATER CRISIS', 'corrosive to skin', 'supermarket bottled-water panic'). Designed to bypass user logic through visceral terror."
+                      : "🧠 EMOTIONAL BIAS RADAR:\n\n- Sensation Meter: 85% (HIGH)\n- Triggers Detected: Fabricated panic ('embezzlement emergency', 'classes cancelled', 'deep anxiety'). Utilized artificial authority voice vectors to bypass safety protocols.";
+                    setActiveAnalysis({ type: 'emotion', content: text });
                   }}
                   className="py-2.5 px-3 rounded-full bg-black hover:bg-[#ff8533]/15 border border-[#ff8533]/30 hover:border-[#ff8533] text-xs font-mono font-bold text-white transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer focus:outline-none"
                 >
@@ -246,23 +281,45 @@ export default function EvidenceViewer({
                 </button>
 
                 <button
+                  type="button"
                   onClick={() => {
                     const testId = `${activeEvidence.id}_fact`;
                     if (!localStorage.getItem(testId)) {
                       localStorage.setItem(testId, 'true');
                       window.dispatchEvent(new CustomEvent('mil-xp-earned', { detail: { xp: 50, msg: 'Fact-Check Logs Query' } }));
                     }
-                    alert(
-                      activeEvidence.id === 'ev_whois_record' || activeEvidence.id === 'ev_marketing_ledger'
-                        ? "🛡️ FACT-CHECK PORTAL CROSS-REFERENCE:\n\n- Municipal Database: Kyoto Municipal Water testing logs show 100% safety parameters (chlorine/bacteria 0.00%).\n- Verification Status: DEBUNKED. The EcoShield article is a commercial marketing fraud designed to sell domestic filter hardware."
-                        : "🛡️ FACT-CHECK PORTAL CROSS-REFERENCE:\n\n- Forensic Archives: Original student forum footage shows Maya defending the project.\n- Verification Status: FALSIFIED. This 11-second audio has been digitally edited with context-splicing."
-                    );
+                    const text = activeEvidence.id === 'ev_whois_record' || activeEvidence.id === 'ev_marketing_ledger'
+                      ? "🛡️ FACT-CHECK PORTAL CROSS-REFERENCE:\n\n- Municipal Database: Kyoto Municipal Water testing logs show 100% safety parameters (chlorine/bacteria 0.00%).\n- Verification Status: DEBUNKED. The EcoShield article is a commercial marketing fraud designed to sell domestic filter hardware."
+                      : "🛡️ FACT-CHECK PORTAL CROSS-REFERENCE:\n\n- Forensic Archives: Original student forum footage shows Maya defending the project.\n- Verification Status: FALSIFIED. This 11-second audio has been digitally edited with context-splicing.";
+                    setActiveAnalysis({ type: 'fact', content: text });
                   }}
                   className="py-2.5 px-3 rounded-full bg-black hover:bg-[#ff8533]/15 border border-[#ff8533]/30 hover:border-[#ff8533] text-xs font-mono font-bold text-white transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer focus:outline-none"
                 >
                   🛡️ Fact-Check DB
                 </button>
               </div>
+
+              {/* Active Verification Report Box */}
+              {activeAnalysis.type && activeAnalysis.content && (
+                <div className="bg-black/90 border border-[#ff8533]/30 rounded-[20px] p-4 text-xs font-mono text-[#d9d2c9] space-y-2 animate-fade-in">
+                  <div className="flex justify-between items-center border-b border-white/5 pb-1.5 mb-2">
+                    <span className="text-[#ffb829] font-bold uppercase tracking-wider">
+                      {activeAnalysis.type === 'source' ? '🔍 Source Audit Report' : activeAnalysis.type === 'emotion' ? '🧠 Emotional Radar Analytics' : '🛡️ Fact-Check Database Log'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveAnalysis({ type: null, content: null })}
+                      className="text-[10px] text-[#9a9a9a] hover:text-white font-bold border border-white/10 px-2 py-0.5 rounded bg-white/5 cursor-pointer focus:outline-none"
+                      aria-label="Close report pane"
+                    >
+                      [x] CLOSE
+                    </button>
+                  </div>
+                  <p className="whitespace-pre-wrap leading-relaxed select-text font-mono">
+                    {activeAnalysis.content}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         ) : (
