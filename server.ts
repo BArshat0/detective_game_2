@@ -15,7 +15,7 @@ let supabaseClient: any = null;
 
 function getSupabaseUserClient(token?: string) {
   const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY;
+  const key = process.env.SUPABASE_ANON_KEY ?? process.env.SUPABASE_KEY;
   if (!url || !key) {
     throw new Error("SUPABASE_NOT_CONFIGURED");
   }
@@ -48,9 +48,10 @@ function getSupabase() {
 }
 
 // Error helper for missing tables (PG code 42P01)
-function handleSupabaseError(error: any, res: any, contextMsg: string) {
+function handleSupabaseError(error: unknown, res: any, contextMsg: string) {
   console.error(`Supabase error during ${contextMsg}:`, error);
-  if (error && (error.code === "42P01" || (error.message && error.message.includes("relation") && error.message.includes("does not exist")))) {
+  const err = error as { code?: string; message?: string } | null;
+  if (err && (err.code === "42P01" || (err.message?.includes("relation") && err.message.includes("does not exist")))) {
     return res.status(400).json({
       error: "SUPABASE_TABLES_MISSING",
       message: "The required tables are not set up in your Supabase database. Please create 'profiles', 'custom_cases', and 'cases_state' tables using the provided SQL schema in your Supabase SQL Editor.",
@@ -66,7 +67,7 @@ function handleSupabaseError(error: any, res: any, contextMsg: string) {
 async function requireAuth(req: any, res: any, next: any) {
   try {
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!authHeader?.startsWith("Bearer ")) {
       return res.status(401).json({ error: "Unauthorized: Missing authentication token" });
     }
     const token = authHeader.split(" ")[1];
@@ -78,8 +79,9 @@ async function requireAuth(req: any, res: any, next: any) {
     req.user = user;
     req.token = token; // Store token for user-scoped queries
     next();
-  } catch (error: any) {
-    if (error.message === "SUPABASE_NOT_CONFIGURED") {
+  } catch (error: unknown) {
+    const err = error as Error;
+    if (err.message === "SUPABASE_NOT_CONFIGURED") {
       return res.status(530).json({ error: "SUPABASE_NOT_CONFIGURED", message: "Supabase has not been configured in the environment variables yet." });
     }
     console.error("Auth middleware error:", error);
@@ -159,7 +161,7 @@ app.post("/api/auth/signup", async (req, res) => {
       // Store the profile data in Supabase profiles table
       try {
         const userClient = getSupabaseUserClient(session?.access_token);
-        const profilePayload: any = {
+        const profilePayload: Record<string, unknown> = {
           id: user.id,
           name,
           email,
@@ -169,7 +171,7 @@ app.post("/api/auth/signup", async (req, res) => {
           xp: 120,
         };
         const { error: firstError } = await userClient.from("profiles").upsert(profilePayload);
-        if (firstError && firstError.message && firstError.message.includes("xp")) {
+        if (firstError?.message?.includes("xp")) {
           delete profilePayload.xp;
           await userClient.from("profiles").upsert(profilePayload);
         }
@@ -179,8 +181,9 @@ app.post("/api/auth/signup", async (req, res) => {
     }
 
     res.json({ user, session });
-  } catch (error: any) {
-    if (error.message === "SUPABASE_NOT_CONFIGURED") {
+  } catch (error: unknown) {
+    const err = error as Error;
+    if (err.message === "SUPABASE_NOT_CONFIGURED") {
       return res.status(530).json({ error: "SUPABASE_NOT_CONFIGURED", message: "Supabase configuration missing." });
     }
     console.error("Signup error:", error);
@@ -238,7 +241,7 @@ app.get("/api/user/profile", requireAuth, async (req: any, res) => {
 
     if (error || !profile) {
       // Lazy-create profile if not found but table exists
-      const defaultProfile: any = {
+      const defaultProfile: Record<string, unknown> = {
         id: req.user.id,
         name: req.user.user_metadata?.name || req.user.email?.split("@")[0] || "Investigator",
         email: req.user.email || "",
@@ -254,7 +257,7 @@ app.get("/api/user/profile", requireAuth, async (req: any, res) => {
         .select()
         .single();
       
-      if (insertError && insertError.message && insertError.message.includes("xp")) {
+      if (insertError?.message?.includes("xp")) {
         delete defaultProfile.xp;
         const retryResult = await supabase
           .from("profiles")
@@ -271,7 +274,7 @@ app.get("/api/user/profile", requireAuth, async (req: any, res) => {
       return res.json(inserted);
     }
     res.json(profile);
-  } catch (error: any) {
+  } catch (error: unknown) {
     handleSupabaseError(error, res, "get profile");
   }
 });
@@ -281,7 +284,7 @@ app.post("/api/user/profile", requireAuth, async (req: any, res) => {
     const supabase = getSupabaseUserClient(req.token);
     const { name, cases_solved, solved_case_ids, achievements, xp } = req.body;
     
-    const payload: any = {
+    const payload: Record<string, unknown> = {
       id: req.user.id,
       name: name && name !== "Cadet Detective" ? name : (req.user.user_metadata?.name || req.user.email?.split("@")[0] || "Investigator"),
       email: req.user.email,
@@ -297,7 +300,7 @@ app.post("/api/user/profile", requireAuth, async (req: any, res) => {
       .select()
       .single();
 
-    if (error && error.message && error.message.includes("xp")) {
+    if (error?.message?.includes("xp")) {
       delete payload.xp;
       const retryResult = await supabase
         .from("profiles")
@@ -312,7 +315,7 @@ app.post("/api/user/profile", requireAuth, async (req: any, res) => {
       return handleSupabaseError(error, res, "update profile");
     }
     res.json(data);
-  } catch (error: any) {
+  } catch (error: unknown) {
     handleSupabaseError(error, res, "post profile");
   }
 });
@@ -330,7 +333,7 @@ app.get("/api/user/cases-state", requireAuth, async (req: any, res) => {
       return handleSupabaseError(error, res, "load case states");
     }
 
-    const formattedStates: Record<string, any> = {};
+    const formattedStates: Record<string, unknown> = {};
     data.forEach((row: any) => {
       const key = row.case_id;
       if (typeof key === "string" && key !== "__proto__" && key !== "constructor" && key !== "prototype") {
@@ -343,7 +346,7 @@ app.get("/api/user/cases-state", requireAuth, async (req: any, res) => {
       }
     });
     res.json(formattedStates);
-  } catch (error: any) {
+  } catch (error: unknown) {
     handleSupabaseError(error, res, "get cases-state");
   }
 });
@@ -371,7 +374,7 @@ app.post("/api/user/cases-state", requireAuth, async (req: any, res) => {
       return handleSupabaseError(error, res, "save case state");
     }
     res.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     handleSupabaseError(error, res, "post cases-state");
   }
 });
@@ -389,7 +392,7 @@ app.get("/api/user/custom-cases", requireAuth, async (req: any, res) => {
       return handleSupabaseError(error, res, "load custom cases");
     }
     res.json(data.map((row: any) => row.case_data));
-  } catch (error: any) {
+  } catch (error: unknown) {
     handleSupabaseError(error, res, "get custom-cases");
   }
 });
@@ -398,7 +401,7 @@ app.post("/api/user/custom-cases", requireAuth, async (req: any, res) => {
   try {
     const supabase = getSupabaseUserClient(req.token);
     const { caseData } = req.body;
-    if (!caseData || !caseData.id) {
+    if (!caseData?.id) {
       return res.status(400).json({ error: "Missing caseData or caseData.id" });
     }
 
@@ -445,7 +448,7 @@ app.delete("/api/user/custom-cases/:id", requireAuth, async (req: any, res) => {
 const PORT = 3000;
 
 // Initialize Gemini API lazily to prevent startup crashes if key is missing
-let aiClient: any = null;
+let aiClient: GoogleGenAI | null = null;
 
 function getGemini() {
   if (!aiClient) {
@@ -466,18 +469,19 @@ function getGemini() {
 }
 
 // Retry helper for handling temporary model unavailability or high-demand (503) errors with exponential backoff
-async function callGeminiWithRetry(fn: () => Promise<any>, retries = 3, delay = 1000): Promise<any> {
+async function callGeminiWithRetry(fn: () => Promise<unknown>, retries = 3, delay = 1000): Promise<any> {
   try {
     return await fn();
-  } catch (error: any) {
-    const errorStr = JSON.stringify(error) || error?.toString() || "";
+  } catch (error: unknown) {
+    const errObj = error as { status?: number; code?: number };
+    const errorStr = JSON.stringify(error) || String(error);
     const isRetryable = 
       errorStr.includes("503") || 
       errorStr.includes("UNAVAILABLE") || 
       errorStr.includes("high demand") || 
       errorStr.includes("temporary") ||
-      (error?.status === 503) ||
-      (error?.code === 503);
+      (errObj?.status === 503) ||
+      (errObj?.code === 503);
 
     if (isRetryable && retries > 0) {
       console.warn(`Gemini error (503/UNAVAILABLE) encountered. Retrying in ${delay}ms... (${retries} retries left)`);
@@ -489,9 +493,10 @@ async function callGeminiWithRetry(fn: () => Promise<any>, retries = 3, delay = 
 }
 
 // Helper to handle Gemini errors gracefully in the backend
-function handleGeminiError(error: any, res: any, contextMsg: string) {
+function handleGeminiError(error: unknown, res: any, contextMsg: string) {
   console.error(`Gemini error during ${contextMsg}:`, error);
-  if (error && (error.message === "GEMINI_NOT_CONFIGURED" || error.message?.includes("API_KEY"))) {
+  const err = error as Error | null;
+  if (err && (err.message === "GEMINI_NOT_CONFIGURED" || err.message?.includes("API_KEY"))) {
     return res.status(530).json({
       error: "GEMINI_NOT_CONFIGURED",
       message: "The Gemini AI Core is not configured yet. Please enter the GEMINI_API_KEY in the Secrets panel on Google AI Studio.",
@@ -615,7 +620,7 @@ app.get("/api/system-status", async (req, res) => {
 });
 
 // Helper to format chat history for LLM prompt ingestion
-function formatChatHistory(chatHistory: any[], userLabel = "Investigator", otherLabel: string): string {
+function formatChatHistory(chatHistory: unknown[], userLabel = "Investigator", otherLabel: string): string {
   const history = Array.isArray(chatHistory) ? chatHistory : [];
   return history.map((h: any) => `${h.sender === "user" ? userLabel : otherLabel}: ${h.text || ""}`).join("\n");
 }
@@ -828,7 +833,7 @@ async function startServer() {
   });
 }
 
-startServer().catch((error) => {
+startServer().catch((error: unknown) => {
   console.error("Failed to start server:", error);
   process.exitCode = 1;
 });

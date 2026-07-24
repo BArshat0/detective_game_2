@@ -27,7 +27,7 @@ export default function MentorDrone({ caseData, discoveredEvidenceIds, notebookN
   }, [messages, isTyping]);
 
   const handleSend = async (customPrompt?: string) => {
-    const textToSend = customPrompt || inputVal;
+    const textToSend = customPrompt ?? inputVal;
     if (!textToSend.trim()) return;
 
     if (!customPrompt) setInputVal('');
@@ -86,7 +86,7 @@ export default function MentorDrone({ caseData, discoveredEvidenceIds, notebookN
       {/* Floating Drone Button */}
       {!isOpen && (
         <button
-          onClick={() => setIsOpen(true)}
+          onClick={() => { setIsOpen(true); }}
           className="flex items-center gap-2 rounded-full bg-[#1e110a] border border-white/10 hover:border-[#ff8533] p-4 text-white shadow-xl hover:translate-y-[-2px] transition-all focus:outline-none cursor-pointer"
         >
           <Bot className="h-6 w-6 text-[#ff8533] animate-pulse" />
@@ -109,13 +109,13 @@ export default function MentorDrone({ caseData, discoveredEvidenceIds, notebookN
 
             <div className="flex items-center gap-2">
               <button 
-                onClick={() => setIsMinimized(!isMinimized)}
+                onClick={() => { setIsMinimized(!isMinimized); }}
                 className="text-[#9a9a9a] hover:text-white transition-colors focus:outline-none cursor-pointer"
               >
                 {isMinimized ? <Maximize2 className="h-3.5 w-3.5" /> : <Minimize2 className="h-3.5 w-3.5" />}
               </button>
               <button 
-                onClick={() => setIsOpen(false)}
+                onClick={() => { setIsOpen(false); }}
                 className="text-[#9a9a9a] hover:text-white transition-colors focus:outline-none cursor-pointer"
               >
                 <X className="h-3.5 w-3.5" />
@@ -187,9 +187,9 @@ export default function MentorDrone({ caseData, discoveredEvidenceIds, notebookN
                 <input
                   type="text"
                   value={inputVal}
-                  onChange={(e) => setInputVal(e.target.value)}
+                  onChange={(e) => { setInputVal(e.target.value); }}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleSend();
+                    if (e.key === 'Enter') void handleSend();
                   }}
                   placeholder="Ask about warning signs..."
                   className="flex-1 bg-black border border-white/10 focus:border-[#ff8533] rounded-full px-3.5 py-1.5 text-xs outline-none text-white font-mono"

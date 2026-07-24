@@ -7,7 +7,7 @@ interface InterrogationTerminalProps {
   caseData: Case;
   unlockedWitnessIds: string[];
   onUnlockWitness: (witnessId: string) => void;
-  chatsState: { [witnessId: string]: { sender: 'user' | 'witness'; text: string; timestamp: string }[] };
+  chatsState: Record<string, { sender: 'user' | 'witness'; text: string; timestamp: string }[]>;
   onAddMessage: (witnessId: string, sender: 'user' | 'witness', text: string) => void;
 }
 
@@ -20,7 +20,7 @@ export default function InterrogationTerminal({
   const [selectedWitnessId, setSelectedWitnessId] = useState<string | null>(null);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [trustLevels, setTrustLevels] = useState<{ [witnessId: string]: number }>({});
+  const [trustLevels, setTrustLevels] = useState<Record<string, number>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto scroll to bottom of chat
@@ -37,11 +37,11 @@ export default function InterrogationTerminal({
   }, [unlockedWitnessIds, caseData.witnesses, selectedWitnessId]);
 
   const activeWitness = caseData.witnesses.find(w => w.id === selectedWitnessId);
-  const activeChat = selectedWitnessId ? safeGet(chatsState, selectedWitnessId) || [] : [];
+  const activeChat = selectedWitnessId ? safeGet(chatsState, selectedWitnessId) ?? [] : [];
   const activeTrust = selectedWitnessId ? safeGet(trustLevels, selectedWitnessId) ?? 35 : 35;
 
   const handleSendMessage = async (textToSend?: string) => {
-    const messageText = textToSend || inputText;
+    const messageText = textToSend ?? inputText;
     if (!messageText.trim() || !selectedWitnessId || !activeWitness) return;
 
     if (!textToSend) {
@@ -324,9 +324,9 @@ export default function InterrogationTerminal({
               <input
                 type="text"
                 value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
+                onChange={(e) => { setInputText(e.target.value); }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleSendMessage();
+                  if (e.key === 'Enter') void handleSendMessage();
                 }}
                 placeholder={`Ask ${activeWitness.name} about social clues or warning signs...`}
                 className="flex-1 bg-black border border-white/10 focus:border-[#ff8533] rounded-full px-4 py-2.5 text-xs outline-none text-white transition-colors"

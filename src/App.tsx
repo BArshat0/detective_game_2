@@ -89,12 +89,12 @@ export default function App() {
   const currentRank = getMilRank(xp);
 
   // Track state for each case independently to preserve progress
-  const [casesState, setCasesState] = useState<{ [caseId: string]: CaseState }>({});
+  const [casesState, setCasesState] = useState<Record<string, CaseState>>({});
 
   // Active quiz submissions
-  const [quizAnswers, setQuizAnswers] = useState<{ [questionId: string]: string }>({});
+  const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [evaluationResult, setEvaluationResult] = useState<any | null>(null);
+  const [evaluationResult, setEvaluationResult] = useState<{ score?: number; grade?: string; verdict?: string; analysis?: string; unlockedBadges?: string[] } | null>(null);
 
   // Load and merge cases list
   const allCases = [...HANDCRAFTED_CASES, ...userProfile.customCases];
@@ -162,7 +162,7 @@ export default function App() {
       setCasesState(casesStateData || {});
       setSupabaseConfigured(true);
       setIsProfileLoaded(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error loading user data:", err);
       setSupabaseError("Failed to load database. Check database tables.");
       setIsProfileLoaded(true);
@@ -253,10 +253,10 @@ export default function App() {
         console.error("Failed to fetch system status:", err);
       }
     };
-    checkSystemStatus();
+    void checkSystemStatus();
     
     if (authToken) {
-      loadUserData(authToken);
+      void loadUserData(authToken);
     }
   }, [authToken]);
 
@@ -266,9 +266,9 @@ export default function App() {
     const activeState = safeGet(casesState, activeCaseId);
     if (activeState) {
       const timer = setTimeout(() => {
-        syncCaseStateToSupabase(authToken, activeCaseId, activeState);
+        void syncCaseStateToSupabase(authToken, activeCaseId, activeState);
       }, 500);
-      return () => clearTimeout(timer);
+      return () => { clearTimeout(timer); };
     }
   }, [casesState, activeCaseId, authToken]);
 
@@ -276,9 +276,9 @@ export default function App() {
   useEffect(() => {
     if (!authToken || !isProfileLoaded) return;
     const timer = setTimeout(() => {
-      syncProfileToSupabase(authToken, userProfile);
+      void syncProfileToSupabase(authToken, userProfile);
     }, 1000);
-    return () => clearTimeout(timer);
+    return () => { clearTimeout(timer); };
   }, [userProfile.casesSolved, userProfile.solvedCaseIds, userProfile.achievements, userProfile.name, xp, authToken, isProfileLoaded]);
 
   // Listen for gamified MIL XP events from subcomponents
@@ -296,7 +296,7 @@ export default function App() {
       }
     };
     window.addEventListener('mil-xp-earned', handleXpEarned);
-    return () => window.removeEventListener('mil-xp-earned', handleXpEarned);
+    return () => { window.removeEventListener('mil-xp-earned', handleXpEarned); };
   }, []);
 
   // Clear XP Toast after delay
@@ -305,7 +305,7 @@ export default function App() {
       const timer = setTimeout(() => {
         setXpToast(null);
       }, 4000);
-      return () => clearTimeout(timer);
+      return () => { clearTimeout(timer); };
     }
   }, [xpToast]);
 
@@ -347,7 +347,7 @@ export default function App() {
         setCasesState(prev => {
           const updated = safeSet(prev, caseId, defaultState);
           if (authToken) {
-            syncCaseStateToSupabase(authToken, caseId, defaultState);
+            void syncCaseStateToSupabase(authToken, caseId, defaultState);
           }
           return updated;
         });
@@ -365,7 +365,7 @@ export default function App() {
             unlockedWitnessIds: targetCase.witnesses.map(w => w.id)
           } as CaseState;
           if (authToken) {
-            syncCaseStateToSupabase(authToken, caseId, updated);
+            void syncCaseStateToSupabase(authToken, caseId, updated);
           }
           return safeSet(prev, caseId, updated);
         });
@@ -386,7 +386,7 @@ export default function App() {
         isCompleted: false
       };
     }
-    return safeGet(casesState, activeCaseId) || {
+    return safeGet(casesState, activeCaseId) ?? {
       caseId: activeCaseId,
       discoveredEvidenceIds: [],
       discoveredClueIds: [],
@@ -499,7 +499,7 @@ export default function App() {
       const state = safeGet(prev, activeCaseId);
       if (!state) return prev;
 
-      const currentChats = safeGet(state.witnessChats, witnessId) || [];
+      const currentChats = safeGet(state.witnessChats, witnessId) ?? [];
       const newChat = {
         sender,
         text,
@@ -688,7 +688,7 @@ export default function App() {
                     {/* CTA Actions */}
                     <div className="md:col-span-5 flex flex-col gap-3 justify-center">
                       <button
-                        onClick={() => setShowAuthForm(true)}
+                        onClick={() => { setShowAuthForm(true); }}
                         className="btn-primary w-full text-center flex items-center justify-center gap-2 group cursor-pointer"
                       >
                         <span>Start Investigating</span>
@@ -735,7 +735,7 @@ export default function App() {
                 <div className="space-y-4 animate-fade-in max-w-md mx-auto">
                   {/* Back to landing button */}
                   <button
-                    onClick={() => setShowAuthForm(false)}
+                    onClick={() => { setShowAuthForm(false); }}
                     className="flex items-center gap-1.5 text-xs font-mono font-bold text-[#ff8533] hover:text-[#ff9d5c] uppercase transition-colors mb-4 cursor-pointer"
                   >
                     <span>← Back to Main Menu</span>
@@ -789,7 +789,7 @@ export default function App() {
                 LIBRARY
               </button>
               <button
-                onClick={() => setCurrentView('profile')}
+                onClick={() => { setCurrentView('profile'); }}
                 className={`px-4 py-2 rounded-full font-mono text-xs font-semibold tracking-wider uppercase transition-all duration-200 cursor-pointer focus:outline-none ${
                   currentView === 'profile'
                     ? 'text-[#ff8533] border-b-2 border-[#ff8533] rounded-none'
@@ -802,7 +802,7 @@ export default function App() {
               {/* User credentials / Authentication Controls */}
               <div className="flex items-center gap-3 border-l border-white/15 pl-4 ml-2 text-xs">
                 <button
-                  onClick={() => setCurrentView('profile')}
+                  onClick={() => { setCurrentView('profile'); }}
                   className="hidden md:flex items-center gap-2 text-right hover:opacity-85 transition-opacity cursor-pointer focus:outline-none"
                   title="View Profile Dossier"
                 >
@@ -1000,7 +1000,7 @@ export default function App() {
                       ].map((tab) => (
                         <button
                           key={tab.id}
-                          onClick={() => setActiveTab(tab.id)}
+                          onClick={() => { setActiveTab(tab.id); }}
                           className={`flex items-center gap-1.5 px-4 py-2.5 rounded-full font-mono text-xs font-bold transition-all whitespace-nowrap focus:outline-none border cursor-pointer ${
                             activeTab === tab.id
                               ? 'border-[#ff8533] bg-[#ff8533]/10 text-white'
@@ -1155,7 +1155,7 @@ export default function App() {
                                           <button
                                             key={choice}
                                             type="button"
-                                            onClick={() => setQuizAnswers(prev => ({ ...prev, [q.id]: choice }))}
+                                            onClick={() => { setQuizAnswers(prev => ({ ...prev, [q.id]: choice })); }}
                                             className={`p-3 rounded-full border text-xs text-left transition-all font-mono leading-relaxed focus:outline-none cursor-pointer ${
                                               isSelected
                                                 ? 'border-[#8052ff] bg-[#8052ff]/10 text-white font-bold'

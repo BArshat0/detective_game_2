@@ -2,11 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 
 export default function VantaBackground() {
   const vantaRef = useRef<HTMLDivElement | null>(null);
-  const [vantaEffect, setVantaEffect] = useState<any>(null);
+  const [vantaEffect, setVantaEffect] = useState<unknown>(null);
 
   useEffect(() => {
-    const VANTA = (window as any).VANTA;
-    if (!vantaEffect && vantaRef.current && VANTA && VANTA.BIRDS) {
+    const VANTA = (window as unknown as Record<string, any>).VANTA;
+    if (!vantaEffect && vantaRef.current && VANTA?.BIRDS) {
       try {
         const effect = VANTA.BIRDS({
           el: vantaRef.current,
@@ -35,8 +35,8 @@ export default function VantaBackground() {
     }
 
     return () => {
-      if (vantaEffect && typeof vantaEffect.destroy === 'function') {
-        vantaEffect.destroy();
+      if (vantaEffect && typeof (vantaEffect as { destroy?: () => void }).destroy === 'function') {
+        (vantaEffect as { destroy: () => void }).destroy();
       }
     };
   }, [vantaEffect]);
@@ -48,8 +48,8 @@ export default function VantaBackground() {
     let attempts = 0;
     const checkInterval = setInterval(() => {
       attempts++;
-      const VANTA = (window as any).VANTA;
-      if (VANTA && VANTA.BIRDS && vantaRef.current) {
+      const VANTA = (window as unknown as Record<string, any>).VANTA;
+      if (VANTA?.BIRDS && vantaRef.current) {
         clearInterval(checkInterval);
         // Force a state update to trigger the initialization effect
         setVantaEffect(null);
@@ -59,7 +59,7 @@ export default function VantaBackground() {
       }
     }, 300);
 
-    return () => clearInterval(checkInterval);
+    return () => { clearInterval(checkInterval); };
   }, [vantaEffect]);
 
   return (

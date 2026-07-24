@@ -150,11 +150,11 @@ export default function ShaderGradient() {
       ctx.lineWidth = 0.5;
       for (let i = 0; i < particles.length; i += 8) {
         const p1 = particles.at(i);
-        if (!p1 || !p1.isBrain) continue;
+        if (!p1?.isBrain) continue;
 
         for (let j = i + 1; j < particles.length; j += 12) {
           const p2 = particles.at(j);
-          if (!p2 || !p2.isBrain) continue;
+          if (!p2?.isBrain) continue;
 
           const dx = p1.x - p2.x;
           const dy = p1.y - p2.y;

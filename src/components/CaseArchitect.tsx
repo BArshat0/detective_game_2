@@ -97,7 +97,7 @@ export default function CaseArchitect({ onCaseGenerated, customCases, onPlayCase
       });
 
       const customCaseData = await response.json();
-      if (customCaseData && customCaseData.id) {
+      if (customCaseData?.id) {
         setTimeout(() => {
           onCaseGenerated(customCaseData);
           setIsGenerating(false);
@@ -198,7 +198,7 @@ export default function CaseArchitect({ onCaseGenerated, customCases, onPlayCase
               <label className="block text-[10px] font-mono font-bold text-[#9a9a9a] uppercase tracking-wider mb-2">Select Safety Topic</label>
               <select
                 value={topic}
-                onChange={(e) => setTopic(e.target.value)}
+                onChange={(e) => { setTopic(e.target.value); }}
                 className="w-full bg-black border border-white/10 rounded-full px-4 py-3 text-xs text-white font-mono outline-none focus:border-[#ff8533] transition-all cursor-pointer"
               >
                 {topics.map((t, tIdx) => (
@@ -215,7 +215,7 @@ export default function CaseArchitect({ onCaseGenerated, customCases, onPlayCase
                   <button
                     key={diff}
                     type="button"
-                    onClick={() => setDifficulty(diff)}
+                    onClick={() => { setDifficulty(diff); }}
                     className={`p-2.5 rounded-full border text-xs font-mono font-extrabold transition-all cursor-pointer focus:outline-none ${
                       difficulty === diff
                         ? diff === 'EASY'
@@ -237,7 +237,7 @@ export default function CaseArchitect({ onCaseGenerated, customCases, onPlayCase
               <label className="block text-[10px] font-mono font-bold text-[#9a9a9a] uppercase tracking-wider mb-2">Select Map Environment</label>
               <select
                 value={environment}
-                onChange={(e) => setEnvironment(e.target.value)}
+                onChange={(e) => { setEnvironment(e.target.value); }}
                 className="w-full bg-black border border-white/10 rounded-full px-4 py-3 text-xs text-white font-mono outline-none focus:border-[#ff8533] transition-all cursor-pointer"
               >
                 {environments.map((env, eIdx) => (
@@ -299,14 +299,14 @@ export default function CaseArchitect({ onCaseGenerated, customCases, onPlayCase
 
                 <div className="flex items-center gap-2 shrink-0">
                   <button
-                    onClick={() => onPlayCase(c.id)}
+                    onClick={() => { onPlayCase(c.id); }}
                     className="flex items-center gap-1.5 text-xs font-mono font-extrabold text-[#1e110a] bg-[#ff8533] hover:bg-[#ff9c5c] px-4 py-2 rounded-full transition-colors cursor-pointer focus:outline-none"
                   >
                     <PlayCircle className="h-4 w-4" />
                     <span>LAUNCH</span>
                   </button>
                   <button
-                    onClick={() => onDeleteCase(c.id)}
+                    onClick={() => { onDeleteCase(c.id); }}
                     className="p-2 text-rose-500 hover:text-rose-400 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-all focus:outline-none cursor-pointer"
                     title="Delete Case"
                   >

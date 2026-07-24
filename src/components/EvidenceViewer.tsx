@@ -54,7 +54,7 @@ export default function EvidenceViewer({
     const excerpt = activeEvidence.content.split('\n')[0];
     onCopyToNotebook(`Evidence "${activeEvidence.name}": ${excerpt}`);
     setCopiedTextId('copied');
-    setTimeout(() => setCopiedTextId(null), 2000);
+    setTimeout(() => { setCopiedTextId(null); }, 2000);
   };
 
   const activeEvidence = caseData.evidences.find(e => e.id === activeEvidenceId);

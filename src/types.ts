@@ -138,8 +138,8 @@ export interface CaseState {
   discoveredClueIds: string[];
   unlockedWitnessIds: string[];
   notebookNotes: string[];
-  timelinePlacements: { [eventId: string]: number }; // eventId -> chronological position in draft
-  witnessChats: { [witnessId: string]: { sender: 'user' | 'witness'; text: string; timestamp: string }[] };
+  timelinePlacements: Record<string, number>; // eventId -> chronological position in draft
+  witnessChats: Record<string, { sender: 'user' | 'witness'; text: string; timestamp: string }[]>;
   isCompleted: boolean;
   score?: number;
   feedback?: string;

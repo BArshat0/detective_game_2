@@ -5,8 +5,8 @@ import { safeGet, safeSet } from '../lib/safeLookup';
 
 interface TimelineBuilderProps {
   caseData: Case;
-  placements: { [eventId: string]: number }; // eventId -> index in sequence (0-indexed)
-  onUpdatePlacements: (newPlacements: { [eventId: string]: number }) => void;
+  placements: Record<string, number>; // eventId -> index in sequence (0-indexed)
+  onUpdatePlacements: (newPlacements: Record<string, number>) => void;
 }
 
 export default function TimelineBuilder({ caseData, placements, onUpdatePlacements }: TimelineBuilderProps) {
@@ -37,7 +37,7 @@ export default function TimelineBuilder({ caseData, placements, onUpdatePlacemen
 
   const handleRemoveEvent = (eventId: string) => {
     const removedIndex = safeGet(placements, eventId) ?? 0;
-    let newPlacements: { [eventId: string]: number } = {};
+    let newPlacements: Record<string, number> = {};
     
     Object.entries(placements).forEach(([id, idx]) => {
       if (id !== eventId) {
@@ -98,7 +98,7 @@ export default function TimelineBuilder({ caseData, placements, onUpdatePlacemen
               {unplacedEvents.map((ev) => (
                 <button
                   key={ev.id}
-                  onClick={() => handlePlaceEvent(ev.id)}
+                  onClick={() => { handlePlaceEvent(ev.id); }}
                   className="w-full text-left bg-black border border-white/10 rounded-[24px] p-4 hover:border-[#ff8533] transition-all flex items-center justify-between gap-3 focus:outline-none group cursor-pointer"
                 >
                   <div className="flex-1 min-w-0">
@@ -151,7 +151,7 @@ export default function TimelineBuilder({ caseData, placements, onUpdatePlacemen
                           {ev.time}
                         </span>
                         <button
-                          onClick={() => handleRemoveEvent(ev.id)}
+                          onClick={() => { handleRemoveEvent(ev.id); }}
                           className="text-[9px] font-mono text-rose-500 hover:text-rose-400 opacity-0 group-hover/active:opacity-100 transition-opacity focus:outline-none font-bold cursor-pointer"
                         >
                           REMOVE [x]

@@ -29,7 +29,7 @@ export default function LoadingScreen({ isDataReady, onComplete }: LoadingScreen
           const finishTimer = setTimeout(() => {
             onComplete();
           }, 300);
-          return () => clearTimeout(finishTimer);
+          return () => { clearTimeout(finishTimer); };
         } else {
           setProgress(nextProgress);
         }
@@ -39,7 +39,7 @@ export default function LoadingScreen({ isDataReady, onComplete }: LoadingScreen
       }
     }, intervalTime);
 
-    return () => clearInterval(timer);
+    return () => { clearInterval(timer); };
   }, [isDataReady, onComplete]);
 
   // Determine user-friendly non-technical status message based on progress

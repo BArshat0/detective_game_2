@@ -122,7 +122,7 @@ export default function ClueBoard({
               {/* Action Source Links */}
               {discovered && clue.evidenceId && (
                 <button
-                  onClick={() => handleInspectSource(clue.evidenceId)}
+                  onClick={() => { handleInspectSource(clue.evidenceId); }}
                   className="shrink-0 flex items-center justify-center gap-1.5 text-[10px] font-mono font-extrabold text-[#ffb829] bg-white/5 border border-white/10 rounded-full px-3.5 py-1.5 hover:bg-[#ffb829]/10 transition-all cursor-pointer focus:outline-none"
                 >
                   <Eye className="h-3.5 w-3.5" />

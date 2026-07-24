@@ -79,7 +79,7 @@ export default function LoginSignup({ onAuthSuccess, supabaseConfigured, geminiC
           }, 1500);
         }
       } else {
-        if (!session || !session.access_token) {
+        if (!session?.access_token) {
           setErrorMessage('Failed to start session. If you just registered, please verify your email address first, or verify your credentials.');
           setIsLoading(false);
           return;
@@ -173,7 +173,7 @@ export default function LoginSignup({ onAuthSuccess, supabaseConfigured, geminiC
                 required
                 placeholder="e.g. Detective Vance"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => { setName(e.target.value); }}
                 className="w-full pl-10 pr-4 py-3 bg-[#1e110a] hover:bg-[#2a170a] focus:bg-[#120a06] border border-white/10 focus:border-[#ff8533] rounded-[24px] text-xs font-mono transition-all outline-none text-[#fcfaf5] focus:ring-1 focus:ring-[#ff8533]/30"
                 disabled={isLoading}
               />
@@ -192,7 +192,7 @@ export default function LoginSignup({ onAuthSuccess, supabaseConfigured, geminiC
               required
               placeholder="e.g. agent@academy.org"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => { setEmail(e.target.value); }}
               className="w-full pl-10 pr-4 py-3 bg-[#1e110a] hover:bg-[#2a170a] focus:bg-[#120a06] border border-white/10 focus:border-[#ff8533] rounded-[24px] text-xs font-mono transition-all outline-none text-[#fcfaf5] focus:ring-1 focus:ring-[#ff8533]/30"
               disabled={isLoading}
             />
@@ -210,7 +210,7 @@ export default function LoginSignup({ onAuthSuccess, supabaseConfigured, geminiC
               required
               placeholder="••••••••••••"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => { setPassword(e.target.value); }}
               className="w-full pl-10 pr-4 py-3 bg-[#1e110a] hover:bg-[#2a170a] focus:bg-[#120a06] border border-white/10 focus:border-[#ff8533] rounded-[24px] text-xs font-mono transition-all outline-none text-[#fcfaf5] focus:ring-1 focus:ring-[#ff8533]/30"
               disabled={isLoading}
             />
