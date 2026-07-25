@@ -216,7 +216,7 @@ export default function EvidenceViewer({
             <div className="flex-1 bg-[#121214] border border-white/10 rounded-[24px] p-5 font-mono text-xs overflow-y-auto text-[#bdbdbd] leading-relaxed max-h-[250px] mb-4">
               <div className="flex items-center justify-between text-[10px] text-[#9a9a9a]/40 border-b border-white/5 pb-2.5 mb-4 font-mono">
                 <span>INVESTIGATION TIMELINE // DATA FILE</span>
-                <span>CASE DOSSIER REGISTRY</span>
+                <span>CASE REGISTRY</span>
               </div>
               
               <div className="space-y-1.5 whitespace-pre-wrap select-text">

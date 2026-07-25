@@ -67,7 +67,7 @@ export default function LoginSignup({ onAuthSuccess, supabaseConfigured, geminiC
 
       if (isSignUp) {
         if (!session) {
-          setSuccessMessage('Registration Completed! Your dossier profile is active and saved in the database.');
+          setSuccessMessage('Registration Completed! Your profile is active and saved in the database.');
           setTimeout(() => {
             // Direct graceful sign-in completion transition
             onAuthSuccess('', user?.email || email, user?.user_metadata?.name || name);
@@ -111,10 +111,10 @@ export default function LoginSignup({ onAuthSuccess, supabaseConfigured, geminiC
           />
         </div>
         <h2 className="font-serif text-2xl font-bold text-[#fcfaf5] tracking-tight">
-          Academy Dossier File
+          Academy Login
         </h2>
         <p className="text-xs text-[#a89485] font-mono mt-1 uppercase tracking-wider">
-          {isSignUp ? 'Create investigator profile' : 'Sign in to access secure cases'}
+          {isSignUp ? 'Create investigator profile' : 'Sign in to access different cases'}
         </p>
       </div>
 
@@ -225,12 +225,12 @@ export default function LoginSignup({ onAuthSuccess, supabaseConfigured, geminiC
           {isLoading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin text-[#1e110a]" />
-              <span>Loading Dossier...</span>
+              <span>Loading...</span>
             </>
           ) : (
             <>
               <Play className="h-3 w-3 fill-current text-[#1e110a]" />
-              <span>{isSignUp ? 'Initialize Profile' : 'Access dossier'}</span>
+              <span>{isSignUp ? 'Initialize Profile' : 'Access Profile'}</span>
             </>
           )}
         </button>

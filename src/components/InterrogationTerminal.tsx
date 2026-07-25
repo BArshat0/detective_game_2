@@ -254,9 +254,9 @@ export default function InterrogationTerminal({
               </div>
             </div>
 
-            {/* Dossier Summary */}
+            {/* REPORT Summary */}
             <p className="text-[11px] text-[#bdbdbd] bg-[#121214] border border-white/5 rounded-[24px] p-4 mb-4 leading-relaxed font-mono">
-              <span className="font-mono text-[#ff8533] font-extrabold uppercase mr-1.5">DOSSIER FILE:</span>
+              <span className="font-mono text-[#ff8533] font-extrabold uppercase mr-1.5">REPORT FILE:</span>
               {activeWitness.description}
             </p>
 

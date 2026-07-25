@@ -521,7 +521,7 @@ export default function App() {
     const questionsCount = activeCase.solution.questions.length;
     const answeredCount = Object.keys(quizAnswers).length;
     if (answeredCount < questionsCount) {
-      alert(`Please answer all ${questionsCount} solution questions in the Submission form before sending your dossier.`);
+      alert(`Please answer all ${questionsCount} solution questions in the Submission form before sending your Report.`);
       return;
     }
 
@@ -658,7 +658,7 @@ export default function App() {
                 <div className="space-y-6 md:space-y-8 animate-fade-in">
                   {/* Category Pill */}
                   <div className="inline-block bg-[#442a1b] border border-[#ff8533]/30 text-[#ff8533] px-4 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest">
-                    Interactive Social Crime Awareness Game
+                    Interactive Social Crime Awareness Academy
                   </div>
 
                   {/* Gorgeous serif title with highlighted blocks, matching the Abacus landing page! */}
@@ -716,7 +716,7 @@ export default function App() {
                           </li>
                           <li className="flex items-start gap-1.5">
                             <span className="text-[#5c7f5c]">●</span>
-                            <span>Curriculum-aligned social safety, empathy, & critical thinking.</span>
+                            <span>Social safety, empathy, & critical thinking.</span>
                           </li>
                         </ul>
                       </div>
@@ -728,7 +728,7 @@ export default function App() {
                   </div>
 
                   <div className="text-[11px] text-[#a89485] font-mono">
-                    Free educational framework · Persistent custom cases via database sync
+                    Free educational academy.
                   </div>
                 </div>
               ) : (
@@ -804,7 +804,7 @@ export default function App() {
                 <button
                   onClick={() => { setCurrentView('profile'); }}
                   className="hidden md:flex items-center gap-2 text-right hover:opacity-85 transition-opacity cursor-pointer focus:outline-none"
-                  title="View Profile Dossier"
+                  title="View Profile"
                 >
                   <div className="text-[11px] font-mono leading-none">
                     <div className="text-white font-bold uppercase flex items-center gap-1 justify-end">
@@ -1179,12 +1179,12 @@ export default function App() {
                                 {isSubmitting ? (
                                   <>
                                     <Loader2 className="h-4 w-4 animate-spin text-white" />
-                                    <span>SUBMITTING DOSSIER FOR EVALUATION...</span>
+                                    <span>SUBMITTING REPORT FOR EVALUATION...</span>
                                   </>
                                 ) : (
                                   <>
                                     <ShieldCheck className="h-4 w-4" />
-                                    <span>SUBMIT COMPREHENSIVE DOSSIER</span>
+                                    <span>SUBMIT COMPREHENSIVE REPORT</span>
                                   </>
                                 )}
                               </button>

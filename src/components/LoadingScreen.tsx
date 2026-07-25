@@ -47,7 +47,7 @@ export default function LoadingScreen({ isDataReady, onComplete }: LoadingScreen
   if (progress >= 100) {
     statusMessage = "Academy entry authorized. Loading workspace...";
   } else if (progress >= 80) {
-    statusMessage = "Finalizing dossier configuration...";
+    statusMessage = "Finalizing configuration...";
   } else if (progress >= 50) {
     statusMessage = "Arranging interactive lab materials...";
   } else if (progress >= 25) {
