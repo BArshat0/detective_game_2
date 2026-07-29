@@ -144,8 +144,8 @@ export default function InterrogationTerminal({
   return (
     <div id="interrogation-terminal" className="grid grid-cols-1 md:grid-cols-3 gap-4 h-full text-white">
       {/* Witnesses Roster Panel */}
-      <div className="md:col-span-1 rounded-[24px] border border-white/10 bg-[#000000] p-4 flex flex-col h-full min-h-[220px]">
-        <h4 className="text-nav-label text-white mb-3 flex items-center gap-1.5 border-b border-white/5 pb-3">
+      <div className="md:col-span-1 rounded-[24px] border border-white/15 glass-panel bg-slate-900/65 p-4 flex flex-col h-full min-h-[220px]">
+        <h4 className="text-nav-label text-white mb-3 flex items-center gap-1.5 border-b border-white/10 pb-3">
           <User className="h-4 w-4 text-[#ff8533] animate-pulse" />
           Witnesses Directory
         </h4>
@@ -211,7 +211,7 @@ export default function InterrogationTerminal({
       </div>
 
       {/* Interrogation Terminal Console */}
-      <div className="md:col-span-2 rounded-[24px] border border-white/10 bg-[#000000] p-5 flex flex-col h-full min-h-[350px]">
+      <div className="md:col-span-2 rounded-[24px] border border-white/15 glass-panel bg-slate-900/65 p-5 flex flex-col h-full min-h-[350px]">
         {activeWitness && unlockedWitnessIds.includes(activeWitness.id) ? (
           <div className="flex flex-col h-full animate-fade-in">
             {/* Witness Info Banner */}
@@ -255,7 +255,7 @@ export default function InterrogationTerminal({
             </div>
 
             {/* REPORT Summary */}
-            <p className="text-[11px] text-[#bdbdbd] bg-[#121214] border border-white/5 rounded-[24px] p-4 mb-4 leading-relaxed font-mono">
+            <p className="text-[11px] text-[#bdbdbd] bg-slate-950/40 border border-white/10 rounded-[24px] p-4 mb-4 leading-relaxed font-mono backdrop-blur-md">
               <span className="font-mono text-[#ff8533] font-extrabold uppercase mr-1.5">REPORT FILE:</span>
               {activeWitness.description}
             </p>

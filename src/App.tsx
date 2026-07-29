@@ -9,6 +9,7 @@ import Markdown from 'react-markdown';
 
 // Core Subcomponents
 import CaseCard from './components/CaseCard';
+import CaseLibraryView from './components/CaseLibraryView';
 import EvidenceViewer from './components/EvidenceViewer';
 import InterrogationTerminal from './components/InterrogationTerminal';
 import ClueBoard from './components/ClueBoard';
@@ -21,6 +22,7 @@ import UserProfileSection from './components/UserProfileSection';
 import LoadingScreen from './components/LoadingScreen';
 import StoryIntroView from './components/StoryIntroView';
 import DetectiveNotebook from './components/DetectiveNotebook';
+import ResumeRestartModal from './components/ResumeRestartModal';
 
 // Shared types and handcrafted cases
 import { Case, UserProfile, CaseState } from './types';
@@ -310,15 +312,30 @@ export default function App() {
   }, [xpToast]);
 
 
-  // Initialize a case state when it's opened for the first time
+  // Track pending case selection for Resume vs Restart prompt
+  const [pendingCaseId, setPendingCaseId] = useState<string | null>(null);
+
+  // Initialize or handle case selection
   const handleSelectCase = (caseId: string) => {
+    const existingState = safeGet(casesState, caseId);
+    if (existingState) {
+      // User has already started investigating this case -> prompt to Resume or Restart
+      setPendingCaseId(caseId);
+    } else {
+      // First time opening this case -> start fresh with story prologue
+      startCaseFresh(caseId, true);
+    }
+  };
+
+  // Helper to start or reset a case fresh
+  const startCaseFresh = (caseId: string, showStoryIntro: boolean = true) => {
     setActiveCaseId(caseId);
-    setCurrentView('story_intro');
+    setCurrentView(showStoryIntro ? 'story_intro' : 'game');
     setActiveTab('evidence');
     setEvaluationResult(null);
     setQuizAnswers({});
     setSelectedEvidenceId(null);
- 
+
     // Unlock "First Contact" achievement on starting any case
     setUserProfile(prev => {
       const achievements = prev.achievements.map(a => 
@@ -330,47 +347,56 @@ export default function App() {
       }
       return updated;
     });
- 
-    if (!safeGet(casesState, caseId)) {
-      const targetCase = allCases.find(c => c.id === caseId);
-      if (targetCase) {
-        const defaultState: CaseState = {
-          caseId,
-          discoveredEvidenceIds: targetCase.evidences.map(e => e.id),
-          discoveredClueIds: targetCase.clues.map(c => c.id),
-          unlockedWitnessIds: targetCase.witnesses.map(w => w.id),
-          notebookNotes: [],
-          timelinePlacements: {},
-          witnessChats: {},
-          isCompleted: false
-        };
-        setCasesState(prev => {
-          const updated = safeSet(prev, caseId, defaultState);
-          if (authToken) {
-            void syncCaseStateToSupabase(authToken, caseId, defaultState);
-          }
-          return updated;
-        });
-      }
-    } else {
-      // For existing states, ensure they also have all elements unlocked
-      const targetCase = allCases.find(c => c.id === caseId);
-      if (targetCase) {
-        setCasesState(prev => {
-          const existing = safeGet(prev, caseId);
-          const updated = {
-            ...existing,
-            discoveredEvidenceIds: targetCase.evidences.map(e => e.id),
-            discoveredClueIds: targetCase.clues.map(c => c.id),
-            unlockedWitnessIds: targetCase.witnesses.map(w => w.id)
-          } as CaseState;
-          if (authToken) {
-            void syncCaseStateToSupabase(authToken, caseId, updated);
-          }
-          return safeSet(prev, caseId, updated);
-        });
-      }
+
+    const targetCase = allCases.find(c => c.id === caseId);
+    if (targetCase) {
+      const defaultState: CaseState = {
+        caseId,
+        discoveredEvidenceIds: targetCase.evidences.map(e => e.id),
+        discoveredClueIds: targetCase.clues.map(c => c.id),
+        unlockedWitnessIds: targetCase.witnesses.map(w => w.id),
+        notebookNotes: [],
+        timelinePlacements: {},
+        witnessChats: {},
+        isCompleted: false
+      };
+      setCasesState(prev => {
+        const updated = safeSet(prev, caseId, defaultState);
+        if (authToken) {
+          void syncCaseStateToSupabase(authToken, caseId, defaultState);
+        }
+        return updated;
+      });
     }
+  };
+
+  // Resume ongoing investigation without showing story prologue
+  const handleResumeCase = (caseId: string) => {
+    setActiveCaseId(caseId);
+    setCurrentView('game'); // Skips story prologue directly to ongoing investigation!
+    setActiveTab('evidence');
+    setEvaluationResult(null);
+    setQuizAnswers({});
+    setSelectedEvidenceId(null);
+    setPendingCaseId(null);
+
+    // Ensure First Contact achievement is unlocked
+    setUserProfile(prev => {
+      const achievements = prev.achievements.map(a => 
+        a.id === 'badge_first_case' ? { ...a, isUnlocked: true, unlockedAt: new Date().toLocaleDateString() } : a
+      );
+      const updated = { ...prev, achievements };
+      if (authToken) {
+        syncProfileToSupabase(authToken, updated);
+      }
+      return updated;
+    });
+  };
+
+  // Restart investigation from beginning with story prologue
+  const handleRestartCase = (caseId: string) => {
+    setPendingCaseId(null);
+    startCaseFresh(caseId, true);
   };
 
   const getActiveCaseState = (): CaseState => {
@@ -605,7 +631,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col font-sans select-none overflow-x-hidden relative">
+    <div className="min-h-screen bg-slate-950/30 text-white flex flex-col font-sans select-none overflow-x-hidden relative">
       
       <AnimatePresence>
         {isInitializing && (
@@ -616,14 +642,13 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      <ShaderGradient />
       <VantaBackground />
 
       {!authToken ? (
         <div className="flex-1 w-full max-w-7xl mx-auto px-6 py-12 flex flex-col justify-center min-h-[95vh] relative z-10 select-none">
           {/* Logo Header */}
-          <div className="flex items-center gap-3 mb-12 self-start animate-fade-in">
-            <div className="w-9 h-9 bg-white p-1 rounded-full flex items-center justify-center shadow-md border border-[#ff8533]/20 overflow-hidden">
+          <div className="flex items-center gap-3 mb-12 self-start animate-fade-in glass-panel bg-slate-900/50 backdrop-blur-md px-5 py-2.5 rounded-full border border-white/20">
+            <div className="w-8 h-8 bg-white p-0.5 rounded-full flex items-center justify-center shadow-md border border-[#ff8533]/30 overflow-hidden">
               <img 
                 src="/src/assets/images/detective_squirrel_1784269041754.jpg" 
                 alt="Detective Fox Mascot Logo" 
@@ -631,7 +656,7 @@ export default function App() {
                 referrerPolicy="no-referrer"
               />
             </div>
-            <span className="font-serif font-bold text-lg text-[#fcfaf5] tracking-tight uppercase">Social Detective Academy</span>
+            <span className="font-serif font-bold text-base text-white tracking-tight uppercase drop-shadow-sm">Social Detective Academy</span>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
@@ -640,13 +665,13 @@ export default function App() {
               {/* Character Mascot Wrapper */}
               <div className="relative w-72 h-72 md:w-80 md:h-80 flex items-center justify-center">
                 {/* Cozy Ambient Light behind the mascot */}
-                <div className="absolute w-64 h-64 bg-[#ff8533]/15 rounded-full filter blur-3xl animate-pulse" />
+                <div className="absolute w-64 h-64 bg-[#ff8533]/25 rounded-full filter blur-3xl animate-pulse" />
                 
                 {/* Cute Generated Detective Squirrel */}
                 <img 
                   src="/src/assets/images/detective_squirrel_1784269041754.jpg" 
                   alt="Sherlock Squirrel Detective Mascot" 
-                  className="w-full h-full object-contain rounded-[32px] border-2 border-[#ff8533]/30 shadow-2xl relative z-10"
+                  className="w-full h-full object-contain rounded-[32px] border-2 border-white/30 shadow-2xl relative z-10 backdrop-blur-md"
                   referrerPolicy="no-referrer"
                 />
               </div>
@@ -657,33 +682,33 @@ export default function App() {
               {!showAuthForm ? (
                 <div className="space-y-6 md:space-y-8 animate-fade-in">
                   {/* Category Pill */}
-                  <div className="inline-block bg-[#442a1b] border border-[#ff8533]/30 text-[#ff8533] px-4 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest">
+                  <div className="inline-block bg-slate-900/60 backdrop-blur-md border border-[#ff8533]/40 text-[#ffb829] px-4 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest shadow-lg">
                     Interactive Social Crime Awareness Academy
                   </div>
 
-                  {/* Gorgeous serif title with highlighted blocks, matching the Abacus landing page! */}
+                  {/* Serif title with highlighted gradient blocks */}
                   <div className="space-y-3">
                     <div className="flex flex-wrap gap-3 items-center">
-                      <span className="bg-[#ff8533] text-[#1e110a] px-6 py-2 rounded-[16px] inline-block font-serif font-extrabold text-3xl md:text-4xl lg:text-5xl tracking-tight shadow-md">
+                      <span className="bg-gradient-to-r from-[#ff8533] to-[#ff9d5c] text-slate-950 px-6 py-2.5 rounded-[20px] inline-block font-serif font-extrabold text-3xl md:text-4xl lg:text-5xl tracking-tight shadow-xl shadow-[#ff8533]/25">
                         Think You
                       </span>
-                      <span className="bg-[#ff8533] text-[#1e110a] px-6 py-2 rounded-[16px] inline-block font-serif font-extrabold text-3xl md:text-4xl lg:text-5xl tracking-tight shadow-md">
+                      <span className="bg-gradient-to-r from-[#ff8533] to-[#ff9d5c] text-slate-950 px-6 py-2.5 rounded-[20px] inline-block font-serif font-extrabold text-3xl md:text-4xl lg:text-5xl tracking-tight shadow-xl shadow-[#ff8533]/25">
                         Know Your
                       </span>
                     </div>
-                    <div className="font-serif italic font-normal text-4xl md:text-5xl lg:text-6xl text-[#ffb829] tracking-tight">
+                    <div className="font-serif italic font-extrabold text-4xl md:text-5xl lg:text-6xl text-[#ffb829] tracking-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]">
                       Threats?
                     </div>
                   </div>
 
-                  {/* Sleek woodland style description */}
-                  <p className="text-sm md:text-base text-[#d9d2c9] font-sans leading-relaxed max-w-xl">
+                  {/* Description text */}
+                  <p className="text-sm md:text-base text-slate-100 font-sans leading-relaxed max-w-xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]">
                     Investigate cyberbullying. Spot elder fraud. Map viral disinformation. 
-                    <strong className="text-[#ff8533] font-semibold mx-1">Social Detective</strong> 
+                    <strong className="text-[#ffb829] font-bold mx-1">Social Detective</strong> 
                     turns social crime awareness, empathy, and digital safety into interactive learning mysteries you will actively want to solve again and again.
                   </p>
 
-                  {/* Large stats and info card, matching the ages 6-12 pill card */}
+                  {/* Large stats and info card */}
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
                     {/* CTA Actions */}
                     <div className="md:col-span-5 flex flex-col gap-3 justify-center">
@@ -696,16 +721,16 @@ export default function App() {
                       </button>
                     </div>
 
-                    {/* Features pill-card */}
-                    <div className="md:col-span-7 bg-[#fcfaf5] text-[#1e110a] rounded-[24px] p-5 border border-[#e6dfd3] shadow-lg flex flex-col justify-between">
+                    {/* Features glass-card */}
+                    <div className="md:col-span-7 glass-panel bg-slate-900/60 backdrop-blur-xl text-white rounded-[28px] p-5 border border-white/20 shadow-2xl flex flex-col justify-between">
                       <div>
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="bg-[#ff8533] text-[#fcfaf5] text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                          <span className="bg-[#ff8533] text-slate-950 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                             ACADEMY ENTRY
                           </span>
-                          <span className="text-xs font-bold text-[#4a2c11]">AGES 12 - ADULT</span>
+                          <span className="text-xs font-bold text-amber-300">AGES 12 - ADULT</span>
                         </div>
-                        <ul className="space-y-2 text-[11px] md:text-xs text-[#4a2c11] font-sans">
+                        <ul className="space-y-2 text-[12px] md:text-xs text-slate-200 font-sans">
                           <li className="flex items-start gap-1.5">
                             <span className="text-[#ff8533]">●</span>
                             <span>No boring slides. No compliance traps. Just active social investigation.</span>
@@ -715,19 +740,19 @@ export default function App() {
                             <span>20-minute case files, interactive hotspots and witness interviews.</span>
                           </li>
                           <li className="flex items-start gap-1.5">
-                            <span className="text-[#5c7f5c]">●</span>
+                            <span className="text-emerald-400">●</span>
                             <span>Social safety, empathy, & critical thinking.</span>
                           </li>
                         </ul>
                       </div>
-                      <div className="mt-3 pt-3 border-t border-[#ab7b4d]/20 flex justify-between items-center text-[10px] italic font-serif text-[#ab7b4d]">
+                      <div className="mt-3 pt-3 border-t border-white/10 flex justify-between items-center text-[11px] italic font-serif text-slate-300">
                         <span>"The squirrel dares you to investigate."</span>
-                        <span className="text-[#ff8533] tracking-wide font-sans not-italic">★★★★★</span>
+                        <span className="text-[#ffb829] tracking-wide font-sans not-italic font-bold">★★★★★</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="text-[11px] text-[#a89485] font-mono">
+                  <div className="text-[11px] text-slate-200 font-mono drop-shadow-sm">
                     Free educational academy.
                   </div>
                 </div>
@@ -736,7 +761,7 @@ export default function App() {
                   {/* Back to landing button */}
                   <button
                     onClick={() => { setShowAuthForm(false); }}
-                    className="flex items-center gap-1.5 text-xs font-mono font-bold text-[#ff8533] hover:text-[#ff9d5c] uppercase transition-colors mb-4 cursor-pointer"
+                    className="flex items-center gap-1.5 text-xs font-mono font-bold text-[#ffb829] hover:text-[#ff8533] uppercase transition-colors mb-4 cursor-pointer glass-panel bg-slate-900/50 backdrop-blur-md px-4 py-2 rounded-full border border-white/20"
                   >
                     <span>← Back to Main Menu</span>
                   </button>
@@ -754,10 +779,10 @@ export default function App() {
         </div>
       ) : (
         <>
-          {/* Upper Navigation Rail */}
-          <header className="void-nav px-6 py-4 sticky top-0 z-40 flex items-center justify-between relative">
+          {/* Upper Floating Navigation Bar */}
+          <header className="sticky top-4 z-50 max-w-7xl mx-auto my-3 px-6 py-3 rounded-full glass-panel bg-slate-900/60 backdrop-blur-xl border border-white/20 shadow-2xl flex items-center justify-between transition-all">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-white p-1 rounded-full flex items-center justify-center shadow-sm border border-[#ff8533]/20 overflow-hidden">
+              <div className="w-8 h-8 bg-white p-0.5 rounded-full flex items-center justify-center shadow-sm border border-[#ff8533]/30 overflow-hidden">
                 <img 
                   src="/src/assets/images/detective_squirrel_1784269041754.jpg" 
                   alt="Detective Fox Mascot Logo" 
@@ -766,41 +791,41 @@ export default function App() {
                 />
               </div>
               <div>
-                <h1 className="font-serif text-lg font-bold tracking-tight text-white flex items-center gap-1.5 uppercase">
+                <h1 className="font-serif text-base font-bold tracking-tight text-white flex items-center gap-1.5 uppercase">
                   SOCIAL DETECTIVE
                 </h1>
-                <p className="text-[10px] text-[#a89485] font-mono">Social Crime Awareness & Prevention System</p>
+                <p className="text-[9px] text-slate-300 font-mono hidden sm:block">Social Crime Awareness & Prevention System</p>
               </div>
             </div>
 
             {/* Global Nav Buttons */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <button
                 onClick={() => {
                   setCurrentView('library');
                   setActiveCaseId(null);
                 }}
-                className={`px-4 py-2 rounded-full font-mono text-xs font-semibold tracking-wider uppercase transition-all duration-200 cursor-pointer focus:outline-none ${
+                className={`px-4 py-1.5 rounded-full font-mono text-xs font-bold tracking-wider uppercase transition-all duration-200 cursor-pointer focus:outline-none ${
                   currentView === 'library'
-                    ? 'text-[#ff8533] border-b-2 border-[#ff8533] rounded-none'
-                    : 'text-[#a89485] hover:text-white'
+                    ? 'bg-[#ff8533] text-slate-950 shadow-md shadow-[#ff8533]/30'
+                    : 'text-slate-300 hover:text-white hover:bg-white/10'
                 }`}
               >
                 LIBRARY
               </button>
               <button
                 onClick={() => { setCurrentView('profile'); }}
-                className={`px-4 py-2 rounded-full font-mono text-xs font-semibold tracking-wider uppercase transition-all duration-200 cursor-pointer focus:outline-none ${
+                className={`px-4 py-1.5 rounded-full font-mono text-xs font-bold tracking-wider uppercase transition-all duration-200 cursor-pointer focus:outline-none ${
                   currentView === 'profile'
-                    ? 'text-[#ff8533] border-b-2 border-[#ff8533] rounded-none'
-                    : 'text-[#a89485] hover:text-white'
+                    ? 'bg-[#ff8533] text-slate-950 shadow-md shadow-[#ff8533]/30'
+                    : 'text-slate-300 hover:text-white hover:bg-white/10'
                 }`}
               >
                 PROFILE
               </button>
 
               {/* User credentials / Authentication Controls */}
-              <div className="flex items-center gap-3 border-l border-white/15 pl-4 ml-2 text-xs">
+              <div className="flex items-center gap-3 border-l border-white/20 pl-3 ml-1 text-xs">
                 <button
                   onClick={() => { setCurrentView('profile'); }}
                   className="hidden md:flex items-center gap-2 text-right hover:opacity-85 transition-opacity cursor-pointer focus:outline-none"
@@ -811,16 +836,16 @@ export default function App() {
                       <span>{userProfile.name}</span>
                       <User className="h-3 w-3 text-[#ff8533]" />
                     </div>
-                    <div className="text-[#a89485] text-[9px] mt-0.5">{userProfile.email}</div>
+                    <div className="text-slate-300 text-[9px] mt-0.5">{userProfile.email}</div>
                   </div>
                 </button>
                 
                 <button
                   onClick={handleLogout}
-                  className="px-3.5 py-1.5 border border-white/15 hover:border-white rounded-full bg-transparent transition-all cursor-pointer font-mono text-[10px] font-bold text-[#a89485] hover:text-white flex items-center gap-1.5"
+                  className="px-3.5 py-1.5 border border-white/20 hover:border-white rounded-full bg-white/10 hover:bg-white/20 transition-all cursor-pointer font-mono text-[10px] font-bold text-slate-200 hover:text-white flex items-center gap-1.5"
                   title="Log Out from Supabase"
                 >
-                  <LogOut className="h-3 w-3 shrink-0" />
+                  <LogOut className="h-3 w-3 shrink-0 text-[#ff8533]" />
                   <span className="hidden sm:inline">LOGOUT</span>
                 </button>
               </div>
@@ -859,53 +884,12 @@ export default function App() {
             
             {/* VIEW 1: CASE LIBRARY */}
             {currentView === 'library' && (
-              <div className="space-y-6 animate-fade-in">
-                
-                {/* Section Headline Block (Asymmetric Two-Column Layout) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-6 pb-12 items-start">
-                  <div>
-                    <span className="text-[12px] font-mono font-bold text-[#ffb829] uppercase tracking-[0.35px] block mb-2">
-                      DIGITAL SAFETY CASE LIBRARY
-                    </span>
-                    <h1 className="text-heading-lg text-white font-normal leading-[1.1] tracking-[-3.12px]">
-                      CASE LIBRARY.
-                    </h1>
-                  </div>
-                  <div className="space-y-6">
-                    <p className="text-body text-[#bdbdbd] font-extralight leading-[1.5] max-w-lg">
-                      Investigate digital safety cases, analyze real-world evidence, and learn how to identify online manipulation, fake media, and cyber exploits.
-                    </p>
-                    <div className="pt-2">
-                      <button
-                        onClick={() => setCurrentView('profile')}
-                        className="inline-flex items-center gap-2 text-xs font-mono font-bold text-[#ff8533] hover:text-[#ff9d5c] uppercase transition-colors"
-                      >
-                        <span>View Your Detective Profile & Achievements →</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Cases List */}
-                <div>
-                  <h3 className="text-nav-label text-white mb-4 flex items-center gap-1.5">
-                    <BookOpenCheck className="h-4 w-4 text-[#ff8533]" />
-                    ACTIVE INVESTIGATIONS
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {allCases.map((caseData) => (
-                      <CaseCard
-                        key={caseData.id}
-                        caseData={caseData}
-                        onSelect={() => handleSelectCase(caseData.id)}
-                        isCompleted={userProfile.solvedCaseIds.includes(caseData.id)}
-                        isCustom={userProfile.customCases.some(c => c.id === caseData.id)}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-              </div>
+              <CaseLibraryView 
+                allCases={allCases}
+                solvedCaseIds={userProfile.solvedCaseIds}
+                onSelectCase={handleSelectCase}
+                onViewProfile={() => setCurrentView('profile')}
+              />
             )}
 
             {/* VIEW 2: STORY INTRO PROLOGUE */}
@@ -1062,9 +1046,9 @@ export default function App() {
                       )}
 
                       {activeTab === 'submit' && (
-                        <div className="rounded-[24px] border border-white/10 bg-[#000000] p-5 space-y-6 text-white animate-fade-in">
+                        <div className="rounded-[24px] border border-white/15 glass-panel bg-slate-900/65 p-5 space-y-6 text-white animate-fade-in backdrop-blur-xl">
                           
-                          {/* Submission evaluation results (If solved!) */}
+                          {/* Submission evaluation results */}
                           {evaluationResult ? (
                             <div className="space-y-6 animate-fade-in">
                               
@@ -1096,7 +1080,6 @@ export default function App() {
                                   🛡️ DIGITAL SAFETY ASSESSMENT REPORT
                                 </h4>
                                 
-                                {/* Scrollable markdown body */}
                                 <div className="text-xs text-[#bdbdbd] leading-relaxed space-y-3 font-mono select-text max-h-[300px] overflow-y-auto pr-2">
                                   <div className="markdown-body">
                                     <Markdown>{evaluationResult.analysis}</Markdown>
@@ -1141,7 +1124,7 @@ export default function App() {
                               </div>
 
                               {/* Form */}
-                              <div className="space-y-5">
+                              <div className="space-y-4">
                                 {activeCase.solution.questions.map((q, qIdx) => (
                                   <div key={q.id} className="p-4.5 rounded-[24px] bg-white/[0.02] border border-white/5">
                                     <h5 className="text-xs font-bold text-white mb-3 flex gap-2">
@@ -1178,46 +1161,45 @@ export default function App() {
                               >
                                 {isSubmitting ? (
                                   <>
-                                    <Loader2 className="h-4 w-4 animate-spin text-white" />
-                                    <span>SUBMITTING REPORT FOR EVALUATION...</span>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Analyzing Findings with AI Forensic Engine...
                                   </>
                                 ) : (
                                   <>
                                     <ShieldCheck className="h-4 w-4" />
-                                    <span>SUBMIT COMPREHENSIVE REPORT</span>
+                                    Submit Final Case Assessment
                                   </>
                                 )}
                               </button>
                             </div>
                           )}
-
                         </div>
                       )}
                     </div>
 
                   </div>
 
-                {/* Right Side: Active Detective Notebook (1 Col) */}
-                <div className="xl:col-span-1">
-                  <DetectiveNotebook
-                    notes={currentCaseState.notebookNotes}
-                    onAddNote={handleAddCustomNote}
-                    onDeleteNote={handleDeleteNotebookNote}
-                    onClearNotes={handleClearNotebookNotes}
-                  />
+                  {/* Right Side: Active Detective Notebook (1 Col) */}
+                  <div className="xl:col-span-1">
+                    <DetectiveNotebook
+                      notes={currentCaseState.notebookNotes}
+                      onAddNote={handleAddCustomNote}
+                      onDeleteNote={handleDeleteNotebookNote}
+                      onClearNotes={handleClearNotebookNotes}
+                    />
+                  </div>
+
                 </div>
 
+                {/* Mentor support drone */}
+                <MentorDrone
+                  caseData={activeCase}
+                  discoveredEvidenceIds={currentCaseState.discoveredEvidenceIds}
+                  notebookNotes={currentCaseState.notebookNotes}
+                />
+
               </div>
-
-              {/* Mentor support drone */}
-              <MentorDrone
-                caseData={activeCase}
-                discoveredEvidenceIds={currentCaseState.discoveredEvidenceIds}
-                notebookNotes={currentCaseState.notebookNotes}
-              />
-
-            </div>
-          )}
+            )}
 
           {/* VIEW 4: USER PROFILE */}
           {currentView === 'profile' && (
@@ -1258,6 +1240,15 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Resume vs Restart Investigation Dialog */}
+      <ResumeRestartModal
+        isOpen={!!pendingCaseId}
+        caseData={allCases.find(c => c.id === pendingCaseId) || null}
+        onResume={() => pendingCaseId && handleResumeCase(pendingCaseId)}
+        onRestart={() => pendingCaseId && handleRestartCase(pendingCaseId)}
+        onClose={() => setPendingCaseId(null)}
+      />
 
       {/* Corporate footer bar */}
       <footer className="border-t border-white/10 bg-transparent p-4 mt-8 flex justify-between items-center text-[10px] font-mono text-[#9a9a9a] relative z-10">

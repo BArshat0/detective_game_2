@@ -116,7 +116,7 @@ export default function CaseArchitect({ onCaseGenerated, customCases, onPlayCase
   return (
     <div id="case-architect-module" className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-white">
       {/* Configuration Controls */}
-      <div className="lg:col-span-1 rounded-[24px] border border-white/10 bg-[#000000] p-5 flex flex-col h-full">
+      <div className="lg:col-span-1 rounded-[24px] border border-white/15 glass-panel bg-slate-900/65 p-5 flex flex-col h-full backdrop-blur-xl">
         <h4 className="text-nav-label text-white mb-4 border-b border-white/10 pb-3 flex items-center gap-2">
           <Cpu className="h-4 w-4 text-[#ff8533] animate-pulse" />
           AI Case Builder
@@ -258,7 +258,7 @@ export default function CaseArchitect({ onCaseGenerated, customCases, onPlayCase
       </div>
 
       {/* Generated Customs Case List */}
-      <div className="lg:col-span-2 rounded-[24px] border border-white/10 bg-[#000000] p-5 flex flex-col h-full">
+      <div className="lg:col-span-2 rounded-[24px] border border-white/15 glass-panel bg-slate-900/65 p-5 flex flex-col h-full backdrop-blur-xl">
         <h4 className="text-nav-label text-white mb-4 border-b border-white/10 pb-3 flex items-center gap-2">
           <BookOpen className="h-4 w-4 text-[#ff8533]" />
           Custom Modules Registry ({customCases.length})

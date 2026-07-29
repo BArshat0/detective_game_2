@@ -62,8 +62,8 @@ export default function EvidenceViewer({
   return (
     <div id="evidence-viewer-container" className="grid grid-cols-1 md:grid-cols-3 gap-4 h-full">
       {/* Evidence Side Panel */}
-      <div className="md:col-span-1 rounded-[24px] border border-white/10 bg-[#000000] p-4 flex flex-col h-full min-h-[250px]">
-        <h4 className="text-nav-label text-white mb-3 flex items-center gap-1.5 border-b border-white/5 pb-3">
+      <div className="md:col-span-1 rounded-[24px] border border-white/15 glass-panel bg-slate-900/65 p-4 flex flex-col h-full min-h-[250px]">
+        <h4 className="text-nav-label text-white mb-3 flex items-center gap-1.5 border-b border-white/10 pb-3">
           <Folder className="h-4 w-4 text-[#ff8533]" />
           Evidence Cabinet
         </h4>
@@ -137,7 +137,7 @@ export default function EvidenceViewer({
       </div>
 
       {/* Evidence Read Out Panel */}
-      <div className="md:col-span-2 rounded-[24px] border border-white/10 bg-[#000000] p-5 flex flex-col h-full min-h-[300px]">
+      <div className="md:col-span-2 rounded-[24px] border border-white/15 glass-panel bg-slate-900/65 p-5 flex flex-col h-full min-h-[300px]">
         {activeEvidence && discoveredEvidenceIds.includes(activeEvidence.id) ? (
           <div className="flex flex-col h-full animate-fade-in">
             {/* Active File Header */}

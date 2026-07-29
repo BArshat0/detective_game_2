@@ -33,7 +33,7 @@ export default function ClueBoard({
   const completionPercentage = Math.round((discoveredCount / totalCount) * 100) || 0;
 
   return (
-    <div id="clue-board-container" className="flex flex-col h-full rounded-[24px] border border-white/10 bg-[#000000] p-5 text-white">
+    <div id="clue-board-container" className="flex flex-col h-full rounded-[24px] border border-white/15 glass-panel bg-slate-900/65 p-5 text-white">
       
       {/* Header telemetry info */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4 mb-4">
@@ -46,7 +46,7 @@ export default function ClueBoard({
         </div>
 
         {/* Progress bar */}
-        <div className="flex items-center gap-3 bg-black border border-white/10 rounded-[24px] px-4 py-2 min-w-[220px]">
+        <div className="flex items-center gap-3 bg-slate-950/40 border border-white/10 rounded-[24px] px-4 py-2 min-w-[220px] backdrop-blur-md">
           <div className="flex-1">
             <div className="flex justify-between items-center text-[10px] font-mono font-bold mb-1.5">
               <span className="text-[#9a9a9a] tracking-wider">CLUES LINKED</span>

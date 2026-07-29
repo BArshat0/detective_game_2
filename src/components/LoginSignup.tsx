@@ -98,11 +98,11 @@ export default function LoginSignup({ onAuthSuccess, supabaseConfigured, geminiC
   };
 
   return (
-    <div id="login-signup-viewport" className="w-full max-w-md mx-auto bg-[#321c0e]/60 border border-white/10 rounded-[32px] text-[#d9d2c9] p-6 md:p-8 shadow-2xl backdrop-blur-md animate-fade-in">
+    <div id="login-signup-viewport" className="w-full max-w-md mx-auto glass-panel bg-slate-900/70 border border-white/20 rounded-[32px] text-white p-6 md:p-8 shadow-2xl backdrop-blur-xl animate-fade-in">
       
       {/* Void Header */}
       <div className="text-center mb-6">
-        <div className="inline-flex items-center justify-center w-12 h-12 bg-white p-1 rounded-full border border-[#ff8533]/30 mb-3 overflow-hidden shadow-inner">
+        <div className="inline-flex items-center justify-center w-12 h-12 bg-white p-1 rounded-full border border-[#ff8533]/30 mb-3 overflow-hidden shadow-md">
           <img 
             src="/src/assets/images/detective_squirrel_1784269041754.jpg" 
             alt="Detective Fox Mascot Logo" 
@@ -110,23 +110,23 @@ export default function LoginSignup({ onAuthSuccess, supabaseConfigured, geminiC
             referrerPolicy="no-referrer"
           />
         </div>
-        <h2 className="font-serif text-2xl font-bold text-[#fcfaf5] tracking-tight">
+        <h2 className="font-serif text-2xl font-bold text-white tracking-tight">
           Academy Login
         </h2>
-        <p className="text-xs text-[#a89485] font-mono mt-1 uppercase tracking-wider">
+        <p className="text-xs text-slate-300 font-mono mt-1 uppercase tracking-wider">
           {isSignUp ? 'Create investigator profile' : 'Sign in to access different cases'}
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="grid grid-cols-2 p-1 bg-[#1e110a] rounded-[24px] border border-white/5 mb-6">
+      <div className="grid grid-cols-2 p-1 bg-slate-950/60 rounded-full border border-white/10 mb-6">
         <button
           type="button"
           onClick={() => { setIsSignUp(false); setErrorMessage(null); }}
-          className={`py-2 rounded-[24px] text-xs font-bold tracking-wider uppercase transition-all duration-200 cursor-pointer focus:outline-none ${
+          className={`py-2 rounded-full text-xs font-bold tracking-wider uppercase transition-all duration-200 cursor-pointer focus:outline-none ${
             !isSignUp 
-              ? 'bg-[#ff8533] text-[#1e110a] shadow-md' 
-              : 'text-[#a89485] hover:text-[#fcfaf5]'
+              ? 'bg-[#ff8533] text-slate-950 shadow-md shadow-[#ff8533]/30' 
+              : 'text-slate-300 hover:text-white'
           }`}
         >
           Sign In
@@ -134,10 +134,10 @@ export default function LoginSignup({ onAuthSuccess, supabaseConfigured, geminiC
         <button
           type="button"
           onClick={() => { setIsSignUp(true); setErrorMessage(null); }}
-          className={`py-2 rounded-[24px] text-xs font-bold tracking-wider uppercase transition-all duration-200 cursor-pointer focus:outline-none ${
+          className={`py-2 rounded-full text-xs font-bold tracking-wider uppercase transition-all duration-200 cursor-pointer focus:outline-none ${
             isSignUp 
-              ? 'bg-[#ff8533] text-[#1e110a] shadow-md' 
-              : 'text-[#a89485] hover:text-[#fcfaf5]'
+              ? 'bg-[#ff8533] text-slate-950 shadow-md shadow-[#ff8533]/30' 
+              : 'text-slate-300 hover:text-white'
           }`}
         >
           Sign Up

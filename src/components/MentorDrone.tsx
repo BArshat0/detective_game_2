@@ -96,15 +96,15 @@ export default function MentorDrone({ caseData, discoveredEvidenceIds, notebookN
 
       {/* Expandable Dialog Panel */}
       {isOpen && (
-        <div className={`w-[320px] sm:w-[360px] rounded-[24px] border border-white/10 bg-black shadow-2xl flex flex-col transition-all duration-300 ${
+        <div className={`w-[320px] sm:w-[360px] rounded-[24px] border border-white/20 glass-panel bg-slate-900/80 shadow-2xl flex flex-col transition-all duration-300 backdrop-blur-xl ${
           isMinimized ? 'h-[52px]' : 'h-[440px]'
         }`}>
           {/* Header */}
-          <div className="flex justify-between items-center bg-white/[0.02] px-4 py-3.5 rounded-t-[24px] border-b border-white/10">
+          <div className="flex justify-between items-center bg-white/[0.04] px-4 py-3.5 rounded-t-[24px] border-b border-white/10">
             <div className="flex items-center gap-2">
               <Bot className="h-4 w-4 text-[#ff8533] animate-pulse" />
               <span className="font-sans font-bold text-xs text-white tracking-wider">CASE ADVISOR</span>
-              <span className="h-1.5 w-1.5 rounded-full bg-[#5c7f5c] animate-ping" />
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
             </div>
 
             <div className="flex items-center gap-2">
@@ -125,7 +125,7 @@ export default function MentorDrone({ caseData, discoveredEvidenceIds, notebookN
 
           {/* Active Chat Content */}
           {!isMinimized && (
-            <div className="flex-1 flex flex-col min-h-0 bg-[#000000] rounded-b-[24px]">
+            <div className="flex-1 flex flex-col min-h-0 bg-transparent rounded-b-[24px]">
               {/* Message scroll thread */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
                 {messages.map((m, idx) => (
@@ -183,7 +183,7 @@ export default function MentorDrone({ caseData, discoveredEvidenceIds, notebookN
               </div>
 
               {/* Input Control Box */}
-              <div className="p-3.5 border-t border-white/10 bg-[#000000] flex gap-2 rounded-b-[24px]">
+              <div className="p-3.5 border-t border-white/10 bg-transparent flex gap-2 rounded-b-[24px]">
                 <input
                   type="text"
                   value={inputVal}

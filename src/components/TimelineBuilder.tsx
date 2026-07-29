@@ -57,7 +57,7 @@ export default function TimelineBuilder({ caseData, placements, onUpdatePlacemen
   };
 
   return (
-    <div id="timeline-builder-container" className="flex flex-col h-full rounded-[24px] border border-white/10 bg-[#000000] p-5 text-white">
+    <div id="timeline-builder-container" className="flex flex-col h-full rounded-[24px] border border-white/15 glass-panel bg-slate-900/65 p-5 text-white">
       
       {/* Header Info */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4 mb-5">
