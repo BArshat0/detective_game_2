@@ -520,9 +520,24 @@ interface ServiceStatus {
   message: string;
 }
 
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+function markServiceError(status: ServiceStatus, context: string, error: unknown): void {
+  status.configured = false;
+  status.status = "error";
+  status.message = `${context}: ${errorMessage(error)}`;
+}
+
+function sanitizeQuestion(value: unknown): string | null {
+  if (typeof value !== "string" || !value.trim()) return null;
+  return value.trim().slice(0, 1000);
+}
+
 // Check Supabase Configuration Status
 async function checkSupabaseStatus(): Promise<ServiceStatus> {
-  const status = {
+  const status: ServiceStatus = {
     configured: false,
     status: "unconfigured",
     message: "Supabase database integration is not set up."
@@ -569,10 +584,7 @@ async function checkSupabaseStatus(): Promise<ServiceStatus> {
       status.message = "Supabase database keys are not configured. Guest accounts and custom case creation are saved locally in this browser tab only.";
     }
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    status.configured = false;
-    status.status = "error";
-    status.message = `Database connection error: ${message}`;
+    markServiceError(status, "Database connection error", err);
   }
 
   return status;
@@ -580,7 +592,7 @@ async function checkSupabaseStatus(): Promise<ServiceStatus> {
 
 // Check Gemini Configuration Status
 async function checkGeminiStatus(): Promise<ServiceStatus> {
-  const status = {
+  const status: ServiceStatus = {
     configured: false,
     status: "unconfigured",
     message: "Gemini AI Core is not set up."
@@ -600,10 +612,7 @@ async function checkGeminiStatus(): Promise<ServiceStatus> {
           status.status = "connected";
           status.message = "Gemini AI Core connected. Case Evaluation, Witness Interrogation, and AI Game Architect are active.";
         } catch (gemErr: unknown) {
-          const message = gemErr instanceof Error ? gemErr.message : String(gemErr);
-          status.configured = false;
-          status.status = "error";
-          status.message = `AI Core initialization error: ${message}`;
+          markServiceError(status, "AI Core initialization error", gemErr);
         }
       }
     } else {
@@ -612,10 +621,7 @@ async function checkGeminiStatus(): Promise<ServiceStatus> {
       status.message = "GEMINI_API_KEY is not configured. Witness chat and case evaluations will fall back to local offline backup simulation.";
     }
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    status.configured = false;
-    status.status = "error";
-    status.message = `AI Core configuration error: ${message}`;
+    markServiceError(status, "AI Core configuration error", err);
   }
 
   return status;
@@ -664,11 +670,11 @@ app.post("/api/witness-chat", async (req, res) => {
   try {
     const { witnessId, caseId, chatHistory, userQuestion, witnessName, witnessRole, witnessKnowledge } = req.body;
 
-    if (!userQuestion || typeof userQuestion !== "string" || !userQuestion.trim()) {
+    const sanitizedQuestion = sanitizeQuestion(userQuestion);
+    if (!sanitizedQuestion) {
       return res.status(400).json({ error: "Missing or invalid userQuestion" });
     }
 
-    const sanitizedQuestion = userQuestion.trim().slice(0, 1000);
     const sanitizedName = String(witnessName || "Witness").slice(0, 100);
     const sanitizedRole = String(witnessRole || "Involved Person").slice(0, 100);
     const sanitizedKnowledge = String(witnessKnowledge || "").slice(0, 4000);
@@ -710,11 +716,11 @@ app.post("/api/mentor-chat", async (req, res) => {
   try {
     const { caseTitle, currentNotes, unlockedEvidence, chatHistory, userQuestion } = req.body;
 
-    if (typeof userQuestion !== "string" || !userQuestion.trim()) {
+    const sanitizedQuestion = sanitizeQuestion(userQuestion);
+    if (!sanitizedQuestion) {
       return res.status(400).json({ error: "Missing or invalid userQuestion" });
     }
 
-    const sanitizedQuestion = userQuestion.trim().slice(0, 1000);
     const sanitizedTitle = String(caseTitle || "Active Investigation").slice(0, 200);
     const sanitizedNotes = String(currentNotes || "").slice(0, 2000);
     const conversation = formatChatHistory(chatHistory, "Investigator", "Lead Mentor");
