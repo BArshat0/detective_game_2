@@ -10,21 +10,84 @@ interface TimelineBuilderProps {
 }
 
 export default function TimelineBuilder({ caseData, placements, onUpdatePlacements }: TimelineBuilderProps) {
-  const draftSequence: TimelineEvent[] = [];
-  const placedIds = Object.keys(placements);
-  
-  placedIds
-    .sort((a, b) => (safeGet(placements, a) ?? 0) - (safeGet(placements, b) ?? 0))
-    .forEach(id => {
-      const ev = caseData.timeline.find(e => e.id === id);
-      if (ev) draftSequence.push(ev);
-    });
+  const timelineEvents = caseData?.timeline || [];
+  const validEventIds = new Set(timelineEvents.map(e => e.id));
 
-  const unplacedEvents = caseData.timeline.filter(e => !placedIds.includes(e.id));
+  // Sanitize placements to remove any key that doesn't belong to current case's timeline
+  const activePlacements: Record<string, number> = {};
+  let containsStaleKeys = false;
+
+  Object.entries(placements || {}).forEach(([id, pos]) => {
+    if (validEventIds.has(id) && typeof pos === 'number' && !isNaN(pos)) {
+      activePlacements[id] = pos;
+    } else {
+      containsStaleKeys = true;
+    }
+  });
+
+  // Automatically clean stale or invalid keys from state if present
+  React.useEffect(() => {
+    if (containsStaleKeys) {
+      onUpdatePlacements(activePlacements);
+    }
+  }, [containsStaleKeys]);
+
+  const draftSequence: TimelineEvent[] = Object.keys(activePlacements)
+    .sort((a, b) => (safeGet(activePlacements, a) ?? 0) - (safeGet(activePlacements, b) ?? 0))
+    .map(id => timelineEvents.find(e => e.id === id))
+    .filter((e): e is TimelineEvent => Boolean(e));
+
+  // Deterministically scramble caseData.timeline so events appear out of chronological order in Unordered Incident Logs
+  const shuffledEvents = React.useMemo(() => {
+    const list = [...timelineEvents];
+    if (list.length <= 1) return list;
+
+    // Use a hash of caseData.id to ensure stable shuffling across renders
+    let seed = 0;
+    if (caseData?.id) {
+      for (let i = 0; i < caseData.id.length; i++) {
+        seed = (seed << 5) - seed + caseData.id.charCodeAt(i);
+        seed |= 0;
+      }
+    }
+
+    // Permute list using pseudo-random generator based on seed
+    for (let i = list.length - 1; i > 0; i--) {
+      seed = (seed * 9301 + 49297) % 233280;
+      const rnd = seed / 233280;
+      const j = Math.floor(rnd * (i + 1));
+      [list[i], list[j]] = [list[j], list[i]];
+    }
+
+    // Ensure the scrambled list is NOT identical to the chronological array
+    let isIdentical = true;
+    for (let i = 0; i < list.length; i++) {
+      if (list[i]?.id !== timelineEvents[i]?.id) {
+        isIdentical = false;
+        break;
+      }
+    }
+    if (isIdentical && list.length > 1) {
+      [list[0], list[list.length - 1]] = [list[list.length - 1], list[0]];
+    }
+
+    return list;
+  }, [caseData?.id, timelineEvents]);
+
+  const placedEventIds = new Set(draftSequence.map(e => e.id));
+  const unplacedEvents = shuffledEvents.filter(e => e && e.id && !placedEventIds.has(e.id));
+
+  const getTimeTag = (ev: TimelineEvent) => {
+    if (!ev.time || ev.time.includes('July') || ev.time.includes('AM') || ev.time.includes('PM') || ev.time.includes('0') || ev.time.includes('1')) {
+      if (ev.time && ev.time.startsWith('TIMESTAMP:')) return ev.time;
+      return 'TIMESTAMP: UNVERIFIED';
+    }
+    return ev.time.startsWith('TIMESTAMP:') ? ev.time : `TIMESTAMP: ${ev.time}`;
+  };
 
   const handlePlaceEvent = (eventId: string) => {
     const nextIndex = draftSequence.length;
-    onUpdatePlacements(safeSet(placements, eventId, nextIndex));
+    onUpdatePlacements(safeSet(activePlacements, eventId, nextIndex));
 
     // Dispatch MIL XP event
     window.dispatchEvent(new CustomEvent('mil-xp-earned', { 
@@ -36,10 +99,10 @@ export default function TimelineBuilder({ caseData, placements, onUpdatePlacemen
   };
 
   const handleRemoveEvent = (eventId: string) => {
-    const removedIndex = safeGet(placements, eventId) ?? 0;
+    const removedIndex = safeGet(activePlacements, eventId) ?? 0;
     let newPlacements: Record<string, number> = {};
     
-    Object.entries(placements).forEach(([id, idx]) => {
+    Object.entries(activePlacements).forEach(([id, idx]) => {
       if (id !== eventId) {
         if (idx > removedIndex) {
           newPlacements = safeSet(newPlacements, id, idx - 1);
@@ -80,32 +143,37 @@ export default function TimelineBuilder({ caseData, placements, onUpdatePlacemen
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-[300px]">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-[420px]">
         {/* Left Side: Unplaced Logs */}
         <div className="rounded-[24px] bg-[#121214] border border-white/5 p-5 flex flex-col h-full">
-          <h5 className="font-mono text-xs text-[#9a9a9a] font-bold mb-4 uppercase tracking-wider flex items-center gap-1.5 border-b border-white/5 pb-2">
-            <HelpCircle className="h-4 w-4 text-[#9a9a9a]/65" />
-            Unordered Incidents Logs
+          <h5 className="font-mono text-xs text-[#9a9a9a] font-bold mb-4 uppercase tracking-wider flex items-center justify-between gap-1.5 border-b border-white/5 pb-2">
+            <span className="flex items-center gap-1.5">
+              <HelpCircle className="h-4 w-4 text-[#9a9a9a]/65" />
+              Unordered Incident Pool
+            </span>
+            <span className="text-[10px] bg-white/5 border border-white/10 px-2 py-0.5 rounded-full text-[#bdbdbd]">
+              {unplacedEvents.length} Unsequenced
+            </span>
           </h5>
 
           {unplacedEvents.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center p-6 text-[#9a9a9a]/60 font-mono text-xs">
               <Calendar className="h-8 w-8 text-[#9a9a9a]/20 mb-2 animate-pulse" />
-              <span>All anomalies added to sequencing timeline.</span>
+              <span>All {shuffledEvents.length} incident entries added to sequencing timeline.</span>
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto space-y-3.5 pr-1 max-h-[300px]">
+            <div className="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[550px] min-h-[380px]">
               {unplacedEvents.map((ev) => (
                 <button
                   key={ev.id}
                   onClick={() => { handlePlaceEvent(ev.id); }}
-                  className="w-full text-left bg-black border border-white/10 rounded-[24px] p-4 hover:border-[#ff8533] transition-all flex items-center justify-between gap-3 focus:outline-none group cursor-pointer"
+                  className="w-full text-left bg-black border border-white/10 rounded-[20px] p-3.5 hover:border-[#ff8533] transition-all flex items-center justify-between gap-3 focus:outline-none group cursor-pointer"
                 >
                   <div className="flex-1 min-w-0">
                     <span className="text-[9px] font-mono text-[#ff8533] bg-[#ff8533]/10 px-2 py-0.5 rounded-full border border-[#ff8533]/30 uppercase tracking-wider font-bold">
-                      TIMESTAMP: {ev.time}
+                      {getTimeTag(ev)}
                     </span>
-                    <p className="text-xs font-mono mt-2.5 text-[#bdbdbd] leading-relaxed group-hover:text-white">
+                    <p className="text-xs font-mono mt-2 text-[#bdbdbd] leading-relaxed group-hover:text-white">
                       {ev.description}
                     </p>
                   </div>
@@ -120,9 +188,14 @@ export default function TimelineBuilder({ caseData, placements, onUpdatePlacemen
 
         {/* Right Side: Timeline Draft */}
         <div className="rounded-[24px] bg-[#121214] border border-white/5 p-5 flex flex-col h-full">
-          <h5 className="font-mono text-xs text-[#ff8533] font-bold mb-4 uppercase tracking-wider flex items-center gap-1.5 border-b border-white/5 pb-2">
-            <FileClock className="h-4 w-4 text-[#ff8533]" />
-            Disinformation Sequence Log
+          <h5 className="font-mono text-xs text-[#ff8533] font-bold mb-4 uppercase tracking-wider flex items-center justify-between gap-1.5 border-b border-white/5 pb-2">
+            <span className="flex items-center gap-1.5">
+              <FileClock className="h-4 w-4 text-[#ff8533]" />
+              Disinformation Sequence Log
+            </span>
+            <span className="text-[10px] bg-[#ff8533]/10 border border-[#ff8533]/30 px-2 py-0.5 rounded-full text-[#ff8533]">
+              {draftSequence.length} / {shuffledEvents.length} Sequenced
+            </span>
           </h5>
 
           {draftSequence.length === 0 ? (
@@ -131,14 +204,14 @@ export default function TimelineBuilder({ caseData, placements, onUpdatePlacemen
               <span>Select incidents from unordered lists to establish the chain of vulnerability.</span>
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto space-y-4 pr-1 max-h-[300px]">
+            <div className="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[550px] min-h-[380px]">
               {draftSequence.map((ev, index) => (
                 <div key={ev.id} className="relative flex flex-col items-center">
                   {index > 0 && (
-                    <div className="absolute -top-4 h-4 w-[1px] border-l border-dashed border-[#ff8533]/40" />
+                    <div className="absolute -top-3 h-3 w-[1px] border-l border-dashed border-[#ff8533]/40" />
                   )}
 
-                  <div className="w-full bg-black border border-white/10 rounded-[24px] p-4 relative flex items-start gap-3 group/active">
+                  <div className="w-full bg-black border border-white/10 rounded-[20px] p-3.5 relative flex items-start gap-3 group/active">
                     <span className="absolute left-0 top-3 bottom-3 w-1 rounded-r bg-[#ff8533]" />
 
                     <div className="shrink-0 h-6 w-6 rounded-full bg-[#ff8533] flex items-center justify-center text-[10px] font-mono font-extrabold text-white">
@@ -146,9 +219,9 @@ export default function TimelineBuilder({ caseData, placements, onUpdatePlacemen
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-center gap-2 mb-1.5">
+                      <div className="flex justify-between items-center gap-2 mb-1">
                         <span className="text-[9px] font-mono text-[#ff8533] bg-[#ff8533]/10 border border-[#ff8533]/30 px-2 py-0.5 rounded-full font-bold">
-                          {ev.time}
+                          {getTimeTag(ev)}
                         </span>
                         <button
                           onClick={() => { handleRemoveEvent(ev.id); }}

@@ -23,6 +23,7 @@ import LoadingScreen from './components/LoadingScreen';
 import StoryIntroView from './components/StoryIntroView';
 import DetectiveNotebook from './components/DetectiveNotebook';
 import ResumeRestartModal from './components/ResumeRestartModal';
+import DigitalSafetyReport from './components/DigitalSafetyReport';
 
 // Shared types and handcrafted cases
 import { Case, UserProfile, CaseState } from './types';
@@ -1029,11 +1030,12 @@ export default function App() {
                         />
                       )}
 
-                      {activeTab === 'timeline' && (
+                      {activeTab === 'timeline' && activeCase && (
                         <TimelineBuilder
                           caseData={activeCase}
                           placements={currentCaseState.timelinePlacements}
                           onUpdatePlacements={(placements) => {
+                            if (!activeCase?.id) return;
                             setCasesState(prev => {
                               const existing = safeGet(prev, activeCase.id);
                               return safeSet(prev, activeCase.id, {
@@ -1046,74 +1048,18 @@ export default function App() {
                       )}
 
                       {activeTab === 'submit' && (
-                        <div className="rounded-[24px] border border-white/15 glass-panel bg-slate-900/65 p-5 space-y-6 text-white animate-fade-in backdrop-blur-xl">
-                          
-                          {/* Submission evaluation results */}
-                          {evaluationResult ? (
-                            <div className="space-y-6 animate-fade-in">
-                              
-                              {/* Top score banner */}
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white/5 border border-white/10 rounded-[24px] p-5">
-                                <div className="text-center md:border-r border-white/10 flex flex-col justify-center">
-                                  <span className="text-[10px] font-mono text-[#9a9a9a] uppercase font-bold">ACADEMY SCORE</span>
-                                  <div className="font-sans text-4xl mt-1 text-[#8052ff] font-bold">
-                                    {evaluationResult.score} / 100
-                                  </div>
-                                </div>
-                                <div className="text-center md:border-r border-white/10 flex flex-col justify-center">
-                                  <span className="text-[10px] font-mono text-[#9a9a9a] uppercase font-bold">ACADEMY RANK</span>
-                                  <div className="font-sans text-3xl mt-1 text-[#ffb829] font-bold">
-                                    {evaluationResult.grade}
-                                  </div>
-                                </div>
-                                <div className="text-center flex flex-col justify-center">
-                                  <span className="text-[10px] font-mono text-[#9a9a9a] uppercase font-bold">JUDGMENT VERDICT</span>
-                                  <p className="text-xs font-mono font-bold mt-1 text-[#bdbdbd] px-2 line-clamp-2">
-                                    {evaluationResult.verdict}
-                                  </p>
-                                </div>
-                              </div>
-
-                              {/* Markdown report */}
-                              <div className="rounded-[24px] bg-[#121214] border border-white/5 p-5 space-y-4 shadow-xl">
-                                <h4 className="text-xs font-mono font-extrabold tracking-wider uppercase text-[#ffb829] border-b border-white/5 pb-2">
-                                  🛡️ DIGITAL SAFETY ASSESSMENT REPORT
-                                </h4>
-                                
-                                <div className="text-xs text-[#bdbdbd] leading-relaxed space-y-3 font-mono select-text max-h-[300px] overflow-y-auto pr-2">
-                                  <div className="markdown-body">
-                                    <Markdown>{evaluationResult.analysis}</Markdown>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Unlocked Badges */}
-                              {evaluationResult.unlockedBadges && evaluationResult.unlockedBadges.length > 0 && (
-                                <div className="rounded-[24px] bg-white/[0.02] border border-white/5 p-4">
-                                  <span className="text-[10px] font-mono text-[#ffb829] block uppercase tracking-wider mb-2.5 font-extrabold">🎖️ Honor Badges Awarded</span>
-                                  <div className="flex flex-wrap gap-2">
-                                    {evaluationResult.unlockedBadges.map((badge: string, bIdx: number) => (
-                                      <span key={bIdx} className="text-xs font-mono font-extrabold text-white bg-black border border-white/10 px-3.5 py-1.5 rounded-full flex items-center gap-1.5">
-                                        <Award className="h-4 w-4 text-[#8052ff] animate-pulse" />
-                                        {badge}
-                                      </span>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-
-                              <button
-                                onClick={() => {
-                                  setCurrentView('library');
-                                  setActiveCaseId(null);
-                                }}
-                                className="btn-primary w-full py-4"
-                              >
-                                Conclude Session & Return to Library
-                              </button>
-
-                            </div>
-                          ) : (
+                        evaluationResult ? (
+                          <DigitalSafetyReport
+                            caseData={activeCase}
+                            evaluationResult={evaluationResult}
+                            investigatorName={userProfile.name || 'Senior Cyber Detective'}
+                            onConclude={() => {
+                              setCurrentView('library');
+                              setActiveCaseId(null);
+                            }}
+                          />
+                        ) : (
+                          <div className="rounded-[24px] border border-white/15 glass-panel bg-slate-900/65 p-5 sm:p-7 space-y-6 text-white animate-fade-in backdrop-blur-xl">
                             <div className="space-y-6 animate-fade-in">
                               <div className="border-b border-white/10 pb-3">
                                 <h4 className="text-nav-label text-white flex items-center gap-2">
@@ -1172,8 +1118,8 @@ export default function App() {
                                 )}
                               </button>
                             </div>
-                          )}
-                        </div>
+                          </div>
+                        )
                       )}
                     </div>
 

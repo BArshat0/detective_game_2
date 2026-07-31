@@ -1,536 +1,786 @@
 import { Case } from '../types';
 
 export const HANDCRAFTED_CASES: Case[] = [
+  // =========================================================================
+  // CASE 1: THE ECHO CHAMBER (Viral Manipulation & Context Splicing)
+  // =========================================================================
   {
     id: 'case_echo_chamber',
-    title: 'The Night the News Lied',
-    topic: 'Viral Manipulation, Context Splicing & Echo Chambers',
+    title: 'The Echo Chamber: The Fall and Rise of Maya Lin',
+    topic: 'Viral Outrage, Context Splicing & Recommender Filter Bubbles',
     difficulty: 'EASY',
     status: 'HIGH PRIORITY',
     tag: 'ALGORITHMIC BIAS',
-    threatActor: 'Viral Recommendation Engine',
+    threatActor: 'Anonymous Splicer & CliqClok Recommender Engine',
     timeLimit: '12:00 Hours',
     imageUrl: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800',
-    introduction: 'Maya Lin, an active high school student leader, has been falsely accused of ruining a local youth project after a 10-second video of her was taken out of context on the "CliqClok" platform. The recommendation algorithm trapped local students in a "filter bubble," pushing repetitive outrage content that created confirmation bias. Our goal is to analyze the source footage, map how the platform algorithm amplified the bias, and dismantle the echo chamber.',
+    introduction: 'Maya Lin, a dedicated 17-year-old student leader and volunteer tutor, has become the target of intense online mobbing after a 10-second video snippet went viral on CliqClok. The video claims she wants to shut down the local Youth Community Center. In reality, Maya was defending the center against budget cuts. Trapped inside algorithmically reinforced filter bubbles, students accepted the edited clip as truth without verification. Your mission is to inspect the unedited forum footage, trace the recommendation metrics, interview key peers, and dismantle the echo chamber.',
     storyIntro: {
-      summary: "A 10-second viral clip posted on CliqClok triggered a massive wave of online hostility against student leader Maya Lin, falsely claiming she wanted to destroy the local youth community center. Within hours, algorithm-driven recommendation loops trapped students in a toxic filter bubble.",
+      summary: "A 10-second context-spliced video posted on CliqClok ignited a massive wave of hostility against 17-year-old student leader Maya Lin. Within hours, platform algorithms trapped local students in a outrage-driven filter bubble, turning her friends and teachers against her before anyone checked the original speech.",
       victimName: "Maya Lin",
-      victimRole: "High School Student Leader",
+      victimRole: "17-Year-Old High School Student Leader",
       incidentTime: "July 10, 08:30 AM",
       scenes: [
         {
           id: "ec_s1",
           sceneNumber: 1,
-          title: "The Viral Notification",
-          locationName: "High School Campus",
-          mediaType: "text_chat",
+          title: "Chapter 1: A Normal Day — The Community Center Proposal",
+          locationName: "Kyoto Central High School Assembly Hall",
+          mediaType: "dialogue",
           speaker: {
-            name: "Clara Oswald",
-            role: "Classmate & Peer",
-            avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400",
-            mood: "panicked"
+            name: "Maya Lin",
+            role: "High School Junior & Youth Volunteer",
+            avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=400",
+            mood: "confident"
           },
-          dialogueText: "Maya! Have you seen what everyone is sharing on CliqClok right now?! There's a clip of you saying you want to close down the Youth Community Center. Everyone in the school group chat is turning against you!",
-          narration: "A sudden influx of notifications floods Maya's phone as a brief, out-of-context video goes viral across local student networks.",
-          keyTakeaway: "Early warning sign: A short 10-second clip generates intense immediate emotional outrage before any facts are verified.",
-          soundEffect: "notification"
+          dialogueText: "Good afternoon everyone! As student council delegate, I'm thrilled to present our plan to double funding for the Youth Community Center's library and computer lab. This space saved my academic career when my family couldn't afford a home laptop, and every student deserves that same shelter.",
+          narration: "Maya Lin is a bright, passionate 17-year-old whose dream is to earn a university scholarship in public policy. She spends four evenings a week tutoring younger kids at the community center. Her classmates Clara and Chloe applaud loudly from the front row.",
+          keyTakeaway: "Character Background: Maya is deeply committed to expanding the Youth Community Center and rely on it personally.",
+          soundEffect: "keyboard"
         },
         {
           id: "ec_s2",
           sceneNumber: 2,
-          title: "Algorithmic Amplification",
-          locationName: "CliqClok Platform Analytics",
-          mediaType: "news_alert",
-          mediaContent: {
-            header: "TRENDING IN YOUR AREA // 48,000 Views in 90 Minutes",
-            body: "'Student Leader Maya Lin Demands Community Center Shutdown!' - Local users are receiving this post on 92% of their personalized feeds."
+          title: "Chapter 2: The Opportunity — The Student Forum Debate",
+          locationName: "Student Association Town Hall",
+          mediaType: "dialogue",
+          speaker: {
+            name: "Chloe Smith",
+            role: "Student Council President",
+            avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=400",
+            mood: "neutral"
           },
-          narration: "The recommendation algorithm detects high comment velocity and boosts the outrage clip by 4.5x, trapping local students inside an isolated filter bubble.",
-          keyTakeaway: "Platform algorithms prioritize user screen-time and conflict engagement over truth or accuracy.",
-          soundEffect: "static"
+          dialogueText: "During the Q&A session, an aggressive online commenter accused Maya of secret corporate ties. Maya stepped up to the microphone and answered firmly: 'A few online trolls falsely claim that I do not care about the community center and we should close it down, but that is completely absurd and untrue!'",
+          narration: "The town hall ended with warm applause. Several students recorded the presentation on their phones for local student news channels.",
+          keyTakeaway: "Original Context: Maya explicitly quoted an online rumor ('A few online trolls falsely claim that...') before refuting it.",
+          soundEffect: "notification"
         },
         {
           id: "ec_s3",
           sceneNumber: 3,
-          title: "The Mob Escalation",
-          locationName: "Student Council Union",
-          mediaType: "phone_call",
+          title: "Chapter 3: Building Trust — The Snipped Clip Emerges",
+          locationName: "CliqClok Trending Feed",
+          mediaType: "text_chat",
           speaker: {
-            name: "Chloe Smith",
-            role: "Student Project Coordinator",
-            avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=400",
-            mood: "urgent"
+            name: "Clara Oswald",
+            role: "Classmate & Maya's Best Friend",
+            avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400",
+            mood: "worried"
           },
-          dialogueText: "Look, Maya, I had to ban you from the student council chat. Everyone on my feed is saying you betrayed us. The algorithm doesn't lie—twenty different accounts shared the same video!",
-          narration: "Peer pressure and confirmation bias spread rapidly. Students refuse to listen to Maya's explanation because the algorithm continually feeds them identical negative reactions.",
-          keyTakeaway: "Confirmation bias causes individuals to accept sensational claims when reinforced by peer echo chambers.",
-          soundEffect: "phone_ring"
+          dialogueText: "Maya! Wake up! An account called @KyotoStudentTruth posted an 11-second clip of your speech. It literally shows you saying: 'I do not care about the community center and we should close it down!' They edited out your opening words! People in the main school group chat are going crazy!",
+          narration: "An anonymous account uploaded a surgical edit of Maya's speech, cutting her introductory qualifier. With dramatic background music added, the clip looks shockingly authentic.",
+          keyTakeaway: "Manipulation Technique: Context Splicing — removing opening/closing words to invert the speaker's true meaning.",
+          soundEffect: "notification"
         },
         {
           id: "ec_s4",
           sceneNumber: 4,
-          title: "Dispatch to Digital Forensics",
+          title: "Chapter 4: Warning Signs — Algorithmic Lock-In",
+          locationName: "CliqClok Recommender System Engine",
+          mediaType: "news_alert",
+          mediaContent: {
+            header: "TRENDING IN YOUR DISTRICT // 48,000 Views in 90 Minutes",
+            body: "'LOCAL STUDENT LEADER BETRAYS COMMUNITY!' — 92% of local high school feeds are receiving this video as their #1 recommended clip."
+          },
+          dialogueText: "The CliqClok recommendation algorithm detects high comment velocity and outrage-driven watch time. It applies a 4.5x priority weight, trapping local students inside an inescapable outrage loop.",
+          narration: "When students open their phones, the algorithm feeds them dozens of reaction videos bashing Maya. Anyone expressing doubt is downvoted and ridiculed. Confirmation bias sets in rapidly.",
+          keyTakeaway: "Algorithmic Filter Bubbles: Recommendation engines prioritize conflict and engagement over factual accuracy.",
+          soundEffect: "static"
+        },
+        {
+          id: "ec_s5",
+          sceneNumber: 5,
+          title: "Chapter 5: The Incident — Ostracization & Collapse",
+          locationName: "High School Main Hallway",
+          mediaType: "phone_call",
+          speaker: {
+            name: "Chloe Smith",
+            role: "Student Council President",
+            avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=400",
+            mood: "panicked"
+          },
+          dialogueText: "Maya, I had to kick you out of the student council chat and suspend your university recommendation letter. Look at my feed—twenty different creators shared the same video! The algorithm doesn't lie. Until this blows over, you're off the project.",
+          narration: "Maya arrives at school to find her locker vandalized with slurs. Her tutoring shifts are cancelled, and her scholarship nomination is placed on hold. Crying in the counselor's office, she insists she was framed.",
+          keyTakeaway: "Human Impact: Social pressure and echo chambers lead to real-world harm before evidence is verified.",
+          soundEffect: "phone_ring"
+        },
+        {
+          id: "ec_s6",
+          sceneNumber: 6,
+          title: "Chapter 6: Investigation Begins — Cyber Forensics Dispatch",
           locationName: "Cyber Detective Academy Dispatch",
           mediaType: "police_dispatch",
           speaker: {
             name: "Chief Investigator Vance",
-            role: "Digital Safety Dispatch",
+            role: "Digital Safety Dispatcher",
             mood: "urgent"
           },
-          dialogueText: "Investigator, Maya Lin was context-spliced! Someone deliberately edited her speech to reverse her true message, and the platform algorithm amplified the deception. We need you on the CliqClok Analysis Hub now to inspect the unedited source footage and algorithmic metrics.",
-          narration: "Your official mission begins. Examine the video frames, analyze the recommender metrics, interview key witnesses, and dismantle the echo chamber.",
-          keyTakeaway: "Lateral reading: Always check the original unedited primary source before accepting viral media.",
+          dialogueText: "Investigator, Maya Lin was the victim of a sophisticated context-splicing attack combined with algorithmic amplification! We need you in the CliqClok Analysis Hub now. Inspect the unedited audio waveforms, audit the recommendation weight logs, interview witnesses, and clear Maya's name.",
+          narration: "Your official investigation begins. Uncover the truth behind the viral clip and expose how the echo chamber was manufactured.",
+          keyTakeaway: "Lateral Reading Protocol: Always locate primary, unedited source media before accepting viral clips.",
           soundEffect: "siren"
         }
       ]
     },
     learningObjectives: [
-      'Understand how recommendation algorithms create "filter bubbles" by reinforcing personal biases.',
-      'Recognize how confirmation bias makes individuals accept false rumors without cross-checking.',
-      'Identify the visual and contextual cues that indicate video manipulation or out-of-context clips.',
-      'Learn the digital literacy steps to break out of digital echo chambers.'
+      'Understand how recommendation algorithms create "filter bubbles" by favoring high-outrage content.',
+      'Recognize how confirmation bias makes individuals accept false rumors when reinforced by peer echo chambers.',
+      'Identify visual and audio frame cuts that indicate context splicing or deceptive editing.',
+      'Master lateral reading techniques to locate unedited primary source materials.'
     ],
     warningSigns: [
-      'Social media feeds showing extremely repetitive viewpoints with zero counter-opinions.',
-      'Sensationalist short-form videos with sudden cuts or missing background context.',
-      'A sudden surge of emotional hostility toward an individual based on a single video clip.',
-      'The platform showing "suggested for you" content that escalates in emotional severity.'
+      'Short-form viral videos featuring sudden jump cuts right before or after controversial statements.',
+      'Social media feeds where 90%+ of suggested content reinforces a single emotional narrative with zero counter-perspectives.',
+      'Sudden surges of extreme hostility toward an individual based solely on a snippet under 15 seconds.',
+      'Comment sections where users who ask for unedited source footage are silenced or accused of defending a villain.'
     ],
     manipulationTechniques: [
-      'Context Splicing (cutting out vital context to reverse the meaning of an event).',
-      'Algorithmic Amplification (recommender loops favoring outrage to increase user screen-time).',
-      'Confirmation Bias (appealing to existing peer dynamics so users immediately believe the worst).'
+      'Context Splicing (cutting out introductory or concluding phrases to invert the meaning of a speech).',
+      'Algorithmic Amplification (recommender loops weighting anger and watch-time retention over truth).',
+      'Confirmation Bias & Peer Mobbing (exploiting group dynamics so users follow the crowd without verifying).'
     ],
     evidences: [
       {
         id: 'ev_spliced_video',
-        name: 'Unedited Student Forum Video',
+        name: 'Unedited Student Forum Audio-Video Log',
         type: 'image',
-        description: 'Frame-by-frame forensic analysis of the viral 11-second clip that triggered local outrage against Maya Lin.',
-        category: 'Video Forensic Analysis',
+        description: 'Frame-by-frame forensic analysis comparing the viral 11-second CliqClok clip with the unedited 3-minute raw recording.',
+        category: 'Audio/Video Forensics',
         dateCollected: 'July 10, 08:30 AM',
-        source: 'CliqClok Viral Feed',
+        source: 'Town Hall AV Archives',
         importance: 'Critical',
-        content: '[VIDEO FRAME-BY-FRAME ANALYSIS]\nTimestamp: July 10th, 08:30 AM\nClip length: 11 seconds.\nVisual audit: The video shows Maya saying, "I do not care about the community center and we should close it down."\nForensic Discovery: At 0:05, there is an audio amplitude gap and an invisible frame cut. In the original unedited transcript, Maya actually said, "A few trolls claim that I do not care about the community center and we should close it down, but that is totally false."\nKey Lesson: Context slicing completely inverted the statement.',
+        content: `[FORENSIC VIDEO TIMELINE COMPARISON]
+Unedited Raw Recording (Timestamp 14:22):
+"A few online trolls falsely claim that [0:05 FRAME CUT] I do not care about the community center and we should close it down [0:16 FRAME CUT], but that is completely absurd and untrue!"
+
+Viral CliqClok Post (@KyotoStudentTruth):
+"I do not care about the community center and we should close it down!"
+
+Audio Waveform Audit:
+- Sharp 12dB amplitude drop at timestamp 0:05 indicating a hard splices cut.
+- Inaudible room reverb shift at 0:16 confirming missing trailing sentence.
+- Conclusion: The statement was deliberately inverted by removing qualifying clauses.`,
         isLocked: false
       },
       {
         id: 'ev_algo_variables',
-        name: 'Platform Recommendation Report',
+        name: 'CliqClok Recommender Metrics Log',
         type: 'system_file',
-        description: 'Internal platform metrics showing how outrage engagement algorithms created an isolated filter bubble.',
+        description: 'Internal platform analytics showing how engagement algorithms generated an isolated filter bubble.',
         category: 'System Performance Logs',
         dateCollected: 'July 10, 09:15 AM',
         source: 'CliqClok Server Analytics',
         importance: 'High',
-        content: 'Algorithm Weighting Settings:\n- Watch-time retention multiplier: 4.5x (highest weight given to conflict/outrage)\n- User-comment velocity: 3.2x\n- Echo-Chamber Index: 92% of viewers of the spliced clip were only shown similar negative clips, creating an absolute feedback loop in under 2 hours.\nKey Lesson: Algorithms prioritize user watch-time over truth.',
+        content: `[CLIQLOK ALGORITHMIC DISTRIBUTION AUDIT]
+Recommender Engine ID: RecLoop_v4.2
+Parameters Triggered:
+- Outrage/Conflict Sentiment Multiplier: 4.5x (highest weight allocated to angry comment threads)
+- User Watch-Time Retention: 94.2%
+- Filter Bubble Metric: 92.1% of local high school accounts received ONLY negative reaction videos within 120 minutes.
+- Alternative Source Reach: 0.3% (unedited debunk videos suppressed due to lower outrage velocity).
+
+Key Insight: The platform algorithm maximized user screen-time by deliberately starving users of counter-evidence.`,
         isLocked: false
       },
       {
         id: 'ev_chat_reconciliation',
-        name: 'Student Group Chat Log',
+        name: 'Student Council Group Chat Export',
         type: 'chat',
-        description: 'Chat transcript between student council members showing the rapid spread of peer pressure and confirmation bias.',
+        description: 'Exported chat history showing the rapid spread of peer pressure and confirmation bias among student leaders.',
         category: 'Messaging Logs',
         dateCollected: 'July 10, 10:00 AM',
-        source: 'Student Project Messaging App',
+        source: 'Student Association Messaging App',
         importance: 'Medium',
-        content: '[STUDY GROUP SYSTEM]\nChloe: "Did you see that video of Maya? She is so selfish."\nClara: "Wait, has anyone actually asked Maya for her side? It looks edited."\nChloe: "Everyone on CliqClok is saying she said it. The algorithm doesn\'t lie, Clara! Let\'s ban her from the student project chats."\nKey Lesson: Peer pressure and echo chambers quickly silence critical thinking.',
+        content: `[STUDENT ASSOCIATION OFFICIAL CHAT]
+July 10, 08:15 AM
+Chloe Smith: "Did everyone see that CliqClok video of Maya? She lied to our faces!"
+Clara Oswald: "Wait guys, I was standing right next to Maya during the assembly. That clip cuts off mid-sentence! Can we please wait for the full video?"
+Chloe Smith: "Clara, my feed has 30 different posts saying she betrayed us. The algorithm doesn't lie! If you keep defending her, you'll be removed from the council too."
+Student Member #4: "Yeah Clara, don't stand up for a fake leader."
+Chloe Smith: [Maya Lin was removed from Student Association Chat]`,
         isLocked: true,
         unlockCondition: 'interview_witness_clara'
+      },
+      {
+        id: 'ev_school_suspension',
+        name: 'Principal\'s Recommendation Hold Notice',
+        type: 'document',
+        description: 'Official school administration memo showing how the viral outrage impacted Maya\'s university scholarship.',
+        category: 'Administrative Document',
+        dateCollected: 'July 10, 11:30 AM',
+        source: 'High School Principal Office',
+        importance: 'High',
+        content: `[KYOTO HIGH SCHOOL ADMINISTRATIVE MEMORANDUM]
+Date: July 10
+Subject: Temporary Suspension of State Scholarship Nomination
+Target Student: Maya Lin (Grade 11)
+
+In light of widespread student unrest and viral footage indicating conduct unbecoming of a student representative, Maya Lin's nomination for the Governor's Merit Scholarship is placed on administrative hold pending disciplinary review.
+
+Signed,
+Principal Arthur Davis`,
+        isLocked: true,
+        unlockCondition: 'interview_witness_chloe'
       }
     ],
     witnesses: [
       {
         id: 'wit_clara',
         name: 'Clara Oswald',
-        role: 'Skeptical Student Peer',
+        role: 'Classmate & Maya\'s Best Friend',
         avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400',
-        description: 'A thoughtful classmate who felt pressured to go along with the crowd but noticed inconsistencies in the viral post.',
-        promptKnowledge: 'You are Clara Oswald, a high school junior. You felt terrible about how quickly everyone turned on Maya. You say: "I wanted to help Maya, but the CliqClok feed was absolutely flooded with hate comments, and Chloe told everyone that if we supported Maya, we would be cancelled too. The algorithm kept feeding us the exact same edited clip with creepy background music. It felt impossible to argue because everyone believed it was real. I am so glad you are looking into the original full recording!"',
+        description: 'Maya\'s closest friend who noticed the video jump cut but stayed silent out of fear of social rejection.',
+        promptKnowledge: 'You are Clara Oswald, 17. You are wracked with guilt. You say: "I knew Maya was innocent! I was standing three feet away from her at the microphone. But when I tried to say something in the group chat, Chloe threatened to turn everyone against me. My whole CliqClok feed was wall-to-wall hate posts with scary music. It felt like living in an alternate reality where no one cared about what actually happened. I am so relieved you are looking at the original raw town hall recording!"',
         status: 'available'
       },
       {
         id: 'wit_chloe',
         name: 'Chloe Smith',
-        role: 'Group Admin / Coordinator',
+        role: 'Student Council President',
         avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=400',
-        description: 'The student project admin who banned Maya after receiving hundreds of algorithm-driven recommendations.',
-        promptKnowledge: 'You are Chloe Smith. You are defensive but starting to realize you made a huge mistake. You say: "Look, my phone was literally vibrating every second with notifications. CliqClok showed me like twenty different videos of people reacting to Maya’s clip. They all said she was a fraud. It was trending! I thought since everyone agreed, it had to be true. I didn\'t know about context slicing. I just thought I was protecting the student project by removing her."',
+        description: 'The student president who banned Maya after being overwhelmed by algorithmically boosted notifications.',
+        promptKnowledge: 'You are Chloe Smith, 17. You are defensive, stressed, and beginning to realize you made a terrible mistake. You say: "Look, my phone was literally vibrating nonstop with hundreds of tags and angry messages. CliqClok kept showing me video after video of people saying Maya betrayed us. It was trending #1 in our city! I thought if everyone agreed, it had to be true. I didn\'t know about context splicing or audio cuts... I just wanted to protect our student council from the mob backlash."',
+        status: 'available'
+      },
+      {
+        id: 'wit_maya',
+        name: 'Maya Lin',
+        role: 'Targeted Student Leader',
+        avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=400',
+        description: 'The victim of the viral campaign, heartbroken that her dedication to the community center was turned against her.',
+        promptKnowledge: 'You are Maya Lin, 17. You are tearful but resolute. You say: "I built my whole life around helping at the Youth Community Center. That center gave me a quiet place to study when my family was struggling. When I saw that fake 10-second clip on CliqClok, my stomach dropped. They stripped away my opening words and made me sound like a monster. People I\'ve known for six years refused to even talk to me. Please show everyone the full unedited town hall tape."',
         status: 'available'
       }
     ],
     timeline: [
       {
         id: 'time_ec1',
-        time: 'July 9, 05:00 PM',
-        description: 'Maya speaks at a student forum, defending the community center against bad faith criticisms.',
+        time: 'TIMESTAMP: UNVERIFIED',
+        description: 'Maya Lin delivers her proposal at the Student Town Hall, quoting and refuting an online rumor about closing the community center.',
         isCorrect: true,
         orderIndex: 0
       },
       {
-        id: 'time_ec2',
-        time: 'July 9, 11:00 PM',
-        description: 'An anonymous account cuts an 11-second snippet of Maya\'s speech, completely removing her introductory and concluding qualifiers.',
+        id: 'time_ec5',
+        time: 'TIMESTAMP: UNVERIFIED',
+        description: 'A classmate records the town hall video on a smartphone and uploads the full raw footage to a shared drive.',
         isCorrect: true,
         orderIndex: 1
       },
       {
-        id: 'time_ec3',
-        time: 'July 10, 08:00 AM',
-        description: 'The CliqClok recommender algorithm detects high early comment activity and prioritizes the clip, boosting its weight 4.5x for local users.',
+        id: 'time_ec2',
+        time: 'TIMESTAMP: UNVERIFIED',
+        description: 'An anonymous account (@KyotoStudentTruth) surgical cuts an 11-second video snippet, removing Maya\'s introductory and concluding qualifiers.',
         isCorrect: true,
         orderIndex: 2
       },
       {
-        id: 'time_ec4',
-        time: 'July 10, 12:00 PM',
-        description: 'Students trapped in the algorithm-driven echo chamber ban Maya from student project networks without verifying the source.',
+        id: 'time_ec3',
+        time: 'TIMESTAMP: UNVERIFIED',
+        description: 'CliqClok\'s algorithm applies a 4.5x outrage weight to the spliced clip, flooding 92% of local student feeds.',
         isCorrect: true,
         orderIndex: 3
+      },
+      {
+        id: 'time_ec6',
+        time: 'TIMESTAMP: UNVERIFIED',
+        description: 'A student council member creates a trending hashtag #BanMaya based purely on the algorithmic clip without watching the raw video.',
+        isCorrect: true,
+        orderIndex: 4
+      },
+      {
+        id: 'time_ec4',
+        time: 'TIMESTAMP: UNVERIFIED',
+        description: 'Students trapped inside the outrage filter bubble ban Maya from council chats and suspend her scholarship recommendation.',
+        isCorrect: true,
+        orderIndex: 5
       }
     ],
     clues: [
-      { id: 'cl_context_splice', text: 'The viral video contains a hidden frame cut and audio gap, hiding Maya\'s actual words.', isDiscovered: false, evidenceId: 'ev_spliced_video' },
-      { id: 'cl_algorithm_echo', text: 'The platform algorithm used a 4.5x outrage multiplier to lock students inside a filter bubble.', isDiscovered: false, evidenceId: 'ev_algo_variables' }
+      { id: 'cl_context_splice', text: 'Audio waveform analysis proves the viral clip omitted Maya\'s opening phrase ("A few trolls falsely claim that...").', isDiscovered: false, evidenceId: 'ev_spliced_video' },
+      { id: 'cl_algorithm_echo', text: 'CliqClok\'s recommender engine assigned a 4.5x outrage multiplier that locked local users in a filter bubble.', isDiscovered: false, evidenceId: 'ev_algo_variables' },
+      { id: 'cl_red_herring_editor', text: 'Red Herring: A classmate\'s video editing assignment was flagged as suspicious but turned out to be an innocent media class project.', isDiscovered: false }
     ],
     solution: {
       questions: [
         {
           id: 'q1',
-          question: 'What is a "filter bubble" in the context of media recommendation algorithms?',
+          question: 'What is a "filter bubble" created by social media recommendation algorithms?',
           choices: [
-            'A security firewall that blocks malware.',
-            'An algorithmically generated state of isolation where users only see content reinforcing their existing beliefs.',
-            'A custom chat group created for classroom study.',
-            'An interactive video game dashboard.'
+            'A network security tool that filters out computer viruses.',
+            'An algorithmically enforced state where users are repeatedly served content matching their outrage history, isolating them from counter-evidence.',
+            'A private group chat created for high school study teams.',
+            'An encrypted messaging protocol used by student councils.'
           ],
-          correctAnswer: 'An algorithmically generated state of isolation where users only see content reinforcing their existing beliefs.',
-          explanation: 'Filter bubbles are created when platform algorithms repeatedly serve content similar to what a user has clicked or hovered over in the past. This blocks out alternate perspectives and accelerates echo chambers.'
+          correctAnswer: 'An algorithmically enforced state where users are repeatedly served content matching their outrage history, isolating them from counter-evidence.',
+          explanation: 'Filter bubbles occur when recommendation algorithms prioritize outrage and engagement over factual accuracy. Users are fed identical emotional clips, giving the false illusion that "everyone agrees" and suppressing critical thinking.'
         },
         {
           id: 'q2',
-          question: 'What is the most effective Media Literacy action when encountering a highly emotional viral video about someone?',
+          question: 'What is "lateral reading" and why is it essential when encountering viral outrage media?',
           choices: [
-            'Share it immediately with friends to warn them.',
-            'Report the person featured to the police.',
-            'Search for the unedited, full-length source video and check if it has been context-spliced.',
-            'Trust the platform because trending videos are always true.'
+            'Reading a news article repeatedly from top to bottom to check for spelling errors.',
+            'Leaving the emotional social media post to independently search for unedited primary sources, verification logs, and neutral reporting.',
+            'Asking friends in your group chat if they believe the video is real.',
+            'Checking how many likes and shares the viral video has received.'
           ],
-          correctAnswer: 'Search for the unedited, full-length source video and check if it has been context-spliced.',
-          explanation: 'A critical MIL skill is lateral reading: leaving the emotional platform post to search for primary unedited sources, identifying cuts, audio splices, or misleading headlines.'
+          correctAnswer: 'Leaving the emotional social media post to independently search for unedited primary sources, verification logs, and neutral reporting.',
+          explanation: 'Lateral reading is the core digital literacy practice of opening new browser tabs to check the credibility of a claim using primary sources, rather than relying on the comments or aesthetics of the viral post itself.'
         }
       ]
     },
     location: {
       name: 'CliqClok Analysis Hub',
-      description: 'The digital analytics space where investigators examine recommender metrics and raw audio-visual logs.',
+      description: 'The digital media analytics lab where investigators examine audio spectrographs and recommender algorithm parameters.',
       coordinates: '35.6762° N, 139.6503° E',
       imageUrl: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800',
       hotspots: [
-        { id: 'hs_server', name: 'Algorithm Database Node', x: 45, y: 35, description: 'The CliqClok metadata register displaying the watch-time weightings.', revealsEvidenceId: 'ev_algo_variables' }
+        { id: 'hs_server', name: 'Algorithm Database Node', x: 45, y: 35, description: 'The CliqClok server node displaying watch-time multipliers and echo chamber metrics.', revealsEvidenceId: 'ev_algo_variables' }
       ]
     }
   },
+
+  // =========================================================================
+  // CASE 2: THE PHANTOM VOICE (AI Voice Cloning & Deepfake Impersonation)
+  // =========================================================================
   {
     id: 'case_synthetic_impostor',
-    title: 'The Midnight Voice Call',
-    topic: 'AI Voice Cloning, Deepfakes & Synthetic Spoofing',
+    title: 'The Phantom Voice: The Midnight Impostor',
+    topic: 'AI Voice Cloning, Deepfakes & Scraped Audio Harvesting',
     difficulty: 'MED',
     status: 'URGENT',
     tag: 'AI FORENSICS',
-    threatActor: 'AI Synthetics Ring',
+    threatActor: 'VoiceSyndicate Cyber Group',
     timeLimit: '24:00 Hours',
     imageUrl: 'https://images.unsplash.com/photo-1614064641938-3bbee52942c7?auto=format&fit=crop&q=80&w=800',
-    introduction: 'A voice recording of Principal Davis claiming that school funds were embezzled and that all classes are cancelled was sent directly to local parents, provoking deep anxiety and chaos. Principal Davis claims he never made such a call, but the voice sounds identical to his. This looks like a synthetic voice-cloning attack. We must examine audio frequency anomalies, trace the synthetic source, and understand the dangers of generative AI manipulation.',
+    introduction: 'At 11:42 PM, Devon Miller—head of the Parent Association—received a frantic telephone call from High School Principal Arthur Davis\'s official office line. The trembling voice claimed Davis was detained at police headquarters due to a district audit error and needed an emergency $12,000 wire transfer to avoid an immediate school shutdown. Panicked, Devon transferred the funds and forwarded an urgent audio alert to 850 parents. But the real Principal Davis was asleep at home. Attackers harvested 22 hours of public school podcast audio to train a neural voice clone. Uncover the spectrographic evidence, trace the spoofed telecommunications gateway, and solve the mystery.',
     storyIntro: {
-      summary: "A synthetic voice recording impersonating Principal Arthur Davis was broadcast to over 850 parent phone numbers, falsely claiming financial embezzlement and emergency school closure. Panic ensued before Principal Davis confirmed he never recorded the message.",
-      victimName: "Arthur Davis",
-      victimRole: "High School Principal",
-      incidentTime: "July 15, 08:00 AM",
+      summary: "A neural AI voice clone of Principal Arthur Davis was used in a late-night telephone extortion scheme. Devon Miller was duped into wiring $12,000 from the parent emergency fund and broadcasting a emergency panic alert before realizing the principal's voice had been artificially harvested from public podcasts.",
+      victimName: "Arthur Davis & Devon Miller",
+      victimRole: "School Principal & Parent Association Lead",
+      incidentTime: "July 15, 11:42 PM",
       scenes: [
         {
           id: "si_s1",
           sceneNumber: 1,
-          title: "The Midnight Voicemail",
-          locationName: "Parent Residence",
-          mediaType: "phone_call",
+          title: "Chapter 1: A Normal Day — The Principal's Weekly Address",
+          locationName: "Kyoto Central High School Studio",
+          mediaType: "dialogue",
           speaker: {
-            name: "Devon Miller",
-            role: "Parent Association Lead",
-            avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400",
-            mood: "panicked"
+            name: "Arthur Davis",
+            role: "High School Principal (54 y/o)",
+            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400",
+            mood: "confident"
           },
-          dialogueText: "I just got a voicemail from Principal Davis's official office number! He sounded breathless and terrified, claiming the school's bank account was drained and classes are cancelled indefinitely! I forwarded it to all 800 parents immediately!",
-          narration: "A panic-inducing voice message spreads like wildfire through parent messaging networks before dawn.",
-          keyTakeaway: "Urgent authority spoofing: Cybercriminals use fear and official sender IDs to trigger immediate panic.",
-          soundEffect: "phone_ring"
+          dialogueText: "Welcome to Episode 50 of the Principal's Weekly Address! I want to personally congratulate our science bowl team and remind all parents about our upcoming annual summer excursion. Thank you for your continued trust in our school community.",
+          narration: "Principal Arthur Davis is a warm, dedicated educator who has served the school for 20 years. To maintain transparency with families, he records a weekly 30-minute podcast hosted publicly on the school's website.",
+          keyTakeaway: "Audio Source: Principal Davis has published 50+ hours of clean, high-quality speech publicly on the internet.",
+          soundEffect: "keyboard"
         },
         {
           id: "si_s2",
           sceneNumber: 2,
-          title: "The Unaware Target",
-          locationName: "Principal's Office",
-          mediaType: "dialogue",
+          title: "Chapter 2: The Opportunity — The Midnight Call",
+          locationName: "Devon Miller's Residence",
+          mediaType: "phone_call",
           speaker: {
-            name: "Arthur Davis",
-            role: "Targeted School Principal",
-            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400",
-            mood: "suspicious"
+            name: "Devon Miller",
+            role: "Parent Association Lead (42 y/o)",
+            avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400",
+            mood: "panicked"
           },
-          dialogueText: "I never recorded any such message! I was asleep in my house! Parents are calling me crying, asking if the school is closing. How could someone generate my exact voice?",
-          narration: "Principal Davis arrives at school to find chaotic crowds outside his office. He confirms his phone was untouched.",
-          keyTakeaway: "Voice cloning requires as little as 10 seconds of clear public sample audio to train a neural vocal model.",
-          soundEffect: "static"
+          dialogueText: "My phone rang at 11:42 PM. The caller ID clearly displayed '+1 (555) 0192' — Principal Davis's official office desk number. When I answered, I heard Mr. Davis's exact voice, breathless and sobbing!",
+          narration: "Devon Miller was asleep when his phone buzzed. Seeing the principal's official office number on the caller ID instantly bypassed his suspicion.",
+          keyTakeaway: "Authority Spoofing: Attackers falsified the caller ID to match the principal's official school telephone number.",
+          soundEffect: "phone_ring"
         },
         {
           id: "si_s3",
           sceneNumber: 3,
-          title: "The Scraped Audio Trail",
-          locationName: "District Server Room",
-          mediaType: "cctv_log",
-          mediaContent: {
-            header: "WEB HARVESTING ALERT // 22 Hours Scraped",
-            body: "Scraper bot detected downloading 45 podcast episodes of 'Principal Davis Weekly Address' from the public school archive to compile a neural voice model."
+          title: "Chapter 3: Building Trust — The High-Stakes Emergency",
+          locationName: "Intercepted Telephone Audio Stream",
+          mediaType: "phone_call",
+          speaker: {
+            name: "Synthetic Voice (Arthur Davis Clone)",
+            role: "AI Impostor",
+            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400",
+            mood: "panicked"
           },
-          narration: "System logs reveal that attackers scraped years of Principal Davis's public podcast recordings to train a neural voice cloning model.",
-          keyTakeaway: "Publicly available media can be harvested to create high-fidelity synthetic clones of real people.",
-          soundEffect: "keyboard"
+          dialogueText: "Devon! Please, listen to me! I'm at the central precinct. There was a catastrophic accounting error with the summer trip bond! If we don't post a $12,000 cash guarantee by midnight, the district will seize our accounts and cancel all classes tomorrow! You must wire the money from the parent emergency fund right now!",
+          narration: "The caller's voice sounds identical to Arthur Davis—including his distinct cadence and polite tone. The sense of catastrophic urgency overrides rational hesitation.",
+          keyTakeaway: "Manipulation Technique: Fear & Extreme Urgency — forcing immediate decision-making before facts can be checked.",
+          soundEffect: "phone_ring"
         },
         {
           id: "si_s4",
           sceneNumber: 4,
-          title: "Dispatch to AI Forensics",
-          locationName: "Audio Spectrograph Terminal",
+          title: "Chapter 4: Warning Signs — Unnatural Hesitations",
+          locationName: "Parent Fund Management Console",
+          mediaType: "dialogue",
+          speaker: {
+            name: "Devon Miller",
+            role: "Parent Association Lead",
+            avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400",
+            mood: "worried"
+          },
+          dialogueText: "I asked him: 'Arthur, shouldn't we call Vice Principal Sato first?' But the voice paused strangely for two seconds with zero background breathing, then repeated in the same rigid tone: 'No time! Wire the funds to this emergency clearing account immediately!' There was a subtle metallic tone in his voice, but I was too panicked to question it.",
+          narration: "Devon noticed two subtle red flags: the caller ignored a specific question about staff members and had unnatural silent gaps without natural breathing sounds.",
+          keyTakeaway: "AI Voice Anomaly: Synthetic TTS generators struggle with interactive conversation context and natural inhalation pauses.",
+          soundEffect: "static"
+        },
+        {
+          id: "si_s5",
+          sceneNumber: 5,
+          title: "Chapter 5: The Incident — Fund Wire & Morning Chaos",
+          locationName: "High School Courtyard",
+          mediaType: "news_alert",
+          mediaContent: {
+            header: "ALERT // $12,000 EXPORTED & 850 PARENTS PANICKED",
+            body: "Devon wired $12,000 from the parent fund and sent a panic voicemail to all parent chat groups. At 07:30 AM, Principal Davis arrived at school completely unaware of any emergency."
+          },
+          dialogueText: "Principal Davis stepped out of his car to find 100 distressed parents crying in the courtyard. When Devon showed him the voicemail, Davis stood frozen in shock: 'This is my voice... but I was in bed asleep with my wife all night!'",
+          narration: "The $12,000 parent emergency fund was drained into an unrecoverable cryptocurrency mixer, and the school was thrown into turmoil.",
+          keyTakeaway: "Devastating Outcome: Financial theft and public panic achieved through synthetic voice cloning and spoofed communications.",
+          soundEffect: "notification"
+        },
+        {
+          id: "si_s6",
+          sceneNumber: 6,
+          title: "Chapter 6: Investigation Begins — AI Forensics Dispatch",
+          locationName: "AI Audio Forensics Laboratory",
           mediaType: "police_dispatch",
           speaker: {
-            name: "Lead Forensics Analyst",
-            role: "AI Biometrics Specialist",
+            name: "Lead Forensics Specialist",
+            role: "Cyber Biometrics Unit",
             mood: "urgent"
           },
-          dialogueText: "Investigator, we are dealing with a deepfake voice synthesis attack. Step into the Audio Forensics Lab, perform spectrographic frequency analysis on the voicemail, trace the spoofed SMS gateway, and clear Principal Davis's name.",
-          narration: "Equip your spectrograph and trace the artificial neural markers in the synthetic voice file.",
-          keyTakeaway: "Synthetic voices lack natural physiological breathing cycles and leave flat spectral silence boundaries.",
+          dialogueText: "Investigator, you are needed on scene! We are analyzing a high-fidelity synthetic voice attack. Step into the AI Forensics Lab, inspect the spectrographic wave boundaries, trace the scraper bot that harvested Davis's podcasts, and track the caller ID spoofing gateway.",
+          narration: "Equip your audio spectrograph and uncover the neural signature behind the synthetic phone call.",
+          keyTakeaway: "Verification Protocol: Establish family/organization safety code words and always hang up to call back directly on known numbers.",
           soundEffect: "siren"
         }
       ]
     },
     learningObjectives: [
-      'Recognize structural anomalies (robotic pacing, flat breathing) that indicate AI voice cloning.',
-      'Understand how cybercriminals harvest public audio to generate highly realistic voice prints.',
-      'Establish personal verification strategies (family safety words, direct callback checks) to protect against spoofing.',
-      'Understand the ethical implications of deepfake technology on public trust.'
+      'Identify spectrographic and auditory anomalies (flat silence, missing breath cycles, metallic boundary cuts) of AI voice clones.',
+      'Understand how cybercriminals harvest public audio/video recordings to build custom neural speech models.',
+      'Implement fail-safe verification protocols (direct callback verification, pre-shared family passphrases).',
+      'Recognize telephone caller-ID spoofing techniques and how to bypass them.'
     ],
     warningSigns: [
-      'An emergency audio message pleading with you to keep it a secret and transfer immediate funds.',
-      'A voice that sounds familiar but has unnatural breathing patterns, robotic pauses, or metallic interference.',
-      'The caller refusing to answer custom questions or acting confused when asked about past shared memories.',
-      'An urgent call coming from a spoofed, hidden, or completely unfamiliar phone number.'
+      'An emergency call claiming a loved one or authority figure is in distress and demanding immediate money transfer.',
+      'A familiar voice that pauses awkwardly during custom questions or displays zero background breathing/room noise.',
+      'Insistence on absolute secrecy and refusal to allow you to call other family members or colleagues.',
+      'Requests for payment via non-standard wire transfers, gift cards, or cryptocurrency addresses.'
     ],
     manipulationTechniques: [
-      'Emotional Panicking (using a simulated disaster to override rational doubts).',
-      'Artificial Voice Synthesis (harvesting open-source podcasts or videos to train neural voices).',
-      'Urgent Authority Spoofing (impersonating figures of authority like principals or family heads).'
+      'Panic & Extreme Urgency (setting artificial time constraints to prevent verification).',
+      'Neural Voice Cloning (harvesting open-source podcasts to train neural text-to-speech models).',
+      'Caller-ID Spoofing (falsifying telecommunication headers to display trusted numbers).'
     ],
     evidences: [
       {
         id: 'ev_voice_log',
-        name: 'Emergency Voicemail Recording',
+        name: 'Emergency Voicemail Spectrographic Analysis',
         type: 'image',
-        description: 'Audio spectrograph report analyzing the artificial voice recording sent to 850 parent numbers.',
+        description: 'Audio spectrograph report analyzing the 0.04-second neural wave chunks of the voicemail sent to Devon Miller.',
         category: 'Audio Forensic Report',
-        dateCollected: 'July 15, 08:00 AM',
-        source: 'Parent Phone Network',
+        dateCollected: 'July 15, 11:45 PM',
+        source: 'Parent Phone Network Intercept',
         importance: 'Critical',
-        content: '[SPECTRAL ANALYSIS REPORT]\nSource: 0.04-second sample chunks.\nBiometrics match: Davis\'s public video channel (98.2% frequency match).\nAI Forensic Markers:\n1. Total absence of background breathing or inhalation cues.\n2. Perfectly flat silent periods with zero ambient hum, indicating synthesized text-to-speech blocks.\n3. Robotic artifacts around hard consonants (p, t, k) showing neural network voice patch transitions.',
+        content: `[AUDIO FORENSICS SPECTRAL ANALYSIS REPORT]
+Source Sample: "Davis_Emergency_Call.wav" (Length: 42 seconds)
+Biometric Frequency Match: 98.4% match with Arthur Davis's vocal timbre.
+
+SPECTRAL ANOMALIES DISCOVERED:
+1. Physiological Inhalation Deficit: 0.00% natural breath sounds detected between clauses (human speech displays 4-8 breaths per minute).
+2. Spectral Silence Floor: Noise floor drops to absolute digital zero (-inf dB) during pauses, indicating synthetic text-to-speech rendering blocks.
+3. Plosive Boundary Artifacts: Hard consonant transitions (p, t, k) show synthetic phase alignments characteristic of neural vocoder patch outputs.`,
         isLocked: false
       },
       {
         id: 'ev_harvest_source',
-        name: 'Podcast Audio Scraping Log',
+        name: 'Podcast Harvester Server Logs',
         type: 'document',
-        description: 'Server logs showing automated download of 22 hours of public school podcasts used to train an AI voice clone.',
-        category: 'Web Server Logs',
+        description: 'Web server logs exposing the automated scraping bot that downloaded 22 hours of Principal Davis\'s weekly podcast episodes.',
+        category: 'Server Traffic Logs',
         dateCollected: 'July 14, 11:30 PM',
-        source: 'School Podcast Repository',
+        source: 'School Web Server Repository',
         importance: 'High',
-        content: '[WEB HARVESTER PROTOCOL]\nTarget URL: https://school.edu/podcasts/Davis_Weekly_Address\nDownloaded files: 45 MP3 files containing 22 hours of Principal Davis speaking.\nCompilation tool detected: "ElevenLabs_Synthetic_Studio_v2"\nVoice model created: "Davis_Model_v3" on July 14th.',
+        content: `[WEB SERVER HARVESTING INCIDENT LOG]
+Target URL: https://kyotohigh.edu/media/podcasts/Davis_Weekly/
+Date: July 14, 02:15 AM
+User-Agent: "Python-urllib/3.10 (AudioScraperBot)"
+Downloaded Assets: 50 MP3 files (Total length: 22 hours, 14 minutes)
+Destination IP: 198.51.100.42 (Anonymous VPN Node)
+Compilation Tool Artifact: Meta-header "ElevenLabs_NeuralStudio_v2.1"
+Voice Model ID: "Model_Davis_v3" created July 14th at 04:30 AM.`,
         isLocked: false
       },
       {
         id: 'ev_spoofed_sms',
-        name: 'Bulk SMS Broadcast Record',
+        name: 'Telecommunications Spoofing Packet Dump',
         type: 'system_file',
-        description: 'Telecommunications log exposing the anonymous VPN node that falsified the caller ID.',
-        category: 'Network Traffic Logs',
-        dateCollected: 'July 15, 08:05 AM',
-        source: 'Telecommunications Gateway',
+        description: 'SIP header packet trace exposing the anonymous VoIP gateway used to falsify Principal Davis\'s desk phone number.',
+        category: 'Network Packet Logs',
+        dateCollected: 'July 15, 11:42 PM',
+        source: 'District Telecom Exchange',
         importance: 'Critical',
-        content: 'SMS Broadcast Gateway: Simplex-Bulk-Gateway\nSpoofed Origin Number: +1 (555) 0192 (Principal Davis\'s official office number)\nReal Origin Node: IP 198.51.100.42 (Anonymous VPN server based in Osaka)\nAction: Coordinated broadcast of the voicemail file to 850 parent numbers.',
+        content: `[SIP TELECOM HEADER PACKET TRACE]
+Call ID: SIP-40912-US
+Header Display Name: "Principal Davis Office"
+Header Display Number: +1 (555) 0192 (Official School Desk)
+
+REAL ORIGINATING NODE:
+Originating IP: 198.51.100.88 (Osaka Telecom Proxy Gateway)
+Routing Protocol: Simplex-VoIP-Bulk-Relay
+Authentication Status: UNVERIFIED (STIR/SHAKEN Protocol Failed - Invalid Certificate)
+Conclusion: Caller ID header was injected via an unauthenticated VoIP gateway.`,
         isLocked: true,
         unlockCondition: 'interview_witness_arthur'
+      },
+      {
+        id: 'ev_crypto_invoice',
+        name: 'Emergency Fund Wire & Crypto Transfer Receipt',
+        type: 'crypto_fragment',
+        description: 'Financial ledger showing the $12,000 wire transfer from the Parent Fund to a synthetic laundering wallet.',
+        category: 'Financial Forensics',
+        dateCollected: 'July 16, 01:00 AM',
+        source: 'Parent Association Bank Account',
+        importance: 'High',
+        content: `[WIRE TRANSFER CONFIRMATION]
+Sender: Kyoto Parent Association Emergency Fund
+Amount: $12,000.00 USD
+Beneficiary Account: "Global Clearing Service LLC"
+Recipient Wallet: 0x71C...9B42 (Automated Mixer Pool)
+Status: Completed (Non-reversible wire transfer)
+Note: Triggered by urgent phone request at 11:55 PM.`,
+        isLocked: true,
+        unlockCondition: 'interview_witness_devon'
       }
     ],
     witnesses: [
       {
         id: 'wit_arthur',
         name: 'Arthur Davis',
-        role: 'Targeted Principal',
+        role: 'High School Principal',
         avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400',
-        description: 'The school principal whose voice was harvested from weekly school podcasts to train an AI model.',
-        promptKnowledge: 'You are Arthur Davis, school principal. You are shocked and deeply concerned. You say: "I never recorded that voicemail. I host a weekly school podcast to keep parents updated about school activities—I guess the scammers downloaded all my podcasts to train an AI voice clone. I was shocked when parents called me crying. How can we trust any audio or video anymore if computers can copy us so easily?"',
+        description: 'The school principal whose voice was harvested from weekly podcasts to train a neural clone.',
+        promptKnowledge: 'You are Arthur Davis, 54. You are shocked and deeply concerned. You say: "I host a weekly podcast to keep parents connected to our school. I never imagined someone would harvest my voice to steal from our parents! When I arrived at school this morning and saw crying parents in the courtyard, I thought there was a real disaster. Hearing my own voice demanding money in a voicemail was horrifying. How can we trust audio anymore if AI can replicate us so seamlessly?"',
         status: 'available'
       },
       {
         id: 'wit_devon',
         name: 'Devon Miller',
-        role: 'Parent Coordinator',
+        role: 'Parent Association Lead',
         avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400',
-        description: 'The parent coordinator who panicked and forwarded the audio to hundreds of group chats.',
-        promptKnowledge: 'You are Devon Miller. You feel guilty for accelerating the panic. You say: "The voicemail sounded exactly like Mr. Davis. It said there was an embezzlement emergency and classes were cancelled. I freaked out and forwarded it to the school group chat immediately. In hindsight, I should have called his office directly to verify instead of spreading the panic to hundreds of families. I learned my lesson about media literacy the hard way."',
+        description: 'The parent leader who wired $12,000 after being deceived by caller ID spoofing and synthetic voice audio.',
+        promptKnowledge: 'You are Devon Miller, 42. You are wracked with guilt and shame. You say: "The caller ID literally said Principal Davis\'s office! And the voice sounded exactly like him—panicked, breathless, crying. He said the school was going to be locked down in 20 minutes if I didn\'t wire the money. I panicked because I wanted to save the school trip. Looking back, I should have hung up and called his personal mobile phone directly. I feel terrible for losing $12,000 of parent funds."',
+        status: 'available'
+      },
+      {
+        id: 'wit_tech_janitor',
+        name: 'Kenji Sato',
+        role: 'School IT Technician',
+        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400',
+        description: 'The IT technician who noticed high night-time server bandwidth downloading the podcast archive.',
+        promptKnowledge: 'You are Kenji Sato, 29. You are observant and eager to help. You say: "On July 14 at 2:00 AM, our firewall alerted me to a single IP address downloading all 50 MP3 episodes of Principal Davis\'s podcast in under three minutes. I thought it was an enthusiastic student catching up, but when I looked closer at the headers, the user agent belonged to an automated scraping bot. That scraped audio was definitely used to train their AI speech generator!"',
         status: 'available'
       }
     ],
     timeline: [
       {
         id: 'time_si1',
-        time: 'July 1',
-        description: 'Scammers scraper-bot downloads 22 hours of Principal Davis\'s school podcasts to compile high-quality speech libraries.',
+        time: 'TIMESTAMP: UNVERIFIED',
+        description: 'An automated scraping bot downloads 22 hours of Principal Davis\'s public podcasts from the school server.',
         isCorrect: true,
         orderIndex: 0
       },
       {
-        id: 'time_si2',
-        time: 'July 14',
-        description: 'The voice studio training model produces "Davis_Model_v3", a neural network voice clone capable of converting arbitrary text into Davis\'s voice.',
+        id: 'time_si5',
+        time: 'TIMESTAMP: UNVERIFIED',
+        description: 'Attackers run spectral feature extraction on the raw MP3 files to isolate clean vocal phonemes.',
         isCorrect: true,
         orderIndex: 1
       },
       {
-        id: 'time_si3',
-        time: 'July 15, 08:00 AM',
-        description: 'Scammers use an IP spoofing SMS gateway to send the synthesized Davis warning audio, falsifying the sender ID as the official school office.',
+        id: 'time_si2',
+        time: 'TIMESTAMP: UNVERIFIED',
+        description: 'Attackers compile neural voice model "Model_Davis_v3" using an AI text-to-speech voice studio.',
         isCorrect: true,
         orderIndex: 2
       },
       {
-        id: 'time_si4',
-        time: 'July 15, 09:00 AM',
-        description: 'Panicked parent groups forward the audio message across social networks, causing school closures and neighborhood panic.',
+        id: 'time_si3',
+        time: 'TIMESTAMP: UNVERIFIED',
+        description: 'Attackers use a spoofed VoIP gateway to call Devon Miller, displaying Davis\'s office desk number on the caller ID.',
         isCorrect: true,
         orderIndex: 3
+      },
+      {
+        id: 'time_si6',
+        time: 'TIMESTAMP: UNVERIFIED',
+        description: 'The synthetic voice generator induces artificial panic by falsely threatening an immediate 20-minute school lockdown.',
+        isCorrect: true,
+        orderIndex: 4
+      },
+      {
+        id: 'time_si4',
+        time: 'TIMESTAMP: UNVERIFIED',
+        description: 'Devon wires $12,000 from the parent fund and broadcasts an emergency alert to 850 parent chat groups.',
+        isCorrect: true,
+        orderIndex: 5
       }
     ],
     clues: [
-      { id: 'cl_voice_synth_markers', text: 'Voice file features flat breathing cycles and robotic spectral boundaries indicative of AI voice-cloning.', isDiscovered: false, evidenceId: 'ev_voice_log' },
-      { id: 'cl_podcasts_harvest', text: 'Scammers scraped Davis\'s podcasts to construct a custom generative voice clone model.', isDiscovered: false, evidenceId: 'ev_harvest_source' }
+      { id: 'cl_voice_synth_markers', text: 'Audio spectrograph reveals 0.00% natural breathing cycles and digital zero noise floors characteristic of AI voice cloning.', isDiscovered: false, evidenceId: 'ev_voice_log' },
+      { id: 'cl_podcasts_harvest', text: 'Server traffic logs prove 22 hours of podcast audio were scraped to build the neural voice model.', isDiscovered: false, evidenceId: 'ev_harvest_source' },
+      { id: 'cl_red_herring_mic', text: 'Red Herring: Old microphone static in Episode 12 was suspected to be an insertion key but proved to be hardware noise.', isDiscovered: false }
     ],
     solution: {
       questions: [
         {
           id: 'q1',
-          question: 'What is the most effective verification strategy when receiving an urgent, panic-inducing call or voice message from a relative or authority figure?',
+          question: 'What is the most secure protocol when receiving an unexpected emergency phone call from a family member or authority figure demanding immediate funds?',
           choices: [
-            'Send money immediately to prevent any risks.',
-            'Forward the voice note to all social media groups to warn others.',
-            'Hang up, look up the official contact number independently, and call back directly to verify.',
-            'Assume that if the voice sounds correct, it must be authentic.'
+            'Wire the funds right away to prevent any potential harm.',
+            'Hang up, independently locate the official phone number from a trusted directory, and call back directly to verify.',
+            'Ask the caller to send a text message with their bank details.',
+            'Trust the call if the caller ID matches a saved phone number.'
           ],
-          correctAnswer: 'Hang up, look up the official contact number independently, and call back directly to verify.',
-          explanation: 'Generative AI can clone a voice print with less than 10 seconds of high-quality sample audio. Direct callback verification using an independently sourced number is the gold standard for authentication.'
+          correctAnswer: 'Hang up, independently locate the official phone number from a trusted directory, and call back directly to verify.',
+          explanation: 'Generative AI can clone a human voice print with less than 10 seconds of clear sample audio, and VoIP caller ID headers can be easily spoofed. Independent direct callbacks are mandatory for emergency verification.'
         },
         {
           id: 'q2',
-          question: 'Which of the following is a key visual or auditory indicator of synthetic media (deepfakes)?',
+          question: 'Which of the following spectrographic features strongly indicates an AI-generated voice recording?',
           choices: [
-            'High-definition camera resolutions.',
-            'ロボットのような間 (robotic flat pauses), complete lack of inhalation sounds, and audio-level cuts between words.',
-            'The presence of background crowd noise.',
-            'The speaker using slang or informal phrasing.'
+            'High audio fidelity and clear pronunciation.',
+            'Complete absence of natural human breathing sounds between phrases and absolute digital zero silence during pauses.',
+            'The presence of background traffic noise.',
+            'The speaker using regional dialect words.'
           ],
-          correctAnswer: 'ロボットのような間 (robotic flat pauses), complete lack of inhalation sounds, and audio-level cuts between words.',
-          explanation: 'AI-generated voices often struggle to accurately synthesize physiological breathing rhythms, natural vocal micro-hesitations, and ambient room noise, leaving flat visual wave-boundaries and perfect robotic silence.'
+          correctAnswer: 'Complete absence of natural human breathing sounds between phrases and absolute digital zero silence during pauses.',
+          explanation: 'Neural text-to-speech models struggle to synthesize subtle human physiological cues such as micro-inhalations, lip smacks, and ambient room noise floors, leaving unnatural digital silences.'
         }
       ]
     },
     location: {
       name: 'AI Audio Forensics Lab',
-      description: 'The school district\'s security laboratory equipped with audio spectrographs and SMS routing analyzers.',
+      description: 'The police department\'s biometric security lab equipped with audio spectrographs and SIP telecom packet analyzers.',
       coordinates: '34.6937° N, 135.5021° E',
       imageUrl: 'https://images.unsplash.com/photo-1614064641938-3bbee52942c7?auto=format&fit=crop&q=80&w=800',
       hotspots: [
-        { id: 'hs_analyzer', name: 'Audio Spectral Console', x: 50, y: 45, description: 'The audio console where wave metrics and biometric transitions are charted.', revealsEvidenceId: 'ev_voice_log' }
+        { id: 'hs_analyzer', name: 'Audio Spectral Console', x: 50, y: 45, description: 'The audio console where voice wave metrics and biometric boundary cuts are analyzed.', revealsEvidenceId: 'ev_voice_log' }
       ]
     }
   },
+
+  // =========================================================================
+  // CASE 3: THE POISONED WELL (Commercial Disinformation & WHOIS Audits)
+  // =========================================================================
   {
     id: 'case_profit_propaganda',
-    title: 'The Poisoned Tap Rumor',
+    title: 'The Poisoned Well: The AquaShield Conspiracy',
     topic: 'Commercial Disinformation, WHOIS Audits & Bot Networks',
     difficulty: 'HIGH',
     status: 'NEW',
     tag: 'MEDIA ECONOMICS',
-    threatActor: 'Hype Media LLC',
+    threatActor: 'HypeMedia LLC & AquaGuard Domestic Filters',
     timeLimit: '48:00 Hours',
     imageUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=800',
-    introduction: 'A viral news post claiming that a dangerous chemical has contaminated the city\'s public drinking water has triggered an overnight grocery-store rush on bottled water. However, municipal safety labs verify that the city\'s water is completely safe. We must look closely at who is benefiting, trace the domain ownership of the "EcoShield News" site, and uncover the financial incentives driving this public fear.',
+    introduction: 'A viral news report published on "EcoShield News" claimed that Kyoto\'s municipal drinking water was contaminated with a dangerous chemical compound called "Toxin-X". The article triggered citywide panic buying, clearing supermarket shelves of bottled water within two hours. However, municipal safety labs confirmed tap water is 100% clean. Investigative journalist Renee Carter revealed she was offered $5,000 to publish a fake contamination story. Who created EcoShield News? Who is profiting from public terror? Audit domain ownership records, inspect campaign ledgers, and dismantle the profit-driven panic machine.',
     storyIntro: {
-      summary: "A viral news report from 'EcoShield News' claimed the municipal drinking water was contaminated with dangerous toxins, causing frantic panic buying of bottled water. Investigations reveal the news site was secretly created by a commercial water filter company.",
-      victimName: "Municipal Public Safety Dept",
-      victimRole: "Kyoto Water Authority",
+      summary: "A fabricated news article claiming tap water was contaminated with industrial toxins triggered mass panic buying across Kyoto. Investigations revealed 'EcoShield News' was secretly registered by the vice president of a home water filtration manufacturer to boost $500 filter sales.",
+      victimName: "Municipal Water Board & Citizens of Kyoto",
+      victimRole: "Public Infrastructure & Consumers",
       incidentTime: "July 12, 10:00 AM",
       scenes: [
         {
           id: "pp_s1",
           sceneNumber: 1,
-          title: "The Chemical Hazard Panic",
-          locationName: "Kyoto Grocery Store",
-          mediaType: "news_alert",
-          mediaContent: {
-            header: "ECOSHIELD NEWS ALERT // 140,000 SHARES",
-            body: "⚠️ TOXIC WATER CRISIS: Municipal reservoirs contaminated with hazard compound Toxin-X! Tap water is corrosive to skin. Buy purified bottled water immediately!"
+          title: "Chapter 1: A Normal Day — Clean Municipal Water Testing",
+          locationName: "Kyoto Water Testing Facility",
+          mediaType: "dialogue",
+          speaker: {
+            name: "Renee Carter",
+            role: "Environmental Reporter (32 y/o)",
+            avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400",
+            mood: "confident"
           },
-          narration: "A sensational online article causes instant panic across the city. Supermarket shelves are cleared of bottled water within two hours.",
-          keyTakeaway: "Fear harvesting: Toxic hazard scares are engineered to override critical thinking and force panic buying.",
-          soundEffect: "notification"
+          dialogueText: "I was covering a routine story on Kyoto's water infrastructure. Dr. Kenzo showed me the automated sensors that test tap water every 15 seconds. Kyoto has some of the cleanest municipal water in the world, certified by global health boards.",
+          narration: "Renee Carter is an award-winning investigative journalist who takes pride in factual environmental reporting. Public municipal water tests were completely green.",
+          keyTakeaway: "Verified Fact: Municipal water testing facilities maintain automated 24/7 public safety logs showing zero contamination.",
+          soundEffect: "keyboard"
         },
         {
           id: "pp_s2",
           sceneNumber: 2,
-          title: "The Bribed Journalist",
-          locationName: "Kyoto Press Club",
+          title: "Chapter 2: The Opportunity — The $5,000 Bribe",
+          locationName: "Downtown Coffee House",
           mediaType: "dialogue",
           speaker: {
             name: "Renee Carter",
-            role: "Environmental Journalist",
+            role: "Environmental Reporter",
             avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400",
             mood: "suspicious"
           },
-          dialogueText: "A marketing rep offered me $5,000 to publish a pre-written story about contaminated water. I refused because municipal water lab tests show 100% clean safety levels! But they went ahead and created a fake news domain to publish it anyway!",
-          narration: "Journalist Renee Carter exposes that the story was artificially fabricated despite clean municipal lab data.",
-          keyTakeaway: "Follow the money: Always investigate who benefits financially when a panic or health scare occurs.",
-          soundEffect: "suspense"
+          dialogueText: "On July 8th, Marcus Sterling—CEO of HypeMedia PR—asked to meet. He offered me $5,000 in cash if I would copy-paste a pre-written draft stating that 'secret lab tests detected Toxin-X in tap water'. I angrily refused and threatened to report him!",
+          narration: "Commercial disinformers often attempt to bribe real journalists first to lend credibility to their fabrications.",
+          keyTakeaway: "Commercial Bribe Attempt: PR agencies attempt to hire credentialed reporters to launch manufactured scares.",
+          soundEffect: "notification"
         },
         {
           id: "pp_s3",
           sceneNumber: 3,
-          title: "Troll Farm Amplification",
-          locationName: "Marketing Analytics Network",
-          mediaType: "email_preview",
+          title: "Chapter 3: Building Trust — EcoShield News Appears",
+          locationName: "EcoShieldNews.com Portal",
+          mediaType: "news_alert",
           mediaContent: {
-            header: "CONFIDENTIAL // PROJECT AQUA-FEAR",
-            sender: "marcus@aquaguard-filters.com",
-            recipient: "botfarm-agency@osaka-media.jp",
-            body: "Execute 10,000 automated retweets of EcoShield News link. Target local family demographics in Kyoto. Push home filter discount code AQUASAFE."
+            header: "ECOSHIELD NEWS SPECIAL REPORT // 140,000 SHARES",
+            body: "⚠️ TOXIC TAP WATER HAZARD: Industrial compound Toxin-X detected in Kyoto reservoirs! Tap water is corrosive to skin. Protect your family with certified home filters!"
           },
-          narration: "Internal emails reveal a direct financial link between the fake news article, a bot farm in Osaka, and a company selling $500 home water filters.",
-          keyTakeaway: "Disinformation is often a commercial business model engineered to sell expensive solutions to manufactured problems.",
-          soundEffect: "keyboard"
+          dialogueText: "Four days after Renee rejected the bribe, a sleek new website named 'EcoShield News' appeared online, carrying the exact same fake article! It cited 'anonymous biosafety experts' and featured sleek scientific diagrams.",
+          narration: "The website looked highly professional, complete with fake editorial badges and green environmental branding designed to instill total trust.",
+          keyTakeaway: "Manufactured Media: Creating fake news outlets that masquerade as trusted environmental organizations.",
+          soundEffect: "notification"
         },
         {
           id: "pp_s4",
           sceneNumber: 4,
-          title: "Dispatch to Media Economics",
+          title: "Chapter 4: Warning Signs — Bot Farm & Discount Codes",
+          locationName: "Osaka Bot Farm Operations",
+          mediaType: "email_preview",
+          mediaContent: {
+            header: "CONFIDENTIAL // CAMPAIGN AQUA-FEAR",
+            sender: "marcus@hypemedia-pr.jp",
+            recipient: "botnet-dispatch@osaka-nodes.com",
+            body: "Execute 10,000 retweets targeting Kyoto parent demographics. Embed promo code 'AQUASAFE' for $500 AquaGuard filters alongside the crisis article."
+          },
+          dialogueText: "An automated bot farm flooded local social networks with the EcoShield link. Conveniently, sponsored ads for 'AquaGuard $500 Home Filters' with discount code 'AQUASAFE' popped up right beside every article share!",
+          narration: "The article generated immediate panic while seamlessly offering a $500 commercial solution to the manufactured problem.",
+          keyTakeaway: "Follow the Money: Panic campaigns are designed to sell expensive commercial solutions to manufactured problems.",
+          soundEffect: "keyboard"
+        },
+        {
+          id: "pp_s5",
+          sceneNumber: 5,
+          title: "Chapter 5: The Incident — Panic Buying & Revenue Spike",
+          locationName: "Kyoto Supermarkets & Stores",
+          mediaType: "news_alert",
+          mediaContent: {
+            header: "PANIC BUYING SPREADS // $189,000 IN FILTER SALES",
+            body: "Supermarket shelves were stripped of bottled water within two hours. AquaGuard's home filter sales exploded by +450%, generating $189,000 in 24 hours."
+          },
+          dialogueText: "Elderly citizens queued for hours in summer heat for bottled water. Meanwhile, AquaGuard Domestic Filters experienced its highest sales day in company history, collecting $189,000 in profits.",
+          narration: "Panic buying caused genuine hardship for vulnerable residents while the corporate instigators celebrated record profits.",
+          keyTakeaway: "Disinformation Monetization: Commercial panic campaigns convert public fear into corporate revenue.",
+          soundEffect: "notification"
+        },
+        {
+          id: "pp_s6",
+          sceneNumber: 6,
+          title: "Chapter 6: Investigation Begins — Media Economics Dispatch",
           locationName: "AquaGuard Investigation Bureau",
           mediaType: "police_dispatch",
           speaker: {
@@ -538,67 +788,111 @@ export const HANDCRAFTED_CASES: Case[] = [
             role: "Media Economics Unit",
             mood: "urgent"
           },
-          dialogueText: "Investigator, you have the briefing! WHOIS domain privacy shields were used to hide the ownership of EcoShield News. Step into the AquaGuard Marketing Office, perform WHOIS domain trace analysis, inspect the campaign ledgers, and hold the perpetrators accountable.",
-          narration: "Your investigation begins. Uncover the WHOIS domain records, inspect financial spreadsheets, and dismantle the commercial disinformation loop.",
-          keyTakeaway: "WHOIS domain lookups expose newly created sites and hidden corporate conflicts of interest.",
+          dialogueText: "Investigator, we need you to follow the money! 'EcoShield News' was registered anonymously behind WHOIS privacy shields. Step into the Media Economics Lab, audit the domain domain registry, inspect the corporate marketing ledgers, and expose the conspirators.",
+          narration: "Your investigation begins. Perform WHOIS domain lookups and follow the financial trail to expose the commercial disinformers.",
+          keyTakeaway: "WHOIS Domain Audits: Uncover domain creation dates and secret corporate registrants behind fake news portals.",
           soundEffect: "siren"
         }
       ]
     },
     learningObjectives: [
-      'Understand the "follow-the-money" principle in analyzing online disinformation campaigns.',
-      'Audit website domain ownership records (WHOIS data) and server metadata to uncover hidden affiliations.',
-      'Analyze how troll farms and botnets artificially boost clickbait engagement metrics.',
-      'Evaluate media sources by looking at commercial conflicts of interest.'
+      'Apply the "Follow-the-Money" principle to uncover commercial motivations behind online panic campaigns.',
+      'Audit domain registration records (WHOIS lookups) to uncover secret corporate ownership and domain age.',
+      'Recognize how bot farms artificially boost clickbait engagement to force algorithms to trend stories.',
+      'Identify conflicts of interest when a news publisher directly profits from selling a solution to the crisis it reports.'
     ],
     warningSigns: [
-      'A scientific-sounding news article hosted on an unfamiliar domain lacking editorial credits.',
-      'The article citing "anonymous biosafety scientists" rather than linking to peer-reviewed public reports.',
-      'Sleek, targeted ads for a commercial water-filtering system popping up alongside the viral article.',
-      'A WHOIS lookup revealing the news site was registered anonymously just days before the rumor broke.'
+      'A scientific crisis article published on a domain registered only a few days prior.',
+      'An article citing "anonymous scientists" without linking to official government or university laboratory test reports.',
+      'Sleek commercial advertisements for filters, supplements, or security items embedded directly inside the "breaking crisis" story.',
+      'Social media accounts sharing the story that were created recently and exhibit automated bot posting behavior.'
     ],
     manipulationTechniques: [
-      'Fear Harvesting (using toxic hazard scares to induce logical shutdown and immediate spending).',
-      'Synthetic Amplification (employing bot farms to generate fake retweets, creating a sense of urgency).',
-      'Conflict of Interest (owning both the "news" platform that spreads panic and the company selling the "solution").'
+      'Fear Harvesting (using health hazard scares to trigger immediate panic buying).',
+      'Synthetic Amplification (hiring bot networks to artificially boost share counts).',
+      'Conflict of Interest (owning both the "news" portal spreading panic and the company selling the solution).'
     ],
     evidences: [
       {
         id: 'ev_eco_article',
-        name: 'Viral Water Crisis News Post',
+        name: 'Viral EcoShield News Article & Post Log',
         type: 'chat',
-        description: 'Sensational news post claiming tap water was contaminated, driving panic buying across supermarkets.',
-        category: 'Social Media Post',
+        description: 'Sensational news post claiming tap water was poisoned with Toxin-X, driving supermarket panic buying.',
+        category: 'Social Media Capture',
         dateCollected: 'July 12, 10:00 AM',
-        source: 'EcoShield News Site',
+        source: 'EcoShield News Portal',
         importance: 'High',
-        content: '[VIRAL SOCIAL SHARING RECORD]\nPublisher: "EcoShield News Network" (@EcoShieldNews_Global)\nHeadline: "⚠️ URGENT WATER CRISIS: Toxic industrial leakage detected in Kyoto reservoirs. City tap water is corrosive to skin and plastic! Clean your local grocery store of bottled water immediately!"\nMetric: 140,000 interactions in 3 hours. 88% of initial sharing profiles were created this month and show automated tweet patterns.',
+        content: `[VIRAL NEWS ARTICLE CAPTURE]
+Publisher: "EcoShield News Network" (@EcoShieldNews_Global)
+Headline: "⚠️ URGENT WATER CRISIS: Industrial Toxin-X detected in Kyoto municipal reservoirs! Tap water is corrosive to skin!"
+Embedded Promo: "Protect your family with AquaGuard Home Filtration Units! Use promo code 'AQUASAFE' for 20% off today!"
+
+Social Velocity: 140,000 shares in 3 hours.
+Account Audit: 88.4% of initial retweets originated from newly created automated bot profiles in Osaka.`,
         isLocked: false
       },
       {
         id: 'ev_whois_record',
-        name: 'Domain Registration Record',
+        name: 'WHOIS Domain Registration Audit Record',
         type: 'document',
-        description: 'Domain lookup revealing that EcoShield News was secretly registered by a commercial water filter company.',
-        category: 'Public Domain Registry',
-        dateCollected: 'July 5, 02:00 PM',
-        source: 'Global Domain Registry',
+        description: 'Public domain registry lookup revealing that EcoShield News was secretly created by the VP of Marketing at AquaGuard.',
+        category: 'Public Registry Audit',
+        dateCollected: 'July 12, 11:15 AM',
+        source: 'Global Domain Name Registry',
         importance: 'Critical',
-        content: '[DOMAIN REGISTER RECORD - ECOSHIELDNEWS.COM]\nCreation Date: July 5th (7 days ago)\nRegistrant Name: WHOIS Privacy Corp (Hidden)\nReal Billing Owner: Eric Vance, VP of Marketing at "AquaGuard Domestic Filters LLC"\nHost IP Address: 198.51.100.89\nKey Lesson: The news site claiming the water is poisoned is owned by a company selling water filters.',
+        content: `[WHOIS PUBLIC DOMAIN AUDIT - ECOSHIELDNEWS.COM]
+Domain Creation Date: July 5th (7 days before rumor outbreak)
+Registrant Name: WHOIS Privacy Protection Corp (Shielded)
+Real Billing Owner Identified: Eric Vance
+Billing Address: AquaGuard Domestic Filters LLC, Suite 400, Kyoto Industrial Park
+IP Host: 198.51.100.89
+
+CRITICAL FINDING: The "independent environmental news site" reporting tap water contamination is owned directly by the marketing VP of a water filter manufacturer!`,
         isLocked: false
       },
       {
         id: 'ev_marketing_ledger',
-        name: 'Company Marketing Ledger',
+        name: 'Confidential Marketing Budget Spreadsheet',
         type: 'document',
-        description: 'Internal company ledger detailing payments to bot farms to manufacture the water safety panic.',
+        description: 'Internal corporate accounting spreadsheet detailing the financial budget spent to manufacture the water safety panic.',
         category: 'Financial Accounting',
-        dateCollected: 'July 12, 11:00 AM',
-        source: 'AquaGuard Financial Archives',
+        dateCollected: 'July 12, 02:00 PM',
+        source: 'AquaGuard Corporate Server',
         importance: 'Critical',
-        content: '[CONFIDENTIAL MARKETING LEDGER - PROJECT AQUA-FEAR]\nAd Budget (EcoShield Article): $15,000\nBot Farm Retweet Coordination Cost: $8,500\nExpected filtration unit sales surge: +450%\nActual Filter Revenue (July 12-14): $189,000 (Up from $4,000 daily average)\nKey Lesson: Disinformation is a lucrative business model.',
+        content: `[CONFIDENTIAL MARKETING BUDGET - PROJECT "AQUA-FEAR"]
+Budget Itemization:
+1. EcoShield News Portal Domain & Design: $4,500
+2. Osaka Bot Farm Retweet Campaign (10,000 retweets): $8,500
+3. Sponsored Search Ads ("Toxin-X Water"): $15,000
+
+REVENUE RETURN ON INVESTMENT:
+Filter Sales (July 12-13): $189,000.00 (Surge of +450% over baseline average)
+Projected Net Profit: $161,000.00
+
+Conclusion: Manufactured panic campaign generated $161k net profit in 48 hours.`,
         isLocked: true,
         unlockCondition: 'interview_witness_renee'
+      },
+      {
+        id: 'ev_water_lab_cert',
+        name: 'Municipal Water Safety Certification',
+        type: 'document',
+        description: 'Official Kyoto Water Authority laboratory test certificate proving 100% clean drinking water.',
+        category: 'Public Health Certificate',
+        dateCollected: 'July 12, 09:00 AM',
+        source: 'Kyoto Municipal Testing Lab',
+        importance: 'High',
+        content: `[KYOTO MUNICIPAL WATER QUALITY CERTIFICATE]
+Date: July 12
+Testing Node: Reservoirs #1 through #6
+Chemical Analysis:
+- Toxin-X / Industrial Contaminants: 0.000 ppm (UNDETECTED)
+- Heavy Metals / Microplastics: Pass (Well within WHO Safety Standards)
+- Microbiological Safety: 100% Pure
+
+Certified By: Dr. Kenzo Takahashi, Chief Water Biologist`,
+        isLocked: true,
+        unlockCondition: 'interview_witness_marcus'
       }
     ],
     witnesses: [
@@ -607,89 +901,113 @@ export const HANDCRAFTED_CASES: Case[] = [
         name: 'Renee Carter',
         role: 'Environmental Reporter',
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400',
-        description: 'A local reporter who was offered $5,000 to publish a pre-written article about Kyoto water toxicity.',
-        promptKnowledge: 'You are Renee Carter, an environmental reporter. You are angry at the corruption of your profession. You say: "A marketing rep from AquaGuard Filters offered me five thousand dollars to copy-paste an anonymous draft stating that municipal water tests found high levels of toxin-X. I refused, but I saw they published it anyway on a brand-new site called EcoShield News. It is complete fiction—our municipal testing lab has live, public-facing testing logs that show the water is 100% clean!"',
+        description: 'The investigative journalist who refused a $5,000 bribe to publish the fake water contamination story.',
+        promptKnowledge: 'You are Renee Carter, 32. You are furious at the corporate corruption of journalism. You say: "Marcus Sterling from HypeMedia offered me five thousand dollars to copy-paste a fake story about Toxin-X in tap water. I refused! But four days later, I saw the exact same draft published on EcoShieldNews.com. It is 100% fake news created to scare people into buying five-hundred-dollar water filters. Dr. Kenzo\'s municipal lab tests show our tap water is completely safe!"',
         status: 'available'
       },
       {
         id: 'wit_marcus',
         name: 'Marcus Sterling',
-        role: 'Marketing Agency CEO',
+        role: 'HypeMedia PR CEO',
         avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=400',
-        description: 'The marketing agency executive who executed the "Aqua-Fear" campaign for AquaGuard.',
-        promptKnowledge: 'You are Marcus Sterling, a smooth, corporate marketing executive. You defend your work as "disruptive emotional marketing". If presented with the WHOIS records or the AquaGuard Campaign Ledger, you will break down and say: "Okay, fine! AquaGuard paid us to drive up demand for their home filtration units. It’s hard to sell a five-hundred-dollar filter if everyone thinks tap water is perfectly safe, right? We built EcoShield News, published the scary draft, and hired a bot farm in Osaka to trend it on Twitter. It’s just... smart business! It’s not illegal to advertise a filter!"',
+        description: 'The marketing executive who planned and executed the "Aqua-Fear" disinfo campaign.',
+        promptKnowledge: 'You are Marcus Sterling, 41, a slick, defensive corporate marketer. If confronted with the WHOIS records or Marketing Ledger, you break down and say: "Alright, look! AquaGuard paid us to create demand for their filters. Nobody buys a $500 filter if they think tap water is safe, right? We created EcoShield News, hired the bot farm in Osaka to trend it, and ran the campaign. It’s just aggressive marketing! People got clean water filters anyway, so who really got hurt?"',
+        status: 'available'
+      },
+      {
+        id: 'wit_dr_kenzo',
+        name: 'Dr. Kenzo Takahashi',
+        role: 'Chief Water Biologist',
+        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400',
+        description: 'The chief scientist at the Kyoto Municipal Water Testing Facility whose lab reports were smeared.',
+        promptKnowledge: 'You are Dr. Kenzo Takahashi, 58. You are distressed and indignant. You say: "Our testing facility runs automated spectrographic analysis every 15 seconds! There is zero Toxin-X in Kyoto\'s water supply. Seeing elderly citizens panicking in supermarkets and buying bottled water when our tap water is 100% clean broke my heart. Disinformation for commercial profit is a public health hazard!"',
         status: 'available'
       }
     ],
     timeline: [
       {
         id: 'time_cf1',
-        time: 'July 5',
-        description: 'AquaGuard Filters plans project "Aqua-Fear", anonymously registering "ecoshieldnews.com" via WHOIS privacy shields.',
+        time: 'TIMESTAMP: UNVERIFIED',
+        description: 'AquaGuard Marketing VP anonymously registers "ecoshieldnews.com" using WHOIS privacy shields.',
         isCorrect: true,
         orderIndex: 0
       },
       {
         id: 'time_cf2',
-        time: 'July 11',
-        description: 'Marcus Sterling\'s team drafts the terrifying "chemical leak" article, citing anonymous scientists and providing links to purchase AquaGuard filters.',
+        time: 'TIMESTAMP: UNVERIFIED',
+        description: 'Marcus Sterling offers journalist Renee Carter a $5,000 bribe to publish the fake Toxin-X article; Renee rejects it.',
         isCorrect: true,
         orderIndex: 1
       },
       {
-        id: 'time_cf3',
-        time: 'July 11, 01:00 PM',
-        description: 'A bot farm automatically likes and shares the EcoShield post, triggering recommendation algorithms to trend the story to local families.',
+        id: 'time_cf5',
+        time: 'TIMESTAMP: UNVERIFIED',
+        description: 'AquaGuard hires a web developer to build EcoShield News with fake editorial badges and green environmental branding.',
         isCorrect: true,
         orderIndex: 2
       },
       {
-        id: 'time_cf4',
-        time: 'July 12',
-        description: 'Panicked citizens clear stores of bottled water, while AquaGuard sales experience an unprecedented 450% revenue surge.',
+        id: 'time_cf3',
+        time: 'TIMESTAMP: UNVERIFIED',
+        description: 'AquaGuard launches EcoShield News with the fake article and hires an Osaka bot farm to flood 10,000 retweets to local parents.',
         isCorrect: true,
         orderIndex: 3
+      },
+      {
+        id: 'time_cf6',
+        time: 'TIMESTAMP: UNVERIFIED',
+        description: 'Targeted social media ads for AquaGuard $500 home filters appear adjacent to the trending EcoShield panic posts.',
+        isCorrect: true,
+        orderIndex: 4
+      },
+      {
+        id: 'time_cf4',
+        time: 'TIMESTAMP: UNVERIFIED',
+        description: 'Panic buying clears stores of bottled water while AquaGuard generates $189,000 in filter sales.',
+        isCorrect: true,
+        orderIndex: 5
       }
     ],
     clues: [
-      { id: 'cl_whois_conflict', text: 'WHOIS database records link the "crisis news" domain to the marketing VP of a water filter company.', isDiscovered: false, evidenceId: 'ev_whois_record' },
-      { id: 'cl_disinfo_roi', text: 'Internal company spreadsheets detail the direct budget spend on troll farms to manufacture the water safety panic.', isDiscovered: false, evidenceId: 'ev_marketing_ledger' }
+      { id: 'cl_whois_conflict', text: 'WHOIS audit reveals the "independent news site" is registered directly to AquaGuard\'s VP of Marketing.', isDiscovered: false, evidenceId: 'ev_whois_record' },
+      { id: 'cl_disinfo_roi', text: 'Internal corporate ledgers prove $28,000 was spent on ads and bot farms to generate $189,000 in filter sales.', isDiscovered: false, evidenceId: 'ev_marketing_ledger' },
+      { id: 'cl_red_herring_spill', text: 'Red Herring: A 10-year-old river spill report was circulated on forums but had no connection to current municipal tap water.', isDiscovered: false }
     ],
     solution: {
       questions: [
         {
           id: 'q1',
-          question: 'What is the "follow-the-money" principle in Media and Information Literacy (MIL)?',
+          question: 'What is the "Follow-the-Money" principle in Media and Information Literacy (MIL)?',
           choices: [
-            'Analyzing which digital wallets have the fastest transaction speeds.',
-            'Evaluating who profits financially or politically from the creation and spread of a rumor.',
-            'Supporting viral content creators with crowdfunding.',
-            'Buying stock in trending tech companies.'
+            'A technique for calculating cryptocurrency exchange rates.',
+            'Analyzing who profits financially or politically from the creation and spread of a panic rumor to uncover hidden motives.',
+            'Tracking government tax expenditures on public libraries.',
+            'Comparing prices between different online shopping platforms.'
           ],
-          correctAnswer: 'Evaluating who profits financially or politically from the creation and spread of a rumor.',
-          explanation: 'Disinformation is rarely created by accident. In many cases, it is a commercialized operation designed to trigger fear or division because those emotional states drive click-through rates, product sales, or political donations.'
+          correctAnswer: 'Analyzing who profits financially or politically from the creation and spread of a panic rumor to uncover hidden motives.',
+          explanation: 'Disinformation is rarely accidental. In many cases, it is a deliberate commercial campaign designed to induce fear because fearful consumers buy solutions (such as expensive filters, supplements, or subscriptions).'
         },
         {
           id: 'q2',
-          question: 'How can a WHOIS domain lookup assist you as a media literacy investigator?',
+          question: 'How does performing a WHOIS domain lookup assist a media investigator?',
           choices: [
-            'It tells you the exact price of the domain name.',
-            'It allows you to download the entire website structure.',
-            'It reveals registration dates and hidden ownership records, helping expose hidden corporate conflicts of interest.',
-            'It translates foreign language news websites.'
+            'It automatically removes fake news websites from the internet.',
+            'It exposes the domain registration date, billing details, and hidden corporate ownership, revealing conflicts of interest.',
+            'It translates foreign language news websites into English.',
+            'It speeds up internet connection bandwidth during investigations.'
           ],
-          correctAnswer: 'It reveals registration dates and hidden ownership records, helping expose hidden corporate conflicts of interest.',
-          explanation: 'A WHOIS lookup exposes when a website was created and who registered it. If a "longstanding independent news site" was registered only three days ago by a commercial competitor\'s marketing director, it reveals a massive conflict of interest.'
+          correctAnswer: 'It exposes the domain registration date, billing details, and hidden corporate ownership, revealing conflicts of interest.',
+          explanation: 'A WHOIS lookup reveals when a domain was registered and who paid for it. If a "breaking news site" was created seven days ago by the marketing director of a product featured in the article, it exposes a massive conflict of interest.'
         }
       ]
     },
     location: {
       name: 'AquaGuard Marketing Office',
-      description: 'The sleek commercial suite where clickbait metrics are engineered.',
+      description: 'The corporate marketing suite where campaign ledgers and clickbait analytics were engineered.',
       coordinates: '34.6902° N, 135.5021° E',
       imageUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=800',
       hotspots: [
-        { id: 'hs_marketing_desk', name: 'Marcus Sterling\'s Desk', x: 60, y: 70, description: 'Marcus\'s terminal displaying advertising receipts and bot network orders.', revealsEvidenceId: 'ev_marketing_ledger' }
+        { id: 'hs_marketing_desk', name: 'Marcus Sterling\'s Desk', x: 60, y: 70, description: 'Marcus\'s computer terminal displaying advertising receipts and bot network orders.', revealsEvidenceId: 'ev_marketing_ledger' }
       ]
     }
   }
