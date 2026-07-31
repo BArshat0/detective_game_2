@@ -206,7 +206,7 @@ export default function ShaderGradient() {
           const dx = p.x - mouse.x;
           const dy = p.y - mouse.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 100) {
+          if (dist > 0 && dist < 100) {
             const force = (100 - dist) * 0.08;
             p.x += (dx / dist) * force;
             p.y += (dy / dist) * force;

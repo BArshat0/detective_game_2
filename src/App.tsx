@@ -353,9 +353,9 @@ export default function App() {
     if (targetCase) {
       const defaultState: CaseState = {
         caseId,
-        discoveredEvidenceIds: targetCase.evidences.map(e => e.id),
-        discoveredClueIds: targetCase.clues.map(c => c.id),
-        unlockedWitnessIds: targetCase.witnesses.map(w => w.id),
+        discoveredEvidenceIds: targetCase.evidences.filter(e => !e.isLocked).map(e => e.id),
+        discoveredClueIds: [],
+        unlockedWitnessIds: targetCase.witnesses.filter(w => w.status === 'available').map(w => w.id),
         notebookNotes: [],
         timelinePlacements: {},
         witnessChats: {},
@@ -1004,7 +1004,7 @@ export default function App() {
                         <EvidenceViewer
                           caseData={activeCase}
                           discoveredEvidenceIds={currentCaseState.discoveredEvidenceIds}
-                          activeEvidenceId={selectedEvidenceId || (currentCaseState.discoveredEvidenceIds[0] || null)}
+                          activeEvidenceId={selectedEvidenceId ?? (currentCaseState.discoveredEvidenceIds[0] ?? null)}
                           setActiveEvidenceId={setSelectedEvidenceId}
                           onCopyToNotebook={handleLogToNotebook}
                         />

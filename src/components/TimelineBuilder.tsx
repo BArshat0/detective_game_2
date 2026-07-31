@@ -30,7 +30,7 @@ export default function TimelineBuilder({ caseData, placements, onUpdatePlacemen
     if (containsStaleKeys) {
       onUpdatePlacements(activePlacements);
     }
-  }, [containsStaleKeys]);
+  }, [containsStaleKeys, placements, onUpdatePlacements]);
 
   const draftSequence: TimelineEvent[] = Object.keys(activePlacements)
     .sort((a, b) => (safeGet(activePlacements, a) ?? 0) - (safeGet(activePlacements, b) ?? 0))

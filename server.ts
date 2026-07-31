@@ -1,4 +1,4 @@
-import express from "express";
+import express, { type NextFunction, type Request, type Response } from "express";
 import path from "path";
 import dotenv from "dotenv";
 import { createServer as createViteServer } from "vite";
@@ -8,10 +8,15 @@ import { CASE_RESPONSE_SCHEMA } from "./src/data/caseSchema";
 dotenv.config({ path: path.resolve(process.cwd(), ".env"), override: true });
 dotenv.config({ path: path.resolve(process.cwd(), ".env.local"), override: true });
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+
+interface AuthenticatedRequest extends Request {
+  user: { id: string; email?: string; user_metadata?: Record<string, unknown> };
+  token: string;
+}
 
 // Supabase Lazy Initialization with validation (scoped per-request to support Row-Level Security)
-let supabaseClient: any = null;
+let supabaseClient: SupabaseClient | null = null;
 
 function getSupabaseUserClient(token?: string) {
   const url = process.env.SUPABASE_URL;
@@ -48,7 +53,7 @@ function getSupabase() {
 }
 
 // Error helper for missing tables (PG code 42P01)
-function handleSupabaseError(error: unknown, res: any, contextMsg: string) {
+function handleSupabaseError(error: unknown, res: Response, contextMsg: string) {
   console.error(`Supabase error during ${contextMsg}:`, error);
   const err = error as { code?: string; message?: string } | null;
   if (err && (err.code === "42P01" || (err.message?.includes("relation") && err.message.includes("does not exist")))) {
@@ -64,7 +69,7 @@ function handleSupabaseError(error: unknown, res: any, contextMsg: string) {
 }
 
 // Auth Middleware
-async function requireAuth(req: any, res: any, next: any) {
+async function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith("Bearer ")) {
@@ -116,8 +121,9 @@ async function attemptAutoConfirm(email: string) {
     } else {
       console.log(`Auto-confirm RPC called successfully for: ${email}`);
     }
-  } catch (err: any) {
-    console.warn("Failed to call auto-confirm RPC (expected if the RPC hasn't been added to Supabase yet):", err?.message || err);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.warn("Failed to call auto-confirm RPC (expected if the RPC hasn't been added to Supabase yet):", message);
   }
 }
 
@@ -220,8 +226,8 @@ app.post("/api/auth/login", async (req, res) => {
       return res.status(400).json({ error: error.message });
     }
     res.json({ user: data.user, session: data.session });
-  } catch (error: any) {
-    if (error.message === "SUPABASE_NOT_CONFIGURED") {
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message === "SUPABASE_NOT_CONFIGURED") {
       return res.status(530).json({ error: "SUPABASE_NOT_CONFIGURED", message: "Supabase configuration missing." });
     }
     console.error("Login error:", error);
@@ -230,7 +236,7 @@ app.post("/api/auth/login", async (req, res) => {
 });
 
 // Profile Management
-app.get("/api/user/profile", requireAuth, async (req: any, res) => {
+app.get("/api/user/profile", requireAuth, async (req: AuthenticatedRequest, res) => {
   try {
     const supabase = getSupabaseUserClient(req.token);
     const { data: profile, error } = await supabase
@@ -279,7 +285,7 @@ app.get("/api/user/profile", requireAuth, async (req: any, res) => {
   }
 });
 
-app.post("/api/user/profile", requireAuth, async (req: any, res) => {
+app.post("/api/user/profile", requireAuth, async (req: AuthenticatedRequest, res) => {
   try {
     const supabase = getSupabaseUserClient(req.token);
     const { name, cases_solved, solved_case_ids, achievements, xp } = req.body;
@@ -321,7 +327,7 @@ app.post("/api/user/profile", requireAuth, async (req: any, res) => {
 });
 
 // Case States Management
-app.get("/api/user/cases-state", requireAuth, async (req: any, res) => {
+app.get("/api/user/cases-state", requireAuth, async (req: AuthenticatedRequest, res) => {
   try {
     const supabase = getSupabaseUserClient(req.token);
     const { data, error } = await supabase
@@ -334,7 +340,7 @@ app.get("/api/user/cases-state", requireAuth, async (req: any, res) => {
     }
 
     const formattedStates: Record<string, unknown> = {};
-    data.forEach((row: any) => {
+    data.forEach((row: { case_id?: unknown; state_data?: unknown }) => {
       const key = row.case_id;
       if (typeof key === "string" && key !== "__proto__" && key !== "constructor" && key !== "prototype") {
         Object.defineProperty(formattedStates, key, {
@@ -351,7 +357,7 @@ app.get("/api/user/cases-state", requireAuth, async (req: any, res) => {
   }
 });
 
-app.post("/api/user/cases-state", requireAuth, async (req: any, res) => {
+app.post("/api/user/cases-state", requireAuth, async (req: AuthenticatedRequest, res) => {
   try {
     const supabase = getSupabaseUserClient(req.token);
     const { caseId, stateData } = req.body;
@@ -380,7 +386,7 @@ app.post("/api/user/cases-state", requireAuth, async (req: any, res) => {
 });
 
 // Custom Cases Management
-app.get("/api/user/custom-cases", requireAuth, async (req: any, res) => {
+app.get("/api/user/custom-cases", requireAuth, async (req: AuthenticatedRequest, res) => {
   try {
     const supabase = getSupabaseUserClient(req.token);
     const { data, error } = await supabase
@@ -391,13 +397,13 @@ app.get("/api/user/custom-cases", requireAuth, async (req: any, res) => {
     if (error) {
       return handleSupabaseError(error, res, "load custom cases");
     }
-    res.json(data.map((row: any) => row.case_data));
+    res.json(data.map((row: { case_data: unknown }) => row.case_data));
   } catch (error: unknown) {
     handleSupabaseError(error, res, "get custom-cases");
   }
 });
 
-app.post("/api/user/custom-cases", requireAuth, async (req: any, res) => {
+app.post("/api/user/custom-cases", requireAuth, async (req: AuthenticatedRequest, res) => {
   try {
     const supabase = getSupabaseUserClient(req.token);
     const { caseData } = req.body;
@@ -420,12 +426,12 @@ app.post("/api/user/custom-cases", requireAuth, async (req: any, res) => {
       return handleSupabaseError(error, res, "save custom case");
     }
     res.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     handleSupabaseError(error, res, "post custom-cases");
   }
 });
 
-app.delete("/api/user/custom-cases/:id", requireAuth, async (req: any, res) => {
+app.delete("/api/user/custom-cases/:id", requireAuth, async (req: AuthenticatedRequest, res) => {
   try {
     const supabase = getSupabaseUserClient(req.token);
     const { id } = req.params;
@@ -440,7 +446,7 @@ app.delete("/api/user/custom-cases/:id", requireAuth, async (req: any, res) => {
       return handleSupabaseError(error, res, "delete custom case");
     }
     res.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     handleSupabaseError(error, res, "delete custom-cases");
   }
 });
@@ -469,7 +475,7 @@ function getGemini() {
 }
 
 // Retry helper for handling temporary model unavailability or high-demand (503) errors with exponential backoff
-async function callGeminiWithRetry(fn: () => Promise<unknown>, retries = 3, delay = 1000): Promise<any> {
+async function callGeminiWithRetry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> {
   try {
     return await fn();
   } catch (error: unknown) {
@@ -493,7 +499,7 @@ async function callGeminiWithRetry(fn: () => Promise<unknown>, retries = 3, dela
 }
 
 // Helper to handle Gemini errors gracefully in the backend
-function handleGeminiError(error: unknown, res: any, contextMsg: string) {
+function handleGeminiError(error: unknown, res: Response, contextMsg: string) {
   console.error(`Gemini error during ${contextMsg}:`, error);
   const err = error as Error | null;
   if (err && (err.message === "GEMINI_NOT_CONFIGURED" || err.message?.includes("API_KEY"))) {
@@ -524,7 +530,7 @@ async function checkSupabaseStatus(): Promise<ServiceStatus> {
 
   try {
     const url = process.env.SUPABASE_URL;
-    const key = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY;
+    const key = process.env.SUPABASE_ANON_KEY ?? process.env.SUPABASE_KEY;
     if (url && key) {
       // Test key and URL actively
       const client = createClient(url, key, {
@@ -562,10 +568,11 @@ async function checkSupabaseStatus(): Promise<ServiceStatus> {
       status.status = "offline";
       status.message = "Supabase database keys are not configured. Guest accounts and custom case creation are saved locally in this browser tab only.";
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
     status.configured = false;
     status.status = "error";
-    status.message = `Database connection error: ${err.message || err}`;
+    status.message = `Database connection error: ${message}`;
   }
 
   return status;
@@ -592,10 +599,11 @@ async function checkGeminiStatus(): Promise<ServiceStatus> {
           status.configured = true;
           status.status = "connected";
           status.message = "Gemini AI Core connected. Case Evaluation, Witness Interrogation, and AI Game Architect are active.";
-        } catch (gemErr: any) {
+        } catch (gemErr: unknown) {
+          const message = gemErr instanceof Error ? gemErr.message : String(gemErr);
           status.configured = false;
           status.status = "error";
-          status.message = `AI Core initialization error: ${gemErr.message || gemErr}`;
+          status.message = `AI Core initialization error: ${message}`;
         }
       }
     } else {
@@ -603,10 +611,11 @@ async function checkGeminiStatus(): Promise<ServiceStatus> {
       status.status = "offline";
       status.message = "GEMINI_API_KEY is not configured. Witness chat and case evaluations will fall back to local offline backup simulation.";
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
     status.configured = false;
     status.status = "error";
-    status.message = `AI Core configuration error: ${err.message || err}`;
+    status.message = `AI Core configuration error: ${message}`;
   }
 
   return status;
@@ -641,7 +650,12 @@ app.get("/api/system-status", async (req, res) => {
 function formatChatHistory(chatHistory: unknown[], userLabel = "Investigator", otherLabel: string): string {
   const history = Array.isArray(chatHistory) ? chatHistory.slice(-15) : [];
   return history
-    .map((h: any) => `${h.sender === "user" ? userLabel : otherLabel}: ${String(h.text || "").slice(0, 500)}`)
+    .map((h: unknown) => {
+      if (!h || typeof h !== "object") return "";
+      const message = h as { sender?: unknown; text?: unknown };
+      return `${message.sender === "user" ? userLabel : otherLabel}: ${String(message.text ?? "").slice(0, 500)}`;
+    })
+    .filter(Boolean)
     .join("\n");
 }
 
@@ -686,7 +700,7 @@ Your guidelines:
 
     const reply = response.text || "I... I have nothing to say to that.";
     res.json({ text: reply.trim() });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return handleGeminiError(error, res, "Witness Interrogation");
   }
 });
@@ -729,7 +743,7 @@ Your guidelines:
 
     const reply = response.text || "Keep digging, detective! Every detail counts.";
     res.json({ text: reply.trim() });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return handleGeminiError(error, res, "Mentor Drone Chat");
   }
 });
@@ -803,7 +817,7 @@ You must analyze their submission:
       },
     }));
 
-    let parsedResult: any = {};
+    let parsedResult: unknown = {};
     try {
       parsedResult = JSON.parse(response.text || "{}");
     } catch {
@@ -817,7 +831,7 @@ You must analyze their submission:
       };
     }
     res.json(parsedResult);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return handleGeminiError(error, res, "Case Submission Assessment");
   }
 });
@@ -867,7 +881,7 @@ Ensure:
 
     const parsedCase = JSON.parse(response.text || "{}");
     res.json(parsedCase);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return handleGeminiError(error, res, "AI Architect Game Generation");
   }
 });

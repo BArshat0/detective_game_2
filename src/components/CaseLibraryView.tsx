@@ -21,7 +21,7 @@ export default function CaseLibraryView({
   onViewProfile
 }: CaseLibraryViewProps) {
   const [selectedCaseId, setSelectedCaseId] = useState<string>(allCases[0]?.id || '');
-  const activeCase = allCases.find(c => c.id === selectedCaseId) || allCases[0];
+  const activeCase = allCases.find(c => c.id === selectedCaseId) ?? allCases[0];
 
   // Parallax mouse effect for the story intro card
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -266,7 +266,7 @@ export default function CaseLibraryView({
                     "{activeCase.introduction}"
                   </p>
                   <p className="text-xs font-mono text-slate-400 font-normal">
-                    ( Location: {activeCase.location?.name || 'Digital Sector Grid'} • Key Witness Interviews: {activeCase.witnesses.length} Persons )
+                    ( Location: {activeCase.location.name || 'Digital Sector Grid'} • Key Witness Interviews: {activeCase.witnesses.length} Persons )
                   </p>
                 </div>
 
@@ -401,4 +401,3 @@ export default function CaseLibraryView({
     </div>
   );
 }
-

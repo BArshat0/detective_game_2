@@ -8,8 +8,8 @@ export default function VantaBackground() {
     let timer: NodeJS.Timeout | null = null;
 
     const initVanta = () => {
-      const windowObj = window as unknown as Record<string, any>;
-      if (vantaRef.current && windowObj.VANTA && typeof windowObj.VANTA.CLOUDS === 'function') {
+      const windowObj = window as unknown as { VANTA?: { CLOUDS?: (options: Record<string, unknown>) => { destroy?: () => void } } };
+      if (vantaRef.current && typeof windowObj.VANTA?.CLOUDS === 'function') {
         try {
           effect = windowObj.VANTA.CLOUDS({
             el: vantaRef.current,
@@ -32,14 +32,14 @@ export default function VantaBackground() {
       }
     };
 
-    const windowObj = window as unknown as Record<string, any>;
-    if (windowObj.VANTA && typeof windowObj.VANTA.CLOUDS === 'function') {
+    const windowObj = window as unknown as { VANTA?: { CLOUDS?: (options: Record<string, unknown>) => { destroy?: () => void } } };
+    if (typeof windowObj.VANTA?.CLOUDS === 'function') {
       initVanta();
     } else {
       let attempts = 0;
       timer = setInterval(() => {
         attempts++;
-        if (windowObj.VANTA && typeof windowObj.VANTA.CLOUDS === 'function') {
+        if (typeof windowObj.VANTA?.CLOUDS === 'function') {
           if (timer) clearInterval(timer);
           initVanta();
         } else if (attempts > 30) {
@@ -64,4 +64,3 @@ export default function VantaBackground() {
     />
   );
 }
-

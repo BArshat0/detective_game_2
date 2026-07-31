@@ -23,7 +23,7 @@ export default function StoryIntroView({ caseData, onCompleteStory, onSkipStory,
   const [savedNote, setSavedNote] = useState(false);
   const [isLaunching, setIsLaunching] = useState(false);
 
-  const scenes: StoryScene[] = story?.scenes || [
+  const scenes: StoryScene[] = story?.scenes ?? [
     {
       id: 'default_s1',
       sceneNumber: 1,
@@ -214,15 +214,15 @@ export default function StoryIntroView({ caseData, onCompleteStory, onSkipStory,
                     <div className="flex items-center gap-3.5">
                       <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-[#ff8533] relative shrink-0 shadow-lg bg-slate-800">
                         <img 
-                          src={currentScene.speaker?.avatar || caseData.imageUrl} 
-                          alt={currentScene.speaker?.name || 'Caller'} 
+                          src={currentScene.speaker?.avatar ?? caseData.imageUrl} 
+                          alt={currentScene.speaker?.name ?? 'Caller'} 
                           className="w-full h-full object-cover"
                         />
                         <span className="absolute bottom-1 right-1 w-3 h-3 bg-rose-500 rounded-full animate-ping" />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="text-base font-bold text-white">{currentScene.speaker?.name || 'Incoming Audio Intercept'}</p>
+                          <p className="text-base font-bold text-white">{currentScene.speaker?.name ?? 'Incoming Audio Intercept'}</p>
                           {currentScene.speaker?.mood && (
                             <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase border bg-gradient-to-r ${getMoodGlow(currentScene.speaker.mood)}`}>
                               {currentScene.speaker.mood}

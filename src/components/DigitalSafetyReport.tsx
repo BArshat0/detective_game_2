@@ -46,7 +46,7 @@ export default function DigitalSafetyReport({
   const analysis = evaluationResult.analysis ?? 'No detailed forensic analysis available.';
   const unlockedBadges = evaluationResult.unlockedBadges ?? [];
 
-  const reportId = `CYBER-AUDIT-${(caseData?.id || 'CASE').toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+  const reportId = `CYBER-AUDIT-${(caseData.id || 'CASE').toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
   const timestamp = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
@@ -56,10 +56,10 @@ export default function DigitalSafetyReport({
     minute: '2-digit'
   });
 
-  const caseTitle = caseData?.title || 'Digital Safety Investigation';
-  const caseTopic = caseData?.topic || 'Cyber Awareness';
-  const caseDifficulty = caseData?.difficulty || 'STANDARD';
-  const caseThreatActor = caseData?.threatActor || 'Digital Threat Actor';
+  const caseTitle = caseData.title || 'Digital Safety Investigation';
+  const caseTopic = caseData.topic || 'Cyber Awareness';
+  const caseDifficulty = caseData.difficulty || 'STANDARD';
+  const caseThreatActor = caseData.threatActor || 'Digital Threat Actor';
 
   const handleCopyReport = () => {
     const fullText = `
@@ -84,9 +84,9 @@ HONOR BADGES AWARDED: ${unlockedBadges.join(', ') || 'None'}
 ================================================================
     `.trim();
 
-    navigator.clipboard.writeText(fullText);
+    void navigator.clipboard.writeText(fullText);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    setTimeout(() => { setCopied(false); }, 2500);
   };
 
   const handlePrint = () => {
