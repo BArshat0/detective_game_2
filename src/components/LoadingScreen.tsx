@@ -53,8 +53,11 @@ export default function LoadingScreen({ isDataReady, onComplete }: LoadingScreen
       initial={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className="fixed inset-0 w-full h-full z-50 flex flex-col items-center justify-center p-6 select-none backdrop-blur-3xl bg-slate-900/30"
+      className="fixed inset-0 z-[100] flex h-full w-full flex-col items-center justify-center bg-[#182434] p-6 select-none"
       id="app-loader-screen"
+      role="status"
+      aria-live="polite"
+      aria-label={`Loading Social Detective Academy, ${progress} percent complete`}
     >
       {/* Light soft warm ambient light gradient layer for cloud atmosphere */}
       <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-amber-100/10 to-slate-950/20 pointer-events-none" />
@@ -72,4 +75,3 @@ export default function LoadingScreen({ isDataReady, onComplete }: LoadingScreen
     </motion.div>
   );
 }
-

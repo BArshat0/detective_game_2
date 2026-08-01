@@ -73,7 +73,7 @@ export default function LoginSignup({ onAuthSuccess, supabaseConfigured, geminiC
             onAuthSuccess('', user?.email || email, user?.user_metadata?.name || name);
           }, 1500);
         } else {
-          setSuccessMessage('✓ Registration & Sign-In Completed! Welcome to the Social Detective Academy.');
+          setSuccessMessage('Registration and sign-in completed. Welcome to the Social Detective Academy.');
           setTimeout(() => {
             onAuthSuccess(session.access_token, user?.email || email, user?.user_metadata?.name || name);
           }, 1500);
@@ -84,7 +84,7 @@ export default function LoginSignup({ onAuthSuccess, supabaseConfigured, geminiC
           setIsLoading(false);
           return;
         }
-        setSuccessMessage('✓ Sign-In Completed! Access granted, retrieving your security archives...');
+        setSuccessMessage('Sign-in completed. Access granted; retrieving your security archives...');
         setTimeout(() => {
           onAuthSuccess(session.access_token, user?.email || email, user?.user_metadata?.name || name);
         }, 1500);
@@ -146,7 +146,7 @@ export default function LoginSignup({ onAuthSuccess, supabaseConfigured, geminiC
 
       {/* Error & Success Banner */}
       {errorMessage && (
-        <div className="mb-6 p-4 rounded-[24px] border border-red-500/30 bg-red-950/20 text-red-400 text-xs leading-relaxed font-sans">
+        <div role="alert" aria-live="assertive" className="mb-6 p-4 rounded-[24px] border border-red-500/30 bg-red-950/20 text-red-400 text-xs leading-relaxed font-sans">
           <div className="font-semibold text-red-400">
             {errorMessage}
           </div>
@@ -154,7 +154,7 @@ export default function LoginSignup({ onAuthSuccess, supabaseConfigured, geminiC
       )}
 
       {successMessage && (
-        <div className="mb-6 p-4 rounded-[24px] border border-[#5c7f5c]/40 bg-[#5c7f5c]/10 text-[#5c7f5c] text-xs font-mono uppercase tracking-wider">
+        <div role="status" aria-live="polite" className="mb-6 p-4 rounded-[24px] border border-[#5c7f5c]/40 bg-[#5c7f5c]/10 text-[#5c7f5c] text-xs font-mono uppercase tracking-wider">
           {successMessage}
         </div>
       )}
@@ -225,7 +225,7 @@ export default function LoginSignup({ onAuthSuccess, supabaseConfigured, geminiC
           {isLoading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin text-[#1e110a]" />
-              <span>Loading...</span>
+              <span>{isSignUp ? 'Creating your profile...' : 'Signing you in...'}</span>
             </>
           ) : (
             <>

@@ -261,39 +261,25 @@ Principal Arthur Davis`,
         orderIndex: 0
       },
       {
-        id: 'time_ec5',
-        time: 'TIMESTAMP: UNVERIFIED',
-        description: 'A classmate records the town hall video on a smartphone and uploads the full raw footage to a shared drive.',
-        isCorrect: true,
-        orderIndex: 1
-      },
-      {
         id: 'time_ec2',
         time: 'TIMESTAMP: UNVERIFIED',
         description: 'An anonymous account (@KyotoStudentTruth) surgical cuts an 11-second video snippet, removing Maya\'s introductory and concluding qualifiers.',
         isCorrect: true,
-        orderIndex: 2
+        orderIndex: 1
       },
       {
         id: 'time_ec3',
         time: 'TIMESTAMP: UNVERIFIED',
         description: 'CliqClok\'s algorithm applies a 4.5x outrage weight to the spliced clip, flooding 92% of local student feeds.',
         isCorrect: true,
-        orderIndex: 3
-      },
-      {
-        id: 'time_ec6',
-        time: 'TIMESTAMP: UNVERIFIED',
-        description: 'A student council member creates a trending hashtag #BanMaya based purely on the algorithmic clip without watching the raw video.',
-        isCorrect: true,
-        orderIndex: 4
+        orderIndex: 2
       },
       {
         id: 'time_ec4',
         time: 'TIMESTAMP: UNVERIFIED',
         description: 'Students trapped inside the outrage filter bubble ban Maya from council chats and suspend her scholarship recommendation.',
         isCorrect: true,
-        orderIndex: 5
+        orderIndex: 3
       }
     ],
     clues: [
@@ -597,39 +583,25 @@ Note: Triggered by urgent phone request at 11:55 PM.`,
         orderIndex: 0
       },
       {
-        id: 'time_si5',
-        time: 'TIMESTAMP: UNVERIFIED',
-        description: 'Attackers run spectral feature extraction on the raw MP3 files to isolate clean vocal phonemes.',
-        isCorrect: true,
-        orderIndex: 1
-      },
-      {
         id: 'time_si2',
         time: 'TIMESTAMP: UNVERIFIED',
         description: 'Attackers compile neural voice model "Model_Davis_v3" using an AI text-to-speech voice studio.',
         isCorrect: true,
-        orderIndex: 2
+        orderIndex: 1
       },
       {
         id: 'time_si3',
         time: 'TIMESTAMP: UNVERIFIED',
         description: 'Attackers use a spoofed VoIP gateway to call Devon Miller, displaying Davis\'s office desk number on the caller ID.',
         isCorrect: true,
-        orderIndex: 3
-      },
-      {
-        id: 'time_si6',
-        time: 'TIMESTAMP: UNVERIFIED',
-        description: 'The synthetic voice generator induces artificial panic by falsely threatening an immediate 20-minute school lockdown.',
-        isCorrect: true,
-        orderIndex: 4
+        orderIndex: 2
       },
       {
         id: 'time_si4',
         time: 'TIMESTAMP: UNVERIFIED',
         description: 'Devon wires $12,000 from the parent fund and broadcasts an emergency alert to 850 parent chat groups.',
         isCorrect: true,
-        orderIndex: 5
+        orderIndex: 3
       }
     ],
     clues: [
@@ -940,32 +912,18 @@ Certified By: Dr. Kenzo Takahashi, Chief Water Biologist`,
         orderIndex: 1
       },
       {
-        id: 'time_cf5',
-        time: 'TIMESTAMP: UNVERIFIED',
-        description: 'AquaGuard hires a web developer to build EcoShield News with fake editorial badges and green environmental branding.',
-        isCorrect: true,
-        orderIndex: 2
-      },
-      {
         id: 'time_cf3',
         time: 'TIMESTAMP: UNVERIFIED',
         description: 'AquaGuard launches EcoShield News with the fake article and hires an Osaka bot farm to flood 10,000 retweets to local parents.',
         isCorrect: true,
-        orderIndex: 3
-      },
-      {
-        id: 'time_cf6',
-        time: 'TIMESTAMP: UNVERIFIED',
-        description: 'Targeted social media ads for AquaGuard $500 home filters appear adjacent to the trending EcoShield panic posts.',
-        isCorrect: true,
-        orderIndex: 4
+        orderIndex: 2
       },
       {
         id: 'time_cf4',
         time: 'TIMESTAMP: UNVERIFIED',
         description: 'Panic buying clears stores of bottled water while AquaGuard generates $189,000 in filter sales.',
         isCorrect: true,
-        orderIndex: 5
+        orderIndex: 3
       }
     ],
     clues: [

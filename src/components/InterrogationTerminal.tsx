@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { User, Send, ShieldAlert, MessageSquare, Loader2, HelpCircle } from 'lucide-react';
+import { User, Send, ShieldAlert, MessageSquare, Loader2, HelpCircle, FileText, Check } from 'lucide-react';
 import { Case } from '../types';
 import { safeGet, safeSet } from '../lib/safeLookup';
 
 interface InterrogationTerminalProps {
   caseData: Case;
   unlockedWitnessIds: string[];
+  discoveredEvidenceIds: string[];
   onUnlockWitness: (witnessId: string) => void;
   chatsState: Record<string, { sender: 'user' | 'witness'; text: string; timestamp: string }[]>;
   onAddMessage: (witnessId: string, sender: 'user' | 'witness', text: string) => void;
@@ -14,12 +15,14 @@ interface InterrogationTerminalProps {
 export default function InterrogationTerminal({
   caseData,
   unlockedWitnessIds,
+  discoveredEvidenceIds,
   chatsState,
   onAddMessage
 }: InterrogationTerminalProps) {
   const [selectedWitnessId, setSelectedWitnessId] = useState<string | null>(null);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [presentedEvidenceId, setPresentedEvidenceId] = useState<string | null>(null);
   const [trustLevels, setTrustLevels] = useState<Record<string, number>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -39,6 +42,8 @@ export default function InterrogationTerminal({
   const activeWitness = caseData.witnesses.find(w => w.id === selectedWitnessId);
   const activeChat = selectedWitnessId ? safeGet(chatsState, selectedWitnessId) ?? [] : [];
   const activeTrust = selectedWitnessId ? safeGet(trustLevels, selectedWitnessId) ?? 35 : 35;
+  const presentableEvidence = caseData.evidences.filter(evidence => discoveredEvidenceIds.includes(evidence.id));
+  const presentedEvidence = presentableEvidence.find(evidence => evidence.id === presentedEvidenceId);
 
   const handleSendMessage = async (textToSend?: string) => {
     const messageText = textToSend ?? inputText;
@@ -76,7 +81,11 @@ export default function InterrogationTerminal({
           userQuestion: messageText,
           witnessName: activeWitness.name,
           witnessRole: activeWitness.role,
-          witnessKnowledge: activeWitness.promptKnowledge
+          witnessKnowledge: activeWitness.promptKnowledge,
+          evidencePresented: presentedEvidence ? {
+            name: presentedEvidence.name,
+            excerpt: presentedEvidence.content.slice(0, 700)
+          } : null
         })
       });
 
@@ -259,6 +268,29 @@ export default function InterrogationTerminal({
               <span className="font-mono text-[#ff8533] font-extrabold uppercase mr-1.5">REPORT FILE:</span>
               {activeWitness.description}
             </p>
+
+            <div className="mb-4 rounded-[22px] border border-[#8052ff]/25 bg-[#8052ff]/[0.06] p-3.5">
+              <div className="mb-2 flex items-center gap-2 text-[10px] font-mono font-black uppercase tracking-wider text-[#b9a5ff]">
+                <FileText className="h-3.5 w-3.5" /> Present evidence to challenge the testimony
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {presentableEvidence.map(evidence => {
+                  const selected = presentedEvidenceId === evidence.id;
+                  return (
+                    <button
+                      key={evidence.id}
+                      type="button"
+                      onClick={() => setPresentedEvidenceId(selected ? null : evidence.id)}
+                      className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-mono font-bold transition-all ${selected ? 'border-[#b9a5ff] bg-[#8052ff]/25 text-white' : 'border-white/10 bg-black/20 text-[#bdbdbd] hover:border-[#b9a5ff]/50 hover:text-white'}`}
+                    >
+                      {selected && <Check className="h-3 w-3" />}
+                      {evidence.name}
+                    </button>
+                  );
+                })}
+              </div>
+              {presentedEvidence && <p className="mt-2 text-[10px] font-mono text-[#d9d0ff]">Selected: {presentedEvidence.name}. Your next question will reference this file.</p>}
+            </div>
 
             {/* Chat Messages Frame */}
             <div className="flex-1 bg-white/[0.01] border border-white/10 rounded-[24px] p-4.5 mb-4 overflow-y-auto space-y-4 max-h-[220px]">

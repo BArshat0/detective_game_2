@@ -668,7 +668,7 @@ function formatChatHistory(chatHistory: unknown[], userLabel = "Investigator", o
 // 1. Witness Chat Endpoint
 app.post("/api/witness-chat", async (req, res) => {
   try {
-    const { witnessId, caseId, chatHistory, userQuestion, witnessName, witnessRole, witnessKnowledge } = req.body;
+    const { witnessId, caseId, chatHistory, userQuestion, witnessName, witnessRole, witnessKnowledge, evidencePresented } = req.body;
 
     const sanitizedQuestion = sanitizeQuestion(userQuestion);
     if (!sanitizedQuestion) {
@@ -678,6 +678,9 @@ app.post("/api/witness-chat", async (req, res) => {
     const sanitizedName = String(witnessName || "Witness").slice(0, 100);
     const sanitizedRole = String(witnessRole || "Involved Person").slice(0, 100);
     const sanitizedKnowledge = String(witnessKnowledge || "").slice(0, 4000);
+    const presentedContext = evidencePresented && typeof evidencePresented === "object"
+      ? `\nEvidence presented by investigator:\n${String(evidencePresented.name || "Unnamed file").slice(0, 200)}\n${String(evidencePresented.excerpt || "").slice(0, 700)}`
+      : "";
 
     const conversation = formatChatHistory(chatHistory, "Investigator", sanitizedName);
 
@@ -685,6 +688,7 @@ app.post("/api/witness-chat", async (req, res) => {
 You are ${sanitizedName}, playing the role of ${sanitizedRole} in the Social Detective case '${String(caseId || "unknown")}'.
 Your profile/knowledge base:
 ${sanitizedKnowledge}
+${presentedContext}
 
 Your guidelines:
 1. Speak exactly in character, maintaining your role.
@@ -771,14 +775,14 @@ You are the Social Detective Academy Evaluator AI. Your role is to critically ev
 Warning Signs that should have been analyzed: ${JSON.stringify(Array.isArray(warningSigns) ? warningSigns.slice(0, 10) : [])}
 Psychological Manipulation techniques in play: ${JSON.stringify(Array.isArray(manipulationTechniques) ? manipulationTechniques.slice(0, 10) : [])}
 
-User's submitted answers to key questions: ${JSON.stringify(answers)}
+Official detective report submitted by the investigator: ${JSON.stringify(answers)}
 User's reconstructed timeline of events: ${JSON.stringify(timeline)}
 User's investigation notes: "${sanitizedNotes}"
 
 You must analyze their submission:
-1. Calculate a final score from 0 to 100 based on the correctness of their answers and the correctness of their reconstructed timeline.
+1. Calculate a final score from 0 to 100 based on logical reasoning, observation quality, evidence relevance, manipulation understanding, explanation quality, investigation completeness, and timeline reasoning. Do not grade only exact answer matching.
 2. Provide a grade (S-RANK for 95-100, A-RANK for 80-94, B-RANK for 65-79, C-RANK for below 65).
-3. Draft a comprehensive, highly readable, and structured "Digital Safety & Social Awareness Evaluation Report" in Markdown.
+3. Draft a comprehensive, highly readable, and structured "Digital Safety & Social Awareness Evaluation Report" in Markdown. Include Case Summary, Strengths, Areas for Improvement, Missed Evidence, Manipulation Analysis, and Real-World Application.
    CRITICAL FORMATTING REQUIREMENT:
    The analysis string MUST NOT be a cramped block of text. It MUST be structured into clear subtopics using Markdown headings (## and ###), bullet points, bold key terms, and callout blockquotes (>). Include these structured sections:
 
@@ -863,7 +867,7 @@ Ensure:
 2. Visual assets can use elegant Unsplash photography links related to social interaction, school life, families, or communities.
 3. Include 2-3 detailed, distinct Evidences (one can be an image, others can be chat logs, social feeds, emails).
 4. Include 2 interactive Witness characters with fully detailed 'promptKnowledge' representing their testimony, quirks, and hidden clues.
-5. Create a logically correct timeline of 5-6 steps that the player will reconstruct.
+5. Create a logically correct timeline of exactly 4 core steps that the player will reconstruct.
 6. Create 3 Clues that correspond to discovering the evidences.
 7. Create a 'solution' containing 2-3 precise questions with 4 choices each, a correct answer (matching one of the choices exactly), and an educational explanation.
 8. Define a 'location' containing 2-3 hotspots that reveal locked or unlocked evidence.

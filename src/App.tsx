@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { 
-  ShieldCheck, Brain, Award, MessageSquare, 
-  ArrowLeft, Calendar, BookOpenCheck, 
-  FileText, Loader2, LogOut, User
+  ShieldCheck, Award, Loader2, LogOut, User
 } from 'lucide-react';
 import Markdown from 'react-markdown';
 
@@ -24,6 +22,9 @@ import StoryIntroView from './components/StoryIntroView';
 import DetectiveNotebook from './components/DetectiveNotebook';
 import ResumeRestartModal from './components/ResumeRestartModal';
 import DigitalSafetyReport from './components/DigitalSafetyReport';
+import InvestigationHeader from './components/InvestigationHeader';
+import DetectiveCaseReportForm, { DetectiveReportSubmission } from './components/DetectiveCaseReportForm';
+import NotificationToast, { NotificationState } from './components/NotificationToast';
 
 // Shared types and handcrafted cases
 import { Case, UserProfile, CaseState } from './types';
@@ -48,12 +49,19 @@ const DEFAULT_USER_PROFILE: UserProfile = {
   customCases: []
 };
 
+type AppView = 'library' | 'story_intro' | 'game' | 'profile';
+
+const getStoredView = (): AppView => {
+  const storedView = localStorage.getItem('detective_current_view');
+  return storedView === 'story_intro' || storedView === 'game' || storedView === 'profile' ? storedView : 'library';
+};
+
 export default function App() {
   // Navigation State
-  const [currentView, setCurrentView] = useState<'library' | 'story_intro' | 'game' | 'profile'>('library');
-  const [activeCaseId, setActiveCaseId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<string>('evidence');
-  const [selectedEvidenceId, setSelectedEvidenceId] = useState<string | null>(null);
+  const [currentView, setCurrentView] = useState<AppView>(getStoredView);
+  const [activeCaseId, setActiveCaseId] = useState<string | null>(() => localStorage.getItem('detective_active_case'));
+  const [activeTab, setActiveTab] = useState<string>(() => localStorage.getItem('detective_active_tab') || 'evidence');
+  const [selectedEvidenceId, setSelectedEvidenceId] = useState<string | null>(() => localStorage.getItem('detective_selected_evidence'));
 
   // Auth State
   const [authToken, setAuthToken] = useState<string | null>(() => {
@@ -81,6 +89,11 @@ export default function App() {
     return val ? parseInt(val, 10) : 0; // Starts at 0 XP
   });
   const [xpToast, setXpToast] = useState<{ xp: number; msg: string } | null>(null);
+  const [notification, setNotification] = useState<NotificationState | null>(null);
+
+  const notify = (nextNotification: NotificationState) => {
+    setNotification(nextNotification);
+  };
 
   const getMilRank = (currentXp: number) => {
     if (currentXp >= 1500) return { name: "Lead Sentinel", level: 4, nextThresh: null, prevThresh: 1500 };
@@ -95,13 +108,28 @@ export default function App() {
   const [casesState, setCasesState] = useState<Record<string, CaseState>>({});
 
   // Active quiz submissions
-  const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [evaluationResult, setEvaluationResult] = useState<{ score?: number; grade?: string; verdict?: string; analysis?: string; unlockedBadges?: string[] } | null>(null);
 
   // Load and merge cases list
   const allCases = [...HANDCRAFTED_CASES, ...userProfile.customCases];
   const activeCase = allCases.find(c => c.id === activeCaseId);
+
+  // Preserve the user's exact location so a reload returns to the same screen.
+  useEffect(() => {
+    localStorage.setItem('detective_current_view', currentView);
+    if (activeCaseId) localStorage.setItem('detective_active_case', activeCaseId);
+    else localStorage.removeItem('detective_active_case');
+    localStorage.setItem('detective_active_tab', activeTab);
+    if (selectedEvidenceId) localStorage.setItem('detective_selected_evidence', selectedEvidenceId);
+    else localStorage.removeItem('detective_selected_evidence');
+  }, [currentView, activeCaseId, activeTab, selectedEvidenceId]);
+
+  useEffect(() => {
+    if (!notification) return;
+    const timer = setTimeout(() => setNotification(null), 5000);
+    return () => clearTimeout(timer);
+  }, [notification]);
 
   // --- Supabase Synchronization Engines ---
 
@@ -168,6 +196,7 @@ export default function App() {
     } catch (err: unknown) {
       console.error("Error loading user data:", err);
       setSupabaseError("Failed to load database. Check database tables.");
+      notify({ kind: 'warning', title: 'Using local session data', message: 'Cloud progress could not be restored. Your current work will remain available in this browser.' });
       setIsProfileLoaded(true);
     }
   };
@@ -231,13 +260,23 @@ export default function App() {
   const handleAuthSuccess = (token: string, email: string, name: string) => {
     localStorage.setItem('supabase_token', token);
     setAuthToken(token);
-    loadUserData(token);
+    notify({ kind: 'success', title: 'Signed in successfully', message: `Welcome back, ${name || email || 'investigator'}. Your case archives are being restored.` });
+    void loadUserData(token);
   };
 
   const handleLogout = () => {
     localStorage.removeItem('supabase_token');
+    localStorage.removeItem('detective_current_view');
+    localStorage.removeItem('detective_active_case');
+    localStorage.removeItem('detective_active_tab');
+    localStorage.removeItem('detective_selected_evidence');
     setAuthToken(null);
     setIsProfileLoaded(false);
+    setCurrentView('library');
+    setActiveCaseId(null);
+    setActiveTab('evidence');
+    setSelectedEvidenceId(null);
+    notify({ kind: 'info', title: 'Signed out', message: 'Your investigation session has been closed safely.' });
     // Reset back to defaults
     setUserProfile(DEFAULT_USER_PROFILE);
     setCasesState({});
@@ -252,8 +291,9 @@ export default function App() {
         setSystemStatus(data);
         setSupabaseConfigured(data.supabase.configured);
         setGeminiConfigured(data.gemini.configured);
-      } catch (err) {
-        console.error("Failed to fetch system status:", err);
+    } catch (err) {
+      console.error("Failed to fetch system status:", err);
+      notify({ kind: 'warning', title: 'Offline mode active', message: 'System services could not be checked. You can continue locally while we retry.' });
       }
     };
     void checkSystemStatus();
@@ -334,7 +374,6 @@ export default function App() {
     setCurrentView(showStoryIntro ? 'story_intro' : 'game');
     setActiveTab('evidence');
     setEvaluationResult(null);
-    setQuizAnswers({});
     setSelectedEvidenceId(null);
 
     // Unlock "First Contact" achievement on starting any case
@@ -377,7 +416,6 @@ export default function App() {
     setCurrentView('game'); // Skips story prologue directly to ongoing investigation!
     setActiveTab('evidence');
     setEvaluationResult(null);
-    setQuizAnswers({});
     setSelectedEvidenceId(null);
     setPendingCaseId(null);
 
@@ -541,16 +579,8 @@ export default function App() {
   };
 
   // submit case evaluation
-  const handleSubmitCase = async () => {
+  const handleSubmitCase = async (report: DetectiveReportSubmission) => {
     if (!activeCaseId || !activeCase) return;
-    
-    // Validate that all questions are answered
-    const questionsCount = activeCase.solution.questions.length;
-    const answeredCount = Object.keys(quizAnswers).length;
-    if (answeredCount < questionsCount) {
-      alert(`Please answer all ${questionsCount} solution questions in the Submission form before sending your Report.`);
-      return;
-    }
 
     setIsSubmitting(true);
 
@@ -564,11 +594,16 @@ export default function App() {
           topic: activeCase.topic,
           warningSigns: activeCase.warningSigns,
           manipulationTechniques: activeCase.manipulationTechniques,
-          answers: quizAnswers,
-          timeline: currentCaseState.timelinePlacements,
+          answers: report,
+          timeline: {
+            placements: currentCaseState.timelinePlacements,
+            events: activeCase.timeline
+          },
           notebookNotes: currentCaseState.notebookNotes.join('\n')
         })
       });
+
+      if (!response.ok) throw new Error('The investigation review service returned an error.');
 
       const evaluation = await response.json();
       setEvaluationResult(evaluation);
@@ -625,24 +660,23 @@ export default function App() {
 
     } catch (e) {
       console.error(e);
-      alert("[JUDICIAL RELAY FAULT]: The server Judge AI is busy or failed to compile. Re-submitting.");
+      notify({ kind: 'error', title: 'Report submission failed', message: 'The review service is temporarily unavailable. Your report is still on screen; please try again.' });
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  if (isInitializing) {
+    return (
+      <LoadingScreen
+        isDataReady={systemStatus !== null && (!authToken || isProfileLoaded)}
+        onComplete={() => setIsInitializing(false)}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-950/30 text-white flex flex-col font-sans select-none overflow-x-hidden relative">
-      
-      <AnimatePresence>
-        {isInitializing && (
-          <LoadingScreen
-            isDataReady={systemStatus !== null && (!authToken || isProfileLoaded)}
-            onComplete={() => setIsInitializing(false)}
-          />
-        )}
-      </AnimatePresence>
-
       <VantaBackground />
 
       {!authToken ? (
@@ -907,97 +941,25 @@ export default function App() {
             {currentView === 'game' && activeCase && (
               <div className="space-y-4 animate-fade-in">
                 
-                {/* Case Title backbar banner */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-transparent border-0 py-2 mb-2">
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => {
-                        setCurrentView('library');
-                        setActiveCaseId(null);
-                      }}
-                      className="p-2 text-[#9a9a9a] hover:text-white border border-white/10 rounded-full bg-transparent hover:bg-white/5 transition-all focus:outline-none cursor-pointer"
-                      aria-label="Back to case library"
-                      title="Back to library"
-                    >
-                      <ArrowLeft className="h-4 w-4" />
-                    </button>
-                    <div>
-                      <div className="flex items-center gap-2 text-[10px] font-mono mb-0.5">
-                        <span className="text-[#8052ff] font-bold">{activeCase.topic.toUpperCase()}</span>
-                        <span className="text-white/20">//</span>
-                        <span className="text-[#ffb829] font-bold">{activeCase.threatActor.toUpperCase()}</span>
-                      </div>
-                      <h2 className="text-heading-2xs text-white flex items-center gap-2">
-                        {activeCase.title}
-                        <span className="text-[10px] font-mono font-normal text-[#9a9a9a]">(Case ID: #{activeCase.id.toUpperCase().replace('CASE_', '')})</span>
-                      </h2>
-                    </div>
-                  </div>
+                <InvestigationHeader
+                  caseData={activeCase}
+                  caseState={currentCaseState}
+                  activeTab={activeTab}
+                  currentRank={currentRank}
+                  xp={xp}
+                  onBack={() => {
+                    setCurrentView('library');
+                    setActiveCaseId(null);
+                  }}
+                  onChangeTab={setActiveTab}
+                />
 
-                  {/* Top Case Progress meters */}
-                  <div className="flex flex-wrap items-center gap-4">
-                    {/* Detective Level HUD */}
-                    <div className="bg-[#1e110a]/80 border border-[#ff8533]/40 rounded-[24px] px-4 py-2 flex items-center gap-3">
-                      <div className="text-right">
-                        <div className="text-[8px] font-mono text-[#9a9a9a] uppercase">DETECTIVE RANK</div>
-                        <div className="text-xs font-mono font-black text-[#ff8533] uppercase">
-                          LEVEL {currentRank.level}: {currentRank.name}
-                        </div>
-                      </div>
-                      <div className="h-6 px-2.5 bg-white/5 border border-white/10 rounded-full flex items-center justify-center text-[10px] font-mono font-extrabold text-white">
-                        {xp} XP
-                      </div>
-                    </div>
-
-                    <div className="bg-transparent px-3.5 py-2 flex items-center gap-2">
-                      <div className="text-right">
-                        <div className="text-[8px] font-mono text-[#9a9a9a] uppercase">EVIDENCE CABINET</div>
-                        <div className="text-xs font-mono font-bold text-[#ff8533]">
-                          {currentCaseState.discoveredEvidenceIds.length} / {activeCase.evidences.length} Unlocked
-                        </div>
-                      </div>
-                    </div>
-                    <div className="bg-transparent px-3.5 py-2 flex items-center gap-2">
-                      <div className="text-right">
-                        <div className="text-[8px] font-mono text-[#9a9a9a] uppercase">WITNESS INTERROGATION</div>
-                        <div className="text-xs font-mono font-bold text-[#ffb829]">
-                          {currentCaseState.unlockedWitnessIds.length} / {activeCase.witnesses.length} Discovered
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Split Screen Grid */}
+                {/* Split Screen Investigation Workspace */}
                 <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
                   
                   {/* Left Side: Navigation Tabs and Main Dynamic Tool Console (3 Cols) */}
                   <div className="xl:col-span-3 flex flex-col gap-4">
                     
-                    {/* Dashboard Tabs Selector */}
-                    <div className="flex overflow-x-auto gap-2 border-b border-white/10 pb-2.5">
-                      {[
-                        { id: 'evidence', label: 'EVIDENCE VIEWER', icon: <FileText className="h-4 w-4" /> },
-                        { id: 'witnesses', label: 'WITNESS INTERVIEWS', icon: <MessageSquare className="h-4 w-4" /> },
-                        { id: 'clues', label: 'DETECTIVE BOARD', icon: <Brain className="h-4 w-4" /> },
-                        { id: 'timeline', label: 'CASE TIMELINE', icon: <Calendar className="h-4 w-4" /> },
-                        { id: 'submit', label: 'INVESTIGATION REPORT', icon: <ShieldCheck className="h-4 w-4 text-[#15846e]" /> }
-                      ].map((tab) => (
-                        <button
-                          key={tab.id}
-                          onClick={() => { setActiveTab(tab.id); }}
-                          className={`flex items-center gap-1.5 px-4 py-2.5 rounded-full font-mono text-xs font-bold transition-all whitespace-nowrap focus:outline-none border cursor-pointer ${
-                            activeTab === tab.id
-                              ? 'border-[#ff8533] bg-[#ff8533]/10 text-white'
-                              : 'border-transparent text-[#9a9a9a] hover:text-white hover:bg-white/5'
-                          }`}
-                        >
-                          {tab.icon}
-                          <span>{tab.label}</span>
-                        </button>
-                      ))}
-                    </div>
-
                     {/* Main Dynamic Workspace Frame */}
                     <div className="flex-1 min-h-[420px]">
                       {activeTab === 'evidence' && (
@@ -1014,6 +976,7 @@ export default function App() {
                         <InterrogationTerminal
                           caseData={activeCase}
                           unlockedWitnessIds={currentCaseState.unlockedWitnessIds}
+                          discoveredEvidenceIds={currentCaseState.discoveredEvidenceIds}
                           onUnlockWitness={() => {}}
                           chatsState={currentCaseState.witnessChats}
                           onAddMessage={handleAddWitnessMessage}
@@ -1043,6 +1006,9 @@ export default function App() {
                                 timelinePlacements: placements
                               } as CaseState);
                             });
+                            if (Object.keys(placements).length === activeCase.timeline.length) {
+                              notify({ kind: 'success', title: 'Timeline complete', message: 'Every incident has been placed. Review your sequence before submitting the case report.' });
+                            }
                           }}
                         />
                       )}
@@ -1059,66 +1025,12 @@ export default function App() {
                             }}
                           />
                         ) : (
-                          <div className="rounded-[24px] border border-white/15 glass-panel bg-slate-900/65 p-5 sm:p-7 space-y-6 text-white animate-fade-in backdrop-blur-xl">
-                            <div className="space-y-6 animate-fade-in">
-                              <div className="border-b border-white/10 pb-3">
-                                <h4 className="text-nav-label text-white flex items-center gap-2">
-                                  <ShieldCheck className="h-4 w-4 text-[#8052ff]" />
-                                  Case Solution Questionnaire
-                                </h4>
-                                <p className="text-xs text-[#9a9a9a] font-mono mt-0.5">Submit your answers to key questions about the cyber exploit vector.</p>
-                              </div>
-
-                              {/* Form */}
-                              <div className="space-y-4">
-                                {activeCase.solution.questions.map((q, qIdx) => (
-                                  <div key={q.id} className="p-4.5 rounded-[24px] bg-white/[0.02] border border-white/5">
-                                    <h5 className="text-xs font-bold text-white mb-3 flex gap-2">
-                                      <span className="text-[#8052ff] font-mono font-extrabold">Q{qIdx + 1}:</span>
-                                      <span className="font-mono">{q.question}</span>
-                                    </h5>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                      {q.choices.map((choice) => {
-                                        const isSelected = quizAnswers[q.id] === choice;
-                                        return (
-                                          <button
-                                            key={choice}
-                                            type="button"
-                                            onClick={() => { setQuizAnswers(prev => ({ ...prev, [q.id]: choice })); }}
-                                            className={`p-3 rounded-full border text-xs text-left transition-all font-mono leading-relaxed focus:outline-none cursor-pointer ${
-                                              isSelected
-                                                ? 'border-[#8052ff] bg-[#8052ff]/10 text-white font-bold'
-                                                : 'border-white/10 bg-transparent text-[#9a9a9a] hover:bg-white/5'
-                                            }`}
-                                          >
-                                            {choice}
-                                          </button>
-                                        );
-                                      })}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-
-                              <button
-                                onClick={handleSubmitCase}
-                                disabled={isSubmitting}
-                                className="btn-primary w-full py-4"
-                              >
-                                {isSubmitting ? (
-                                  <>
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                    Analyzing Findings with AI Forensic Engine...
-                                  </>
-                                ) : (
-                                  <>
-                                    <ShieldCheck className="h-4 w-4" />
-                                    Submit Final Case Assessment
-                                  </>
-                                )}
-                              </button>
-                            </div>
-                          </div>
+                          <DetectiveCaseReportForm
+                            caseData={activeCase}
+                            caseState={currentCaseState}
+                            isSubmitting={isSubmitting}
+                            onSubmit={report => { void handleSubmitCase(report); }}
+                          />
                         )
                       )}
                     </div>
@@ -1183,6 +1095,19 @@ export default function App() {
                 {xpToast.msg}
               </div>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {notification && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 16 }}
+            transition={{ duration: 0.2 }}
+          >
+            <NotificationToast notification={notification} onDismiss={() => setNotification(null)} />
           </motion.div>
         )}
       </AnimatePresence>

@@ -58,6 +58,7 @@ export const CASE_RESPONSE_SCHEMA = {
     },
     timeline: {
       type: Type.ARRAY,
+      description: "Exactly 4 chronological incident steps for the player to reconstruct.",
       items: {
         type: Type.OBJECT,
         properties: {

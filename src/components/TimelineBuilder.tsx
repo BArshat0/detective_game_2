@@ -10,30 +10,34 @@ interface TimelineBuilderProps {
 }
 
 export default function TimelineBuilder({ caseData, placements, onUpdatePlacements }: TimelineBuilderProps) {
-  const timelineEvents = caseData?.timeline || [];
-  const validEventIds = new Set(timelineEvents.map(e => e.id));
+  const timelineEvents = React.useMemo(() => (
+    Array.isArray(caseData.timeline)
+      ? caseData.timeline.filter((event): event is TimelineEvent => Boolean(event?.id))
+      : []
+  ), [caseData.timeline]);
+  const { activePlacements, containsStaleKeys } = React.useMemo(() => {
+    const validEventIds = new Set(timelineEvents.map(event => event.id));
+    const sanitized: Record<string, number> = {};
+    let hasStaleKeys = false;
 
-  // Sanitize placements to remove any key that doesn't belong to current case's timeline
-  const activePlacements: Record<string, number> = {};
-  let containsStaleKeys = false;
+    Object.entries(placements ?? {}).forEach(([id, position]) => {
+      if (validEventIds.has(id) && Number.isFinite(position)) sanitized[id] = position;
+      else hasStaleKeys = true;
+    });
 
-  Object.entries(placements || {}).forEach(([id, pos]) => {
-    if (validEventIds.has(id) && typeof pos === 'number' && !isNaN(pos)) {
-      activePlacements[id] = pos;
-    } else {
-      containsStaleKeys = true;
-    }
-  });
+    return { activePlacements: sanitized, containsStaleKeys: hasStaleKeys };
+  }, [placements, timelineEvents]);
 
   // Automatically clean stale or invalid keys from state if present
   React.useEffect(() => {
     if (containsStaleKeys) {
       onUpdatePlacements(activePlacements);
     }
-  }, [containsStaleKeys, placements, onUpdatePlacements]);
+  }, [containsStaleKeys, placements]);
 
-  const draftSequence: TimelineEvent[] = Object.keys(activePlacements)
-    .sort((a, b) => (safeGet(activePlacements, a) ?? 0) - (safeGet(activePlacements, b) ?? 0))
+  const draftSequence: TimelineEvent[] = Object.entries(activePlacements)
+    .sort(([, a], [, b]) => a - b)
+    .map(([id]) => id)
     .map(id => timelineEvents.find(e => e.id === id))
     .filter((e): e is TimelineEvent => Boolean(e));
 
@@ -44,7 +48,7 @@ export default function TimelineBuilder({ caseData, placements, onUpdatePlacemen
 
     // Use a hash of caseData.id to ensure stable shuffling across renders
     let seed = 0;
-    if (caseData?.id) {
+    if (caseData.id) {
       for (let i = 0; i < caseData.id.length; i++) {
         seed = (seed << 5) - seed + caseData.id.charCodeAt(i);
         seed |= 0;

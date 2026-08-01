@@ -33,6 +33,7 @@ export default function CaseArchitect({ onCaseGenerated, customCases, onPlayCase
   const [isGenerating, setIsGenerating] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [tipIndex, setTipIndex] = useState(0);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const topics = [
     'Cyberbullying & Social Isolation',
@@ -83,6 +84,7 @@ export default function CaseArchitect({ onCaseGenerated, customCases, onPlayCase
   }, [isGenerating]);
 
   const handleGenerate = async () => {
+    setErrorMessage(null);
     setIsGenerating(true);
 
     try {
@@ -104,12 +106,12 @@ export default function CaseArchitect({ onCaseGenerated, customCases, onPlayCase
         }, 9800);
       } else {
         setIsGenerating(false);
-        alert("Failed to synthesize custom case. Try choosing another topic configuration.");
+        setErrorMessage('The case could not be synthesized. Try another topic or configuration.');
       }
     } catch (e) {
       console.error(e);
       setIsGenerating(false);
-      alert("[CONNECTION EXPIRED]: Server failed to design custom case components.");
+      setErrorMessage('The case builder is temporarily unavailable. Check your connection and try again.');
     }
   };
 
@@ -193,6 +195,11 @@ export default function CaseArchitect({ onCaseGenerated, customCases, onPlayCase
           </div>
         ) : (
           <div className="space-y-5 flex-1">
+            {errorMessage && (
+              <div role="alert" aria-live="assertive" className="rounded-2xl border border-rose-400/30 bg-rose-950/30 p-3 text-xs leading-relaxed text-rose-200">
+                {errorMessage}
+              </div>
+            )}
             {/* Topic Select */}
             <div>
               <label className="block text-[10px] font-mono font-bold text-[#9a9a9a] uppercase tracking-wider mb-2">Select Safety Topic</label>

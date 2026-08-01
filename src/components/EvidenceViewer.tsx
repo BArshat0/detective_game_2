@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Folder, FileText, Lock, Unlock, Eye, Copy, FileCode, MessageSquare, Mail, Key, Check } from 'lucide-react';
+import { Folder, FileText, Lock, Unlock, Eye, Copy, FileCode, MessageSquare, Mail, Key, Check, Search, Clock3, Fingerprint } from 'lucide-react';
 import { Case } from '../types';
 
 interface EvidenceViewerProps {
@@ -19,11 +19,45 @@ export default function EvidenceViewer({
 }: EvidenceViewerProps) {
   const [copiedTextId, setCopiedTextId] = useState<string | null>(null);
   const [activeAnalysis, setActiveAnalysis] = useState<{ type: 'source' | 'emotion' | 'fact' | null; content: string | null }>({ type: null, content: null });
+  const [completedInspections, setCompletedInspections] = useState<string[]>([]);
 
   // Reset verification pane when active evidence changes
   React.useEffect(() => {
     setActiveAnalysis({ type: null, content: null });
+    setCompletedInspections([]);
   }, [activeEvidenceId]);
+
+  const getInspectionChecks = (type: string) => {
+    if (type === 'email') return [
+      { id: 'sender', label: 'Inspect sender and reply address', icon: Fingerprint },
+      { id: 'urgency', label: 'Look for pressure or urgency', icon: Search },
+      { id: 'timing', label: 'Compare dates and timestamps', icon: Clock3 },
+    ];
+    if (type === 'chat') return [
+      { id: 'pressure', label: 'Find the pressure tactic', icon: Search },
+      { id: 'sequence', label: 'Trace who spoke first', icon: Clock3 },
+      { id: 'contradiction', label: 'Mark a contradiction', icon: Fingerprint },
+    ];
+    if (type === 'image') return [
+      { id: 'context', label: 'Inspect the missing context', icon: Search },
+      { id: 'source', label: 'Check where this came from', icon: Fingerprint },
+      { id: 'timestamp', label: 'Compare the visible timestamp', icon: Clock3 },
+    ];
+    return [
+      { id: 'source', label: 'Verify the source', icon: Fingerprint },
+      { id: 'language', label: 'Circle suspicious language', icon: Search },
+      { id: 'timeline', label: 'Compare the timeline', icon: Clock3 },
+    ];
+  };
+
+  const handleInspection = (inspectionId: string, label: string) => {
+    if (!activeEvidence || completedInspections.includes(inspectionId)) return;
+    setCompletedInspections(prev => [...prev, inspectionId]);
+    onCopyToNotebook(`Observation — ${activeEvidence.name}: ${label}.`);
+    window.dispatchEvent(new CustomEvent('mil-xp-earned', {
+      detail: { xp: 15, msg: `Observation recorded: ${label}` }
+    }));
+  };
 
   const getEvidenceIcon = (type: string) => {
     switch (type) {
@@ -211,6 +245,37 @@ export default function EvidenceViewer({
               <span className="text-[#ffb829] font-mono font-bold uppercase mr-1.5">WHY IT MATTERS:</span> 
               {activeEvidence.description}
             </p>
+
+            <div className="mb-4 rounded-[24px] border border-[#ffb829]/20 bg-[#ffb829]/[0.05] p-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2 text-[10px] font-mono font-black uppercase tracking-wider text-[#ffb829]">
+                    <Search className="h-3.5 w-3.5" /> Field inspection
+                  </div>
+                  <p className="mt-1 text-[11px] text-[#bdbdbd]">Choose an observation to investigate. Your finding will be added to the notebook.</p>
+                </div>
+                <span className="shrink-0 rounded-full border border-[#ffb829]/25 bg-black/20 px-2 py-1 text-[9px] font-mono text-[#ffb829]">
+                  {completedInspections.length}/{getInspectionChecks(activeEvidence.type).length} checked
+                </span>
+              </div>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                {getInspectionChecks(activeEvidence.type).map(({ id, label, icon: Icon }) => {
+                  const completed = completedInspections.includes(id);
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => handleInspection(id, label)}
+                      disabled={completed}
+                      className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-[10px] font-mono font-bold transition-all ${completed ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-white/10 bg-black/20 text-[#bdbdbd] hover:border-[#ffb829]/50 hover:text-white'}`}
+                    >
+                      <Icon className="h-3.5 w-3.5 shrink-0" />
+                      <span>{completed ? 'Observation logged' : label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
             {/* File Interactive Body View */}
             <div className="flex-1 bg-[#121214] border border-white/10 rounded-[24px] p-5 font-mono text-xs overflow-y-auto text-[#bdbdbd] leading-relaxed max-h-[250px] mb-4">
