@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, RotateCcw, X, ShieldAlert, Sparkles, ArrowRight } from 'lucide-react';
+import { Play, RotateCcw, X, ShieldAlert, ArrowRight } from 'lucide-react';
 import { Case } from '../types';
 
 interface ResumeRestartModalProps {

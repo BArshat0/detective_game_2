@@ -2,970 +2,1316 @@ import { Case } from '../types';
 
 export const HANDCRAFTED_CASES: Case[] = [
   // =========================================================================
-  // CASE 1: THE ECHO CHAMBER (Viral Manipulation & Context Splicing)
+  // CASE 1: The Promise Beyond the Border
+  // Theme: Fake Overseas Employment, Digital Recruitment Fraud & Human Trafficking Prevention
   // =========================================================================
   {
-    id: 'case_echo_chamber',
-    title: 'The Echo Chamber: The Fall and Rise of Maya Lin',
-    topic: 'Viral Outrage, Context Splicing & Recommender Filter Bubbles',
-    difficulty: 'EASY',
+    id: 'case_border_promise',
+    title: 'The Promise Beyond the Border',
+    topic: 'Overseas Job Fraud & Human Trafficking',
+    difficulty: 'HIGH',
     status: 'HIGH PRIORITY',
-    tag: 'ALGORITHMIC BIAS',
-    threatActor: 'Anonymous Splicer & CliqClok Recommender Engine',
-    timeLimit: '12:00 Hours',
-    imageUrl: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800',
-    introduction: 'Maya Lin, a dedicated 17-year-old student leader and volunteer tutor, has become the target of intense online mobbing after a 10-second video snippet went viral on CliqClok. The video claims she wants to shut down the local Youth Community Center. In reality, Maya was defending the center against budget cuts. Trapped inside algorithmically reinforced filter bubbles, students accepted the edited clip as truth without verification. Your mission is to inspect the unedited forum footage, trace the recommendation metrics, interview key peers, and dismantle the echo chamber.',
+    tag: 'HUMAN TRAFFICKING & RECRUITMENT FRAUD',
+    threatActor: 'Aura Syndicate',
+    timeLimit: '48 HOURS',
+    imageUrl: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1200&q=80',
+    introduction: 'A gifted 19-year-old developer, Kaelen Miller, abruptly departed after accepting an unverified "VIP Tech Specialist Contract" in Southeast Asia. 36 hours later, his mother received distressed, scripted voice messages demanding passport clearance fees. Uncover the human trafficking network behind Aura Global Recruitment.',
     storyIntro: {
-      summary: "A 10-second context-spliced video posted on CliqClok ignited a massive wave of hostility against 17-year-old student leader Maya Lin. Within hours, platform algorithms trapped local students in a outrage-driven filter bubble, turning her friends and teachers against her before anyone checked the original speech.",
-      victimName: "Maya Lin",
-      victimRole: "17-Year-Old High School Student Leader",
-      incidentTime: "July 10, 08:30 AM",
+      summary: 'Kaelen Miller accepted an overseas job offer promising $8,500/month with free housing and flight tickets. Immediately upon arrival in a border transit zone, his passport was confiscated and his phone switched to automated scripted messaging. His family fears he has been trapped inside a forced cyber-scam compound.',
+      victimName: 'Kaelen Miller',
+      victimRole: 'Junior Web Developer (Age 19)',
+      incidentTime: '48 Hours Ago',
       scenes: [
         {
-          id: "ec_s1",
+          id: 'sc_border_ch1_1',
           sceneNumber: 1,
-          title: "Chapter 1: A Normal Day — The Community Center Proposal",
-          locationName: "Kyoto Central High School Assembly Hall",
-          mediaType: "dialogue",
+          chapterNumber: 1,
+          chapterTitle: 'A Normal Day',
+          title: 'Late Night Code & Family Dreams',
+          locationName: 'Kaelen\'s Apartment - Riverdale',
+          mediaType: 'dialogue',
           speaker: {
-            name: "Maya Lin",
-            role: "High School Junior & Youth Volunteer",
-            avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=400",
-            mood: "confident"
+            name: 'Kaelen Miller',
+            role: 'Junior Web Developer (Age 19)',
+            avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=300&q=80',
+            mood: 'neutral'
           },
-          dialogueText: "Good afternoon everyone! As student council delegate, I'm thrilled to present our plan to double funding for the Youth Community Center's library and computer lab. This space saved my academic career when my family couldn't afford a home laptop, and every student deserves that same shelter.",
-          narration: "Maya Lin is a bright, passionate 17-year-old whose dream is to earn a university scholarship in public policy. She spends four evenings a week tutoring younger kids at the community center. Her classmates Clara and Chloe applaud loudly from the front row.",
-          keyTakeaway: "Character Background: Maya is deeply committed to expanding the Youth Community Center and rely on it personally.",
-          soundEffect: "keyboard"
+          narration: 'Kaelen Miller sits at his desk surrounded by open code editors. Having worked two part-time freelance gigs since high school, his main goal in life is helping his widowed mother, Eleanor, pay for her upcoming knee replacement surgery.',
+          dialogueText: 'If I can just secure one stable full-time developer job this year, Mom won\'t have to work double shifts at the clinic anymore. My GitHub portfolio is finally looking solid.',
+          keyTakeaway: 'Understanding Kaelen\'s financial goals and desire to help his family explains why he was emotionally receptive to high-paying job offers.'
         },
         {
-          id: "ec_s2",
+          id: 'sc_border_ch2_2',
           sceneNumber: 2,
-          title: "Chapter 2: The Opportunity — The Student Forum Debate",
-          locationName: "Student Association Town Hall",
-          mediaType: "dialogue",
+          chapterNumber: 2,
+          chapterTitle: 'The Opportunity',
+          title: 'The Unsolicited Executive Offer',
+          locationName: 'Kaelen\'s Professional Network Inbox',
+          mediaType: 'email_preview',
           speaker: {
-            name: "Chloe Smith",
-            role: "Student Council President",
-            avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=400",
-            mood: "neutral"
+            name: 'Elena Vance',
+            role: 'Head Talent Scout, Aura Solutions',
+            avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80',
+            mood: 'confident'
           },
-          dialogueText: "During the Q&A session, an aggressive online commenter accused Maya of secret corporate ties. Maya stepped up to the microphone and answered firmly: 'A few online trolls falsely claim that I do not care about the community center and we should close it down, but that is completely absurd and untrue!'",
-          narration: "The town hall ended with warm applause. Several students recorded the presentation on their phones for local student news channels.",
-          keyTakeaway: "Original Context: Maya explicitly quoted an online rumor ('A few online trolls falsely claim that...') before refuting it.",
-          soundEffect: "notification"
-        },
-        {
-          id: "ec_s3",
-          sceneNumber: 3,
-          title: "Chapter 3: Building Trust — The Snipped Clip Emerges",
-          locationName: "CliqClok Trending Feed",
-          mediaType: "text_chat",
-          speaker: {
-            name: "Clara Oswald",
-            role: "Classmate & Maya's Best Friend",
-            avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400",
-            mood: "worried"
-          },
-          dialogueText: "Maya! Wake up! An account called @KyotoStudentTruth posted an 11-second clip of your speech. It literally shows you saying: 'I do not care about the community center and we should close it down!' They edited out your opening words! People in the main school group chat are going crazy!",
-          narration: "An anonymous account uploaded a surgical edit of Maya's speech, cutting her introductory qualifier. With dramatic background music added, the clip looks shockingly authentic.",
-          keyTakeaway: "Manipulation Technique: Context Splicing — removing opening/closing words to invert the speaker's true meaning.",
-          soundEffect: "notification"
-        },
-        {
-          id: "ec_s4",
-          sceneNumber: 4,
-          title: "Chapter 4: Warning Signs — Algorithmic Lock-In",
-          locationName: "CliqClok Recommender System Engine",
-          mediaType: "news_alert",
+          narration: 'Out of nowhere, Kaelen receives a direct message from "Elena Vance", representing Aura Global Solutions Ltd. She offers an immediate Senior Web Lead role in Southeast Asia starting at $8,500/month.',
+          dialogueText: 'Kaelen, our executive engineering team reviewed your open-source React repositories. We are skipping standard technical coding rounds! We need you on tomorrow\'s flight for our offshore AI lab. Luxury housing and full medical included.',
           mediaContent: {
-            header: "TRENDING IN YOUR DISTRICT // 48,000 Views in 90 Minutes",
-            body: "'LOCAL STUDENT LEADER BETRAYS COMMUNITY!' — 92% of local high school feeds are receiving this video as their #1 recommended clip."
+            sender: 'elena.vance@auraglobaljobs.org',
+            recipient: 'kaelen.m@devmail.io',
+            header: 'EXECUTIVE DIRECT OFFER: Senior Web Lead ($8,500/mo)',
+            body: 'Dear Kaelen, Aura Global Solutions is expanding its regional AI hub. Based on your open-source projects, we have selected you for immediate placement. No technical interviews required. Flight tickets fully covered.'
           },
-          dialogueText: "The CliqClok recommendation algorithm detects high comment velocity and outrage-driven watch time. It applies a 4.5x priority weight, trapping local students inside an inescapable outrage loop.",
-          narration: "When students open their phones, the algorithm feeds them dozens of reaction videos bashing Maya. Anyone expressing doubt is downvoted and ridiculed. Confirmation bias sets in rapidly.",
-          keyTakeaway: "Algorithmic Filter Bubbles: Recommendation engines prioritize conflict and engagement over factual accuracy.",
-          soundEffect: "static"
+          keyTakeaway: 'Skipping technical interviews and offering absurdly high salaries to junior developers are classic lures used by fraudulent recruiters.'
         },
         {
-          id: "ec_s5",
+          id: 'sc_border_ch3_3',
+          sceneNumber: 3,
+          chapterNumber: 3,
+          chapterTitle: 'Building Trust',
+          title: 'Official Contract & Video Calls',
+          locationName: 'Virtual Call Terminal',
+          mediaType: 'text_chat',
+          speaker: {
+            name: 'Elena Vance',
+            role: 'Head Talent Scout, Aura Solutions',
+            avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80',
+            mood: 'confident'
+          },
+          narration: 'Elena schedules a video chat, speaks with extreme professionalism, and emails an official-looking PDF employment offer letter complete with corporate stamps and signed by Managing Director Victor Sterling.',
+          dialogueText: 'Kaelen, we understand taking an overseas leap is a big decision. Here is your official employment contract and $2,000 relocation bonus authorization. You will be building cutting-edge web tools with our senior team.',
+          mediaContent: {
+            timestamp: 'Yesterday 02:15 PM',
+            body: 'OFFER LETTER ATTACHED: Aura Global Solutions Ltd. - Position: Overseas Web Lead. Salary: $8,500 USD/month. Relocation Bonus: $2,000 upon arrival.'
+          },
+          keyTakeaway: 'Professional-looking PDF contracts and corporate stamps do not guarantee legitimacy. Anyone can design convincing corporate templates.'
+        },
+        {
+          id: 'sc_border_ch4_4',
+          sceneNumber: 4,
+          chapterNumber: 4,
+          chapterTitle: 'Warning Signs',
+          title: 'Tourist Visa & Crypto Deposit Pressure',
+          locationName: 'Airport Transit Terminal',
+          mediaType: 'text_chat',
+          speaker: {
+            name: 'Elena Vance',
+            role: 'Head Talent Scout, Aura Solutions',
+            avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80',
+            mood: 'urgent'
+          },
+          narration: 'When Kaelen asks about foreign work visas, Elena insists he must fly out on a 30-day Tourist Transit Visa, claiming official work permits take 2 months and can be "swapped" at the compound. She also demands a $450 advance deposit.',
+          dialogueText: 'Kaelen, flight seats are extremely limited! You must transfer a $450 crypto deposit within 2 hours to secure your express visa clearance ticket. Once landed, our local manager will handle the work permit swap.',
+          keyTakeaway: 'Traveling for overseas employment on a tourist visa is illegal. Combined with advance fee demands, this is a major indicator of human trafficking.'
+        },
+        {
+          id: 'sc_border_ch5_5',
           sceneNumber: 5,
-          title: "Chapter 5: The Incident — Ostracization & Collapse",
-          locationName: "High School Main Hallway",
-          mediaType: "phone_call",
+          chapterNumber: 5,
+          chapterTitle: 'The Incident',
+          title: 'Passport Confiscation & Scripted Call',
+          locationName: 'Border Sub-District Compound',
+          mediaType: 'phone_call',
           speaker: {
-            name: "Chloe Smith",
-            role: "Student Council President",
-            avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=400",
-            mood: "panicked"
+            name: 'Eleanor Miller (Mother)',
+            role: 'Distressed Relative',
+            avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80',
+            mood: 'panicked'
           },
-          dialogueText: "Maya, I had to kick you out of the student council chat and suspend your university recommendation letter. Look at my feed—twenty different creators shared the same video! The algorithm doesn't lie. Until this blows over, you're off the project.",
-          narration: "Maya arrives at school to find her locker vandalized with slurs. Her tutoring shifts are cancelled, and her scholarship nomination is placed on hold. Crying in the counselor's office, she insists she was framed.",
-          keyTakeaway: "Human Impact: Social pressure and echo chambers lead to real-world harm before evidence is verified.",
-          soundEffect: "phone_ring"
+          narration: 'Upon landing at the border airport, heavy compound guards escort Kaelen into a guarded tech park and confiscate his passport and phone under "security protocol". 36 hours later, his mother receives a monotone, coerced phone message.',
+          dialogueText: 'Detective! Kaelen called me sounding terrified, like someone was dictating every word right next to his head! He told me his travel papers were held and begged me to wire $2,000 right now to free him. Please find my son!',
+          keyTakeaway: 'Scripted monotone voice calls and demands for clearance fees from stranded travelers are clear signs of physical coercion and forced cyber labor.'
         },
         {
-          id: "ec_s6",
+          id: 'sc_border_ch6_6',
           sceneNumber: 6,
-          title: "Chapter 6: Investigation Begins — Cyber Forensics Dispatch",
-          locationName: "Cyber Detective Academy Dispatch",
-          mediaType: "police_dispatch",
+          chapterNumber: 6,
+          chapterTitle: 'Investigation Begins',
+          title: 'The Cyber Crime Division Responds',
+          locationName: 'Cyber Crime Investigation Division',
+          mediaType: 'police_dispatch',
           speaker: {
-            name: "Chief Investigator Vance",
-            role: "Digital Safety Dispatcher",
-            mood: "urgent"
+            name: 'Chief Investigator Vance',
+            role: 'Digital Forensics Unit',
+            mood: 'urgent'
           },
-          dialogueText: "Investigator, Maya Lin was the victim of a sophisticated context-splicing attack combined with algorithmic amplification! We need you in the CliqClok Analysis Hub now. Inspect the unedited audio waveforms, audit the recommendation weight logs, interview witnesses, and clear Maya's name.",
-          narration: "Your official investigation begins. Uncover the truth behind the viral clip and expose how the echo chamber was manufactured.",
-          keyTakeaway: "Lateral Reading Protocol: Always locate primary, unedited source media before accepting viral clips.",
-          soundEffect: "siren"
+          narration: 'The Cyber Crime Unit has officially taken over the case. All emails, offer letters, WHOIS domain logs, flight tickets, and chat histories encountered during the narrative are now indexed in your Investigation Room.',
+          dialogueText: 'Investigator, Kaelen Miller is trapped inside an unlicensed border compound. We must verify Aura Global\'s domain registry, interrogate the recruiter Elena Vance, and trace the syndicate leader Victor Sterling before they move him.',
+          keyTakeaway: 'Proceed to the Investigation Room to examine evidence, interview witnesses, and reconstruct the chronological timeline.'
         }
       ]
     },
     learningObjectives: [
-      'Understand how recommendation algorithms create "filter bubbles" by favoring high-outrage content.',
-      'Recognize how confirmation bias makes individuals accept false rumors when reinforced by peer echo chambers.',
-      'Identify visual and audio frame cuts that indicate context splicing or deceptive editing.',
-      'Master lateral reading techniques to locate unedited primary source materials.'
+      'Recognize overseas employment fraud indicators and fake corporate registries.',
+      'Identify social engineering tactics used by human trafficking recruiters.',
+      'Verify domain registration WHOIS records, flight itineraries, and official labor export licenses.'
     ],
     warningSigns: [
-      'Short-form viral videos featuring sudden jump cuts right before or after controversial statements.',
-      'Social media feeds where 90%+ of suggested content reinforces a single emotional narrative with zero counter-perspectives.',
-      'Sudden surges of extreme hostility toward an individual based solely on a snippet under 15 seconds.',
-      'Comment sections where users who ask for unedited source footage are silenced or accused of defending a villain.'
+      'Job offers promising unusually high salaries with zero technical assessment or interview panel.',
+      'Recruiters urging immediate departure with one-way tickets on Tourist Visas.',
+      'Insistence on advance crypto/wire deposits for visa processing and passport retainment upon arrival.'
     ],
     manipulationTechniques: [
-      'Context Splicing (cutting out introductory or concluding phrases to invert the meaning of a speech).',
-      'Algorithmic Amplification (recommender loops weighting anger and watch-time retention over truth).',
-      'Confirmation Bias & Peer Mobbing (exploiting group dynamics so users follow the crowd without verifying).'
+      'Financial Flattery (praising skills to rush emotional decisions)',
+      'Sense of Urgency (claiming limited flight seats and 2-hour timers)',
+      'Isolation Strategy (moving communication away from verified corporate channels)'
+    ],
+    leads: [
+      {
+        id: 'lead_audit_contract',
+        title: 'Audit the Aura Global Employment Contract',
+        description: 'Inspect the PDF employment offer letter in the evidence cabinet. Look for suspicious terms, missing registration numbers, and upfront fee demands.',
+        targetType: 'evidence',
+        targetId: 'ev_border_contract',
+        isUnlocked: true,
+        isCompleted: false,
+        unlocksLeads: ['lead_check_whois', 'lead_interview_elena'],
+        unlocksEvidenceIds: ['ev_border_whois'],
+        unlocksWitnessIds: ['wit_elena_vance'],
+        rewardXp: 100,
+        hint: 'Click "Inspect File" on the Employment Contract to examine fee terms and company seal.'
+      },
+      {
+        id: 'lead_check_whois',
+        title: 'Examine Aura Global Domain & License Registry',
+        description: 'Cross-reference the company domain "auraglobaljobs.org" against the official government labor registry to verify if it is a registered recruitment agency.',
+        targetType: 'evidence',
+        targetId: 'ev_border_whois',
+        isUnlocked: false,
+        isCompleted: false,
+        unlocksLeads: ['lead_interrogate_sterling'],
+        unlocksWitnessIds: ['wit_victor_sterling'],
+        rewardXp: 120,
+        hint: 'Use the Evidence Verification Toolkit in Evidence Lab to perform a Source Audit on WHOIS records.'
+      },
+      {
+        id: 'lead_interview_elena',
+        title: 'Interrogate Recruiter Elena Vance',
+        description: 'Question Elena about her physical office location, employee identification number, and why Kaelen was issued a tourist visa instead of a work permit.',
+        targetType: 'witness',
+        targetId: 'wit_elena_vance',
+        isUnlocked: false,
+        isCompleted: false,
+        unlocksLeads: ['lead_confront_elena'],
+        unlocksEvidenceIds: ['ev_border_chat_logs'],
+        rewardXp: 150,
+        hint: 'Ask Elena about the flight itinerary and visa type in the Interrogation Terminal.'
+      },
+      {
+        id: 'lead_confront_elena',
+        title: 'Confront Elena with WHOIS Record',
+        description: 'Present the WHOIS domain evidence during interrogation to prove her recruitment portal was registered just 5 days ago.',
+        targetType: 'witness',
+        targetId: 'wit_elena_vance',
+        isUnlocked: false,
+        isCompleted: false,
+        unlocksLeads: ['lead_reconstruct_border_timeline'],
+        rewardXp: 200,
+        hint: 'Click "Present Evidence" in the Interrogation terminal and select the WHOIS record file.'
+      },
+      {
+        id: 'lead_reconstruct_border_timeline',
+        title: 'Reconstruct Kaelen\'s Departure Timeline',
+        description: 'Arrange the sequence of events from initial recruitment to airport arrival in the Case Timeline tool.',
+        targetType: 'timeline',
+        isUnlocked: false,
+        isCompleted: false,
+        unlocksLeads: ['lead_border_conference'],
+        rewardXp: 180,
+        hint: 'Drag timeline events into correct chronological order.'
+      },
+      {
+        id: 'lead_border_conference',
+        title: 'Present Case Brief to Chief Detective',
+        description: 'Gather your findings and submit your investigation report at the Detective Case Conference.',
+        targetType: 'conference',
+        isUnlocked: false,
+        isCompleted: false,
+        rewardXp: 300,
+        hint: 'Go to Case Conference tab and outline the perpetrator, method, and prevention plan.'
+      }
     ],
     evidences: [
       {
-        id: 'ev_spliced_video',
-        name: 'Unedited Student Forum Audio-Video Log',
-        type: 'image',
-        description: 'Frame-by-frame forensic analysis comparing the viral 11-second CliqClok clip with the unedited 3-minute raw recording.',
-        category: 'Audio/Video Forensics',
-        dateCollected: 'July 10, 08:30 AM',
-        source: 'Town Hall AV Archives',
-        importance: 'Critical',
-        content: `[FORENSIC VIDEO TIMELINE COMPARISON]
-Unedited Raw Recording (Timestamp 14:22):
-"A few online trolls falsely claim that [0:05 FRAME CUT] I do not care about the community center and we should close it down [0:16 FRAME CUT], but that is completely absurd and untrue!"
-
-Viral CliqClok Post (@KyotoStudentTruth):
-"I do not care about the community center and we should close it down!"
-
-Audio Waveform Audit:
-- Sharp 12dB amplitude drop at timestamp 0:05 indicating a hard splices cut.
-- Inaudible room reverb shift at 0:16 confirming missing trailing sentence.
-- Conclusion: The statement was deliberately inverted by removing qualifying clauses.`,
-        isLocked: false
-      },
-      {
-        id: 'ev_algo_variables',
-        name: 'CliqClok Recommender Metrics Log',
-        type: 'system_file',
-        description: 'Internal platform analytics showing how engagement algorithms generated an isolated filter bubble.',
-        category: 'System Performance Logs',
-        dateCollected: 'July 10, 09:15 AM',
-        source: 'CliqClok Server Analytics',
-        importance: 'High',
-        content: `[CLIQLOK ALGORITHMIC DISTRIBUTION AUDIT]
-Recommender Engine ID: RecLoop_v4.2
-Parameters Triggered:
-- Outrage/Conflict Sentiment Multiplier: 4.5x (highest weight allocated to angry comment threads)
-- User Watch-Time Retention: 94.2%
-- Filter Bubble Metric: 92.1% of local high school accounts received ONLY negative reaction videos within 120 minutes.
-- Alternative Source Reach: 0.3% (unedited debunk videos suppressed due to lower outrage velocity).
-
-Key Insight: The platform algorithm maximized user screen-time by deliberately starving users of counter-evidence.`,
-        isLocked: false
-      },
-      {
-        id: 'ev_chat_reconciliation',
-        name: 'Student Council Group Chat Export',
-        type: 'chat',
-        description: 'Exported chat history showing the rapid spread of peer pressure and confirmation bias among student leaders.',
-        category: 'Messaging Logs',
-        dateCollected: 'July 10, 10:00 AM',
-        source: 'Student Association Messaging App',
-        importance: 'Medium',
-        content: `[STUDENT ASSOCIATION OFFICIAL CHAT]
-July 10, 08:15 AM
-Chloe Smith: "Did everyone see that CliqClok video of Maya? She lied to our faces!"
-Clara Oswald: "Wait guys, I was standing right next to Maya during the assembly. That clip cuts off mid-sentence! Can we please wait for the full video?"
-Chloe Smith: "Clara, my feed has 30 different posts saying she betrayed us. The algorithm doesn't lie! If you keep defending her, you'll be removed from the council too."
-Student Member #4: "Yeah Clara, don't stand up for a fake leader."
-Chloe Smith: [Maya Lin was removed from Student Association Chat]`,
-        isLocked: true,
-        unlockCondition: 'interview_witness_clara'
-      },
-      {
-        id: 'ev_school_suspension',
-        name: 'Principal\'s Recommendation Hold Notice',
+        id: 'ev_border_contract',
+        name: 'Aura Global VIP Offer Letter',
         type: 'document',
-        description: 'Official school administration memo showing how the viral outrage impacted Maya\'s university scholarship.',
-        category: 'Administrative Document',
-        dateCollected: 'July 10, 11:30 AM',
-        source: 'High School Principal Office',
-        importance: 'High',
-        content: `[KYOTO HIGH SCHOOL ADMINISTRATIVE MEMORANDUM]
-Date: July 10
-Subject: Temporary Suspension of State Scholarship Nomination
-Target Student: Maya Lin (Grade 11)
+        description: 'Employment contract issued to Kaelen Miller offering $8,500/month as "Overseas Web Lead". Demands $450 advance visa processing fee and passport surrender upon arrival.',
+        content: `AURA GLOBAL SOLUTIONS LTD. — RECRUITMENT DIVISION
+OFFER OF EMPLOYMENT & OVERSEAS PLACEMENT CONTRACT
 
-In light of widespread student unrest and viral footage indicating conduct unbecoming of a student representative, Maya Lin's nomination for the Governor's Merit Scholarship is placed on administrative hold pending disciplinary review.
+Candidate: Kaelen Miller (Age 19)
+Position: Overseas Senior Web Lead (Special Project)
+Monthly Remuneration: $8,500 USD (Net) + Luxury Housing Allowance
+Location: Border Special Economic Zone, Sub-District 9
 
-Signed,
-Principal Arthur Davis`,
+TERMS & MANDATORY REQUIREMENTS:
+1. Candidate agrees to depart within 24 hours on Flight AG-802 (Tourist Transit Visa Category V-1).
+2. Candidate agrees to deposit $450 USD processing fee to designated wallet address for express clearance.
+3. Official passport will be retained by local site manager upon arrival for "security registration".
+4. Personal mobile devices will be deposited in office storage during working shifts.
+
+Signed: Victor Sterling (Managing Director)
+Recruiter: Elena Vance (Talent Acquisition)`,
+        isLocked: false,
+        dateCollected: '10:15 AM Today',
+        source: 'Family Email Archive',
+        category: 'CONTRACTUAL EVIDENCE',
+        importance: 'Critical',
+        inspectablePoints: [
+          {
+            id: 'p1',
+            label: 'Tourist Transit Visa Requirement',
+            detail: 'Working overseas on a Tourist Visa is illegal in most jurisdictions and leaves workers completely vulnerable without labor rights or legal protections.',
+            revealsLeadId: 'lead_check_whois'
+          },
+          {
+            id: 'p2',
+            label: 'Passport Retainment Clause',
+            detail: 'Confiscating passports upon arrival is a direct indicator of forced labor and human trafficking.',
+            revealsLeadId: 'lead_interview_elena'
+          },
+          {
+            id: 'p3',
+            label: 'Advance Crypto Deposit',
+            detail: 'Legitimate employers never demand job seekers pay upfront processing fees or deposit crypto.',
+            revealsLeadId: 'lead_check_whois'
+          }
+        ],
+        metadata: {
+          sender: 'elena.vance@auraglobaljobs.org',
+          recipient: 'kaelen.m@devmail.io',
+          ipAddress: '185.220.101.42 (Anonymous Proxy)',
+          domainAge: '5 Days Old'
+        }
+      },
+      {
+        id: 'ev_border_whois',
+        name: 'WHOIS & Corporate Registry Report',
+        type: 'website',
+        description: 'Domain WHOIS lookup and Ministry of Labor verification log for auraglobaljobs.org.',
+        content: `DOMAIN REGISTRATION AUDIT
+Domain: auraglobaljobs.org
+Registered Date: 5 Days Ago
+Registrant Name: REDACTED FOR PRIVACY (Proxy Protection)
+Hosting Provider: Offshore Crypto Server (Panama)
+
+GOVERNMENT LABOR MINISTRY DATABASE QUERY:
+Organization Search: "Aura Global Solutions Ltd."
+Result: NOT FOUND IN REGISTERED OVERSEAS EMPLOYMENT AGENCIES.
+License Status: UNLICENSED / FRAUDULENT RECRUITER ALERT ISSUED.`,
         isLocked: true,
-        unlockCondition: 'interview_witness_chloe'
+        unlockCondition: 'Inspect Offer Letter or Complete Lead: Audit Contract',
+        dateCollected: '11:30 AM Today',
+        source: 'Cyber Forensics Terminal',
+        category: 'DOMAIN ANALYSIS',
+        importance: 'Critical',
+        inspectablePoints: [
+          {
+            id: 'p4',
+            label: 'Domain Age (5 Days)',
+            detail: 'A company claiming 10 years of global recruitment experience whose domain was registered 5 days ago is fake.',
+            revealsLeadId: 'lead_interview_elena'
+          },
+          {
+            id: 'p5',
+            label: 'Unlicensed Status',
+            detail: 'Not registered with the Ministry of Labor — unauthorized to recruit citizens for abroad work.',
+            revealsLeadId: 'lead_interrogate_sterling'
+          }
+        ]
+      },
+      {
+        id: 'ev_border_chat_logs',
+        name: 'Recruiter Chat History',
+        type: 'chat',
+        description: 'Exported WhatsApp chat between recruiter Elena Vance and victim Kaelen Miller.',
+        content: `[Elena 14:02]: Kaelen, the executive board is impressed! They want you on tomorrow's plane for our offshore hub.
+[Kaelen 14:05]: Isn't this too fast? I haven't even had a technical coding interview or met the engineering team.
+[Elena 14:06]: Opportunities like this don't wait. Other candidates are applying. Pay the $450 visa deposit now or we pass to candidate #2.
+[Kaelen 14:10]: Okay, I just sent the deposit. Where do I pick up my foreign work permit?
+[Elena 14:11]: You will enter on a tourist visa first, then we swap it at the compound. Keep this off social media!`,
+        isLocked: true,
+        unlockCondition: 'Interview Elena Vance',
+        dateCollected: '12:00 PM Today',
+        source: 'Victim Phone Backup',
+        category: 'COMMUNICATION TRAIL',
+        importance: 'High'
       }
     ],
     witnesses: [
       {
-        id: 'wit_clara',
-        name: 'Clara Oswald',
-        role: 'Classmate & Maya\'s Best Friend',
-        avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400',
-        description: 'Maya\'s closest friend who noticed the video jump cut but stayed silent out of fear of social rejection.',
-        promptKnowledge: 'You are Clara Oswald, 17. You are wracked with guilt. You say: "I knew Maya was innocent! I was standing three feet away from her at the microphone. But when I tried to say something in the group chat, Chloe threatened to turn everyone against me. My whole CliqClok feed was wall-to-wall hate posts with scary music. It felt like living in an alternate reality where no one cared about what actually happened. I am so relieved you are looking at the original raw town hall recording!"',
-        status: 'available'
+        id: 'wit_elena_vance',
+        name: 'Elena Vance',
+        role: 'Talent Scout / Recruiter (Aura Global)',
+        avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80',
+        description: 'Polished recruiter operating out of a regional virtual co-working space. Claims she was hired by Victor Sterling to find young tech talent quickly.',
+        promptKnowledge: 'You are Elena Vance, a recruiter for Aura Global. You insist the job is 100% legitimate and high paying. You claim you were hired by Victor Sterling to find young talent. If confronted with the WHOIS record showing the domain is 5 days old, you act surprised and admit Victor told you to use that portal.',
+        status: 'available',
+        personalityTrait: 'Polished, Persuasive, Evasive',
+        motive: 'Receives commission per recruited candidate; claims ignorance of human trafficking compound.',
+        suspicionLevel: 'Suspect',
+        confrontationTriggers: [
+          {
+            evidenceId: 'ev_border_whois',
+            dialogueResponse: 'Wait... the domain was created 5 days ago?! Mr. Sterling told me Aura was a 10-year-old firm! He gave me $500 cash per recruit to onboard candidates fast on tourist visas...',
+            revealsLeadId: 'lead_interrogate_sterling',
+            revealsWitnessId: 'wit_victor_sterling'
+          }
+        ]
       },
       {
-        id: 'wit_chloe',
-        name: 'Chloe Smith',
-        role: 'Student Council President',
-        avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=400',
-        description: 'The student president who banned Maya after being overwhelmed by algorithmically boosted notifications.',
-        promptKnowledge: 'You are Chloe Smith, 17. You are defensive, stressed, and beginning to realize you made a terrible mistake. You say: "Look, my phone was literally vibrating nonstop with hundreds of tags and angry messages. CliqClok kept showing me video after video of people saying Maya betrayed us. It was trending #1 in our city! I thought if everyone agreed, it had to be true. I didn\'t know about context splicing or audio cuts... I just wanted to protect our student council from the mob backlash."',
-        status: 'available'
-      },
-      {
-        id: 'wit_maya',
-        name: 'Maya Lin',
-        role: 'Targeted Student Leader',
-        avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=400',
-        description: 'The victim of the viral campaign, heartbroken that her dedication to the community center was turned against her.',
-        promptKnowledge: 'You are Maya Lin, 17. You are tearful but resolute. You say: "I built my whole life around helping at the Youth Community Center. That center gave me a quiet place to study when my family was struggling. When I saw that fake 10-second clip on CliqClok, my stomach dropped. They stripped away my opening words and made me sound like a monster. People I\'ve known for six years refused to even talk to me. Please show everyone the full unedited town hall tape."',
-        status: 'available'
+        id: 'wit_victor_sterling',
+        name: 'Victor Sterling',
+        role: 'Managing Director / Alleged Operator',
+        avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=300&q=80',
+        description: 'Self-styled international entrepreneur operating shell companies under multiple aliases across offshore accounts.',
+        promptKnowledge: 'You are Victor Sterling. You deflect blame, claiming Kaelen is an independent contractor who agreed to all terms willingly. If confronted with evidence of passport retention and forced messaging, you claim "standard site security procedures".',
+        status: 'locked',
+        personalityTrait: 'Arrogant, Deflective, Corporate',
+        motive: 'Operates illicit cyber scam compounds using trapped overseas workers.',
+        suspicionLevel: 'Prime Suspect'
       }
     ],
     timeline: [
       {
-        id: 'time_ec1',
-        time: 'TIMESTAMP: UNVERIFIED',
-        description: 'Maya Lin delivers her proposal at the Student Town Hall, quoting and refuting an online rumor about closing the community center.',
+        id: 'tl_border_1',
+        time: 'Day 1 - 09:00 AM',
+        description: 'Elena Vance messages Kaelen on social professional platform with high-salary overseas job offer.',
         isCorrect: true,
-        orderIndex: 0
+        orderIndex: 1,
+        isInitiallyKnown: true
       },
       {
-        id: 'time_ec2',
-        time: 'TIMESTAMP: UNVERIFIED',
-        description: 'An anonymous account (@KyotoStudentTruth) surgical cuts an 11-second video snippet, removing Maya\'s introductory and concluding qualifiers.',
+        id: 'tl_border_2',
+        time: 'Day 1 - 02:10 PM',
+        description: 'Kaelen transfers $450 crypto deposit under pressure for urgent visa clearance.',
         isCorrect: true,
-        orderIndex: 1
+        orderIndex: 2,
+        isInitiallyKnown: true
       },
       {
-        id: 'time_ec3',
-        time: 'TIMESTAMP: UNVERIFIED',
-        description: 'CliqClok\'s algorithm applies a 4.5x outrage weight to the spliced clip, flooding 92% of local student feeds.',
+        id: 'tl_border_3',
+        time: 'Day 2 - 06:30 AM',
+        description: 'Kaelen departs on a one-way flight using a tourist visa.',
         isCorrect: true,
-        orderIndex: 2
+        orderIndex: 3,
+        isInitiallyKnown: false
       },
       {
-        id: 'time_ec4',
-        time: 'TIMESTAMP: UNVERIFIED',
-        description: 'Students trapped inside the outrage filter bubble ban Maya from council chats and suspend her scholarship recommendation.',
+        id: 'tl_border_4',
+        time: 'Day 2 - 08:00 PM',
+        description: 'Arrival at border sub-district; passport confiscated by site handlers under guise of "security clearance".',
         isCorrect: true,
-        orderIndex: 3
+        orderIndex: 4,
+        isInitiallyKnown: false
       }
     ],
     clues: [
-      { id: 'cl_context_splice', text: 'Audio waveform analysis proves the viral clip omitted Maya\'s opening phrase ("A few trolls falsely claim that...").', isDiscovered: false, evidenceId: 'ev_spliced_video' },
-      { id: 'cl_algorithm_echo', text: 'CliqClok\'s recommender engine assigned a 4.5x outrage multiplier that locked local users in a filter bubble.', isDiscovered: false, evidenceId: 'ev_algo_variables' },
-      { id: 'cl_red_herring_editor', text: 'Red Herring: A classmate\'s video editing assignment was flagged as suspicious but turned out to be an innocent media class project.', isDiscovered: false }
+      {
+        id: 'cl_border_1',
+        text: 'Employer urged candidate to fly on a Tourist Visa instead of a verified Work Permit.',
+        evidenceId: 'ev_border_contract',
+        isDiscovered: true
+      },
+      {
+        id: 'cl_border_2',
+        text: 'Aura Global website was registered 5 days ago on offshore servers and lacks labor licensing.',
+        evidenceId: 'ev_border_whois',
+        isDiscovered: false
+      },
+      {
+        id: 'cl_border_3',
+        text: 'Recruiter Elena Vance admitted receiving cash bonuses from Victor Sterling to rush candidates.',
+        evidenceId: 'ev_border_chat_logs',
+        isDiscovered: false
+      }
     ],
+    initialWallNodes: [
+      { id: 'node_kaelen', title: 'Kaelen Miller (Victim)', type: 'suspect', x: 20, y: 30, description: '19yo Developer, Trapped Overseas' },
+      { id: 'node_elena', title: 'Elena Vance', type: 'suspect', x: 50, y: 20, description: 'Recruiter, Aura Global' },
+      { id: 'node_sterling', title: 'Victor Sterling', type: 'suspect', x: 80, y: 30, description: 'Mastermind, Shell Company Director' },
+      { id: 'node_contract', title: 'Fake Job Offer', type: 'evidence', x: 35, y: 70, description: 'Demanded crypto fee & tourist visa' },
+      { id: 'node_whois', title: '5-Day Domain WHOIS', type: 'digital', x: 65, y: 70, description: 'Unlicensed Fake Entity' }
+    ],
+    conferenceConfig: {
+      promptContext: 'Evaluating overseas job scam and human trafficking network investigation.',
+      suspectOptions: [
+        { id: 'wit_victor_sterling', name: 'Victor Sterling', role: 'Syndicate Operator & Fake Agency Director' },
+        { id: 'wit_elena_vance', name: 'Elena Vance', role: 'Unwitting / Commissioned Recruiter' },
+        { id: 'kaelen_roommate', name: 'Leo (Roommate)', role: 'Casual Acquaintance' }
+      ],
+      mechanismOptions: [
+        { id: 'm1', label: 'Overseas Recruitment Trafficking', description: 'Baiting victims with high tech salaries, tourist visas, and advance fees then trapping them in forced labor compounds.' },
+        { id: 'm2', label: 'Standard Identity Theft', description: 'Stealing credentials without physical coercion.' },
+        { id: 'm3', label: 'Local Corporate Embezzlement', description: 'Stealing local company funds.' }
+      ],
+      preventionOptions: [
+        { id: 'p1', label: 'Ministry Labor Verification & No Upfront Fees', description: 'Always verify recruiters on official government labor portals, never pay advance job fees, and never travel for work on a tourist visa.' },
+        { id: 'p2', label: 'Pay All Upfront Fees Immediately', description: 'Pay fees to speed up visa processing.' },
+        { id: 'p3', label: 'Keep Communications Off Official Record', description: 'Use private unmonitored apps.' }
+      ]
+    },
+    location: {
+      name: 'Aura Global Co-Working Suite',
+      description: 'A rented virtual office space used temporarily by recruiters to meet candidates and issue fake contracts.',
+      coordinates: '35.6762° N, 139.6503° E',
+      imageUrl: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80',
+      hotspots: [
+        {
+          id: 'hs_border_1',
+          name: 'Discarded Contract Shreds',
+          x: 28,
+          y: 45,
+          description: 'A trash bin containing draft contracts with identical wording sent to 12 other young applicants.',
+          revealsEvidenceId: 'ev_border_contract'
+        },
+        {
+          id: 'hs_border_2',
+          name: 'Unclaimed Router Terminal',
+          x: 72,
+          y: 60,
+          description: 'Network terminal showing recent connections to offshore proxy IP addresses.',
+          revealsLeadId: 'lead_check_whois'
+        }
+      ]
+    },
     solution: {
       questions: [
         {
           id: 'q1',
-          question: 'What is a "filter bubble" created by social media recommendation algorithms?',
-          choices: [
-            'A network security tool that filters out computer viruses.',
-            'An algorithmically enforced state where users are repeatedly served content matching their outrage history, isolating them from counter-evidence.',
-            'A private group chat created for high school study teams.',
-            'An encrypted messaging protocol used by student councils.'
-          ],
-          correctAnswer: 'An algorithmically enforced state where users are repeatedly served content matching their outrage history, isolating them from counter-evidence.',
-          explanation: 'Filter bubbles occur when recommendation algorithms prioritize outrage and engagement over factual accuracy. Users are fed identical emotional clips, giving the false illusion that "everyone agrees" and suppressing critical thinking.'
+          question: 'Who was the primary mastermind operating the fraudulent recruitment compound?',
+          choices: ['Victor Sterling', 'Elena Vance', 'Kaelen Miller', 'Mrs. Miller'],
+          correctAnswer: 'Victor Sterling',
+          explanation: 'Victor Sterling operated the unlicensed shell company Aura Global, paying recruiters cash to lure victims abroad onto tourist visas.'
         },
         {
           id: 'q2',
-          question: 'What is "lateral reading" and why is it essential when encountering viral outrage media?',
+          question: 'Which key warning sign proved that the job offer was a scam?',
           choices: [
-            'Reading a news article repeatedly from top to bottom to check for spelling errors.',
-            'Leaving the emotional social media post to independently search for unedited primary sources, verification logs, and neutral reporting.',
-            'Asking friends in your group chat if they believe the video is real.',
-            'Checking how many likes and shares the viral video has received.'
+            'Demanding an advance visa fee, requiring travel on a tourist visa, and passport retainment terms.',
+            'Offering remote work flexible hours.',
+            'Asking for a resume and cover letter.',
+            'Using video calls for meetings.'
           ],
-          correctAnswer: 'Leaving the emotional social media post to independently search for unedited primary sources, verification logs, and neutral reporting.',
-          explanation: 'Lateral reading is the core digital literacy practice of opening new browser tabs to check the credibility of a claim using primary sources, rather than relying on the comments or aesthetics of the viral post itself.'
+          correctAnswer: 'Demanding an advance visa fee, requiring travel on a tourist visa, and passport retainment terms.',
+          explanation: 'Legitimate employers do not demand advance crypto fees or require workers to travel on tourist visas with surrendered passports.'
         }
-      ]
-    },
-    location: {
-      name: 'CliqClok Analysis Hub',
-      description: 'The digital media analytics lab where investigators examine audio spectrographs and recommender algorithm parameters.',
-      coordinates: '35.6762° N, 139.6503° E',
-      imageUrl: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800',
-      hotspots: [
-        { id: 'hs_server', name: 'Algorithm Database Node', x: 45, y: 35, description: 'The CliqClok server node displaying watch-time multipliers and echo chamber metrics.', revealsEvidenceId: 'ev_algo_variables' }
       ]
     }
   },
 
   // =========================================================================
-  // CASE 2: THE PHANTOM VOICE (AI Voice Cloning & Deepfake Impersonation)
+  // CASE 2: The Echoes in the Static
+  // Theme: AI Deepfake Voice Cloning & Emergency Family Ransom Extortion
   // =========================================================================
   {
-    id: 'case_synthetic_impostor',
-    title: 'The Phantom Voice: The Midnight Impostor',
-    topic: 'AI Voice Cloning, Deepfakes & Scraped Audio Harvesting',
+    id: 'case_echoes_static',
+    title: 'The Echoes in the Static',
+    topic: 'AI Voice Cloning & Family Extortion',
     difficulty: 'MED',
     status: 'URGENT',
-    tag: 'AI FORENSICS',
-    threatActor: 'VoiceSyndicate Cyber Group',
-    timeLimit: '24:00 Hours',
-    imageUrl: 'https://images.unsplash.com/photo-1614064641938-3bbee52942c7?auto=format&fit=crop&q=80&w=800',
-    introduction: 'At 11:42 PM, Devon Miller—head of the Parent Association—received a frantic telephone call from High School Principal Arthur Davis\'s official office line. The trembling voice claimed Davis was detained at police headquarters due to a district audit error and needed an emergency $12,000 wire transfer to avoid an immediate school shutdown. Panicked, Devon transferred the funds and forwarded an urgent audio alert to 850 parents. But the real Principal Davis was asleep at home. Attackers harvested 22 hours of public school podcast audio to train a neural voice clone. Uncover the spectrographic evidence, trace the spoofed telecommunications gateway, and solve the mystery.',
+    tag: 'DEEPFAKE AUDIO & EMERGENCY EXTORTION',
+    threatActor: 'Phantom Audio Syndicate',
+    timeLimit: '24 HOURS',
+    imageUrl: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&w=1200&q=80',
+    introduction: 'Dr. Arthur Pendelton received a panicked phone call featuring the crying voice of his daughter Maya, claiming she was in a severe mountain car accident and held for $4,800 emergency damages. Spectrogram analysis revealed the voice was an AI clone synthesized from public YouTube vlogs.',
     storyIntro: {
-      summary: "A neural AI voice clone of Principal Arthur Davis was used in a late-night telephone extortion scheme. Devon Miller was duped into wiring $12,000 from the parent emergency fund and broadcasting a emergency panic alert before realizing the principal's voice had been artificially harvested from public podcasts.",
-      victimName: "Arthur Davis & Devon Miller",
-      victimRole: "School Principal & Parent Association Lead",
-      incidentTime: "July 15, 11:42 PM",
+      summary: 'Dr. Arthur Pendelton received a satellite call with Maya\'s sobbing voice begging for emergency funds after an alleged car crash in the mountains. A stern operator demanded $4,800 via instant transfer within 20 minutes. Maya later confirmed she was at camp with zero cell knowledge of the event.',
+      victimName: 'Dr. Arthur Pendelton & Maya Pendelton',
+      victimRole: 'University Professor (Age 58) & Daughter (Age 22)',
+      incidentTime: 'Yesterday Afternoon',
       scenes: [
         {
-          id: "si_s1",
+          id: 'sc_echo_ch1_1',
           sceneNumber: 1,
-          title: "Chapter 1: A Normal Day — The Principal's Weekly Address",
-          locationName: "Kyoto Central High School Studio",
-          mediaType: "dialogue",
+          chapterNumber: 1,
+          chapterTitle: 'A Normal Day',
+          title: 'Morning Goodbye & Mountain Vlog',
+          locationName: 'Dr. Pendelton\'s Study',
+          mediaType: 'text_chat',
           speaker: {
-            name: "Arthur Davis",
-            role: "High School Principal (54 y/o)",
-            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400",
-            mood: "confident"
+            name: 'Maya Pendelton',
+            role: 'Geology Student (Age 22)',
+            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+            mood: 'neutral'
           },
-          dialogueText: "Welcome to Episode 50 of the Principal's Weekly Address! I want to personally congratulate our science bowl team and remind all parents about our upcoming annual summer excursion. Thank you for your continued trust in our school community.",
-          narration: "Principal Arthur Davis is a warm, dedicated educator who has served the school for 20 years. To maintain transparency with families, he records a weekly 30-minute podcast hosted publicly on the school's website.",
-          keyTakeaway: "Audio Source: Principal Davis has published 50+ hours of clean, high-quality speech publicly on the internet.",
-          soundEffect: "keyboard"
-        },
-        {
-          id: "si_s2",
-          sceneNumber: 2,
-          title: "Chapter 2: The Opportunity — The Midnight Call",
-          locationName: "Devon Miller's Residence",
-          mediaType: "phone_call",
-          speaker: {
-            name: "Devon Miller",
-            role: "Parent Association Lead (42 y/o)",
-            avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400",
-            mood: "panicked"
-          },
-          dialogueText: "My phone rang at 11:42 PM. The caller ID clearly displayed '+1 (555) 0192' — Principal Davis's official office desk number. When I answered, I heard Mr. Davis's exact voice, breathless and sobbing!",
-          narration: "Devon Miller was asleep when his phone buzzed. Seeing the principal's official office number on the caller ID instantly bypassed his suspicion.",
-          keyTakeaway: "Authority Spoofing: Attackers falsified the caller ID to match the principal's official school telephone number.",
-          soundEffect: "phone_ring"
-        },
-        {
-          id: "si_s3",
-          sceneNumber: 3,
-          title: "Chapter 3: Building Trust — The High-Stakes Emergency",
-          locationName: "Intercepted Telephone Audio Stream",
-          mediaType: "phone_call",
-          speaker: {
-            name: "Synthetic Voice (Arthur Davis Clone)",
-            role: "AI Impostor",
-            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400",
-            mood: "panicked"
-          },
-          dialogueText: "Devon! Please, listen to me! I'm at the central precinct. There was a catastrophic accounting error with the summer trip bond! If we don't post a $12,000 cash guarantee by midnight, the district will seize our accounts and cancel all classes tomorrow! You must wire the money from the parent emergency fund right now!",
-          narration: "The caller's voice sounds identical to Arthur Davis—including his distinct cadence and polite tone. The sense of catastrophic urgency overrides rational hesitation.",
-          keyTakeaway: "Manipulation Technique: Fear & Extreme Urgency — forcing immediate decision-making before facts can be checked.",
-          soundEffect: "phone_ring"
-        },
-        {
-          id: "si_s4",
-          sceneNumber: 4,
-          title: "Chapter 4: Warning Signs — Unnatural Hesitations",
-          locationName: "Parent Fund Management Console",
-          mediaType: "dialogue",
-          speaker: {
-            name: "Devon Miller",
-            role: "Parent Association Lead",
-            avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400",
-            mood: "worried"
-          },
-          dialogueText: "I asked him: 'Arthur, shouldn't we call Vice Principal Sato first?' But the voice paused strangely for two seconds with zero background breathing, then repeated in the same rigid tone: 'No time! Wire the funds to this emergency clearing account immediately!' There was a subtle metallic tone in his voice, but I was too panicked to question it.",
-          narration: "Devon noticed two subtle red flags: the caller ignored a specific question about staff members and had unnatural silent gaps without natural breathing sounds.",
-          keyTakeaway: "AI Voice Anomaly: Synthetic TTS generators struggle with interactive conversation context and natural inhalation pauses.",
-          soundEffect: "static"
-        },
-        {
-          id: "si_s5",
-          sceneNumber: 5,
-          title: "Chapter 5: The Incident — Fund Wire & Morning Chaos",
-          locationName: "High School Courtyard",
-          mediaType: "news_alert",
+          narration: 'Dr. Arthur Pendelton, a university history professor, receives a warm text from his daughter Maya, who is heading out on a 3-day geology field trip in the remote Cascade Mountains. Maya posts a 2-minute video blog on YouTube showing her field gear.',
+          dialogueText: 'Morning Dad! Setting up camp at North Pass. Cell signal is weak here, but I posted a quick 2-minute vlog update on YouTube for the geology club. Love you!',
           mediaContent: {
-            header: "ALERT // $12,000 EXPORTED & 850 PARENTS PANICKED",
-            body: "Devon wired $12,000 from the parent fund and sent a panic voicemail to all parent chat groups. At 07:30 AM, Principal Davis arrived at school completely unaware of any emergency."
+            timestamp: '08:15 AM Yesterday',
+            body: 'Text Message from Maya: "Heading into the mountain valley now! Check out my YouTube vlog if you want to see our camp setup!"'
           },
-          dialogueText: "Principal Davis stepped out of his car to find 100 distressed parents crying in the courtyard. When Devon showed him the voicemail, Davis stood frozen in shock: 'This is my voice... but I was in bed asleep with my wife all night!'",
-          narration: "The $12,000 parent emergency fund was drained into an unrecoverable cryptocurrency mixer, and the school was thrown into turmoil.",
-          keyTakeaway: "Devastating Outcome: Financial theft and public panic achieved through synthetic voice cloning and spoofed communications.",
-          soundEffect: "notification"
+          keyTakeaway: 'Public video blogs and social media audio clips provide cybercriminals with high-quality voice samples needed to train AI cloning models.'
         },
         {
-          id: "si_s6",
-          sceneNumber: 6,
-          title: "Chapter 6: Investigation Begins — AI Forensics Dispatch",
-          locationName: "AI Audio Forensics Laboratory",
-          mediaType: "police_dispatch",
+          id: 'sc_echo_ch2_2',
+          sceneNumber: 2,
+          chapterNumber: 2,
+          chapterTitle: 'The Opportunity',
+          title: 'The Incoming Satellite Call',
+          locationName: 'Dr. Pendelton\'s Home Office',
+          mediaType: 'phone_call',
           speaker: {
-            name: "Lead Forensics Specialist",
-            role: "Cyber Biometrics Unit",
-            mood: "urgent"
+            name: 'Unknown Satellite Line',
+            role: 'VOIP Spoofed Caller',
+            avatar: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=300&q=80',
+            mood: 'urgent'
           },
-          dialogueText: "Investigator, you are needed on scene! We are analyzing a high-fidelity synthetic voice attack. Step into the AI Forensics Lab, inspect the spectrographic wave boundaries, trace the scraper bot that harvested Davis's podcasts, and track the caller ID spoofing gateway.",
-          narration: "Equip your audio spectrograph and uncover the neural signature behind the synthetic phone call.",
-          keyTakeaway: "Verification Protocol: Establish family/organization safety code words and always hang up to call back directly on known numbers.",
-          soundEffect: "siren"
+          narration: 'Late afternoon, while Arthur is grading papers, his phone buzzes with an incoming call from an unlisted VOIP satellite number displaying +1 (800) 555-EMRG.',
+          dialogueText: '[Phone Ringing] Incoming Encrypted Satellite Call from North Pass Region...',
+          keyTakeaway: 'Spoofed caller IDs can make calls appear to come from local law enforcement or satellite emergency networks.'
+        },
+        {
+          id: 'sc_echo_ch3_3',
+          sceneNumber: 3,
+          chapterNumber: 3,
+          chapterTitle: 'Building Trust',
+          title: 'The Panicked Voice Stream',
+          locationName: 'Encrypted Audio Stream',
+          mediaType: 'phone_call',
+          speaker: {
+            name: 'Synthesized Maya Voice',
+            role: 'AI Audio Clone',
+            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+            mood: 'panicked'
+          },
+          narration: 'Arthur answers. A weeping, trembling voice sounding 100% identical to Maya screams through the speaker.',
+          dialogueText: 'Dad! Dad, please help me! I was in a terrible crash on the mountain road... my brake line snapped and I hit a transport vehicle... these local operators won\'t let me leave unless you pay the damages right now!',
+          keyTakeaway: 'AI voice models clone pitch, tone, and inflection with terrifying accuracy, weaponizing emotional panic to bypass logical reasoning.'
+        },
+        {
+          id: 'sc_echo_ch4_4',
+          sceneNumber: 4,
+          chapterNumber: 4,
+          chapterTitle: 'Warning Signs',
+          title: 'Hostage Demands & 20-Minute Countdown',
+          locationName: 'Phone Intercept',
+          mediaType: 'phone_call',
+          speaker: {
+            name: 'Operator Vance (Scammer)',
+            role: 'Extortion Operator',
+            avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
+            mood: 'urgent'
+          },
+          narration: 'A harsh male voice takes the phone, prohibiting Arthur from hanging up or placing a secondary call to Maya\'s mother.',
+          dialogueText: 'Listen carefully, old man. Your daughter caused $4,800 in vehicle damages. You must wire $4,800 via instant peer-to-peer transfer within 20 minutes, or we turn her over to local detention! Do not hang up or call police or we disconnect!',
+          keyTakeaway: 'Forbidding secondary verification calls and setting tight 20-minute timers are telltale signs of emergency extortion scams.'
+        },
+        {
+          id: 'sc_echo_ch5_5',
+          sceneNumber: 5,
+          chapterNumber: 5,
+          chapterTitle: 'The Incident',
+          title: 'Drained Savings & The Peaceful Post',
+          locationName: 'Dr. Pendelton\'s Residence',
+          mediaType: 'news_alert',
+          speaker: {
+            name: 'Cyber Crime Emergency Alert',
+            role: 'Fraud Warning Notice',
+            mood: 'panicked'
+          },
+          narration: 'Terrified for his daughter\'s life, Arthur wire-transfers $4,800. An hour later, Maya posts a peaceful photo on Instagram eating lunch at her geology camp, entirely unaware of any accident. Arthur realizes he was scammed by an AI voice clone synthesized from her YouTube vlog.',
+          dialogueText: 'FRAUD ALERT: Cybercriminals harvested 2 minutes of speech from Maya\'s YouTube video, trained an ElevenTTS AI model, and spoofed a satellite call to extort her family.',
+          keyTakeaway: 'Always perform out-of-band verification by calling the person directly or contacting field supervisors before sending money.'
+        },
+        {
+          id: 'sc_echo_ch6_6',
+          sceneNumber: 6,
+          chapterNumber: 6,
+          chapterTitle: 'Investigation Begins',
+          title: 'Acoustic Forensics & VOIP Tracing',
+          locationName: 'Forensics Audio Laboratory',
+          mediaType: 'police_dispatch',
+          speaker: {
+            name: 'Chief Investigator Vance',
+            role: 'Acoustic Forensics Director',
+            mood: 'urgent'
+          },
+          narration: 'The Cyber Crime Unit initiates acoustic spectrogram analysis on the recorded voicemail and traces the VOIP server.',
+          dialogueText: 'Investigator, inspect the voicemail audio file in the Evidence Lab. Look for synthetic pitch artifacts, run WHOIS traces on the VOIP proxy, and interrogate student IT assistant Julian Vance to locate the cloning engine.',
+          keyTakeaway: 'Proceed to the Investigation Room to examine the audio recording, analyze spectral logs, and interview witnesses.'
         }
       ]
     },
     learningObjectives: [
-      'Identify spectrographic and auditory anomalies (flat silence, missing breath cycles, metallic boundary cuts) of AI voice clones.',
-      'Understand how cybercriminals harvest public audio/video recordings to build custom neural speech models.',
-      'Implement fail-safe verification protocols (direct callback verification, pre-shared family passphrases).',
-      'Recognize telephone caller-ID spoofing techniques and how to bypass them.'
+      'Understand how AI voice cloning models harvest voice samples from public videos.',
+      'Detect synthetic audio artifacts (robotic cadence, unnatural pitch stability, static loops).',
+      'Establish strict out-of-band verification protocols for emergency or financial requests.'
     ],
     warningSigns: [
-      'An emergency call claiming a loved one or authority figure is in distress and demanding immediate money transfer.',
-      'A familiar voice that pauses awkwardly during custom questions or displays zero background breathing/room noise.',
-      'Insistence on absolute secrecy and refusal to allow you to call other family members or colleagues.',
-      'Requests for payment via non-standard wire transfers, gift cards, or cryptocurrency addresses.'
+      'Voicemails or phone calls demanding secret financial transfers to bypass official approval steps.',
+      'Caller voice exhibits subtle mechanical pauses, missing background ambient noise, or unnatural pitch stability.',
+      'Extreme emotional pressure forbidding secondary verification calls to family or authorities.'
     ],
     manipulationTechniques: [
-      'Panic & Extreme Urgency (setting artificial time constraints to prevent verification).',
-      'Neural Voice Cloning (harvesting open-source podcasts to train neural text-to-speech models).',
-      'Caller-ID Spoofing (falsifying telecommunication headers to display trusted numbers).'
+      'Biometric Deception (AI Voice Cloning)',
+      'Emergency Family Panic Fabrication',
+      'Strict Out-of-Band Prevention (Forbidding hang-ups)'
+    ],
+    leads: [
+      {
+        id: 'lead_analyze_audio_spectrogram',
+        title: 'Run Spectrogram Analysis on Voicemail',
+        description: 'Load the recorded voicemail in the Evidence Lab and inspect audio spectral frequencies for synthetic voice generator artifacts.',
+        targetType: 'evidence',
+        targetId: 'ev_voice_recording',
+        isUnlocked: true,
+        isCompleted: false,
+        unlocksLeads: ['lead_trace_voice_sample', 'lead_interview_harrison'],
+        unlocksEvidenceIds: ['ev_voice_spectral_log'],
+        unlocksWitnessIds: ['wit_principal_harrison'],
+        rewardXp: 110,
+        hint: 'Use the Source Audit button in Evidence Lab on the Voice Recording.'
+      },
+      {
+        id: 'lead_trace_voice_sample',
+        title: 'Trace Public Audio Harvesting Source',
+        description: 'Find where the perpetrators obtained Maya\'s voice sample used to train the voice model.',
+        targetType: 'evidence',
+        targetId: 'ev_voice_spectral_log',
+        isUnlocked: false,
+        isCompleted: false,
+        unlocksLeads: ['lead_interrogate_sam'],
+        unlocksWitnessIds: ['wit_sam_coder'],
+        rewardXp: 130,
+        hint: 'Inspect the Spectral Analysis Log in the Evidence cabinet.'
+      },
+      {
+        id: 'lead_interview_harrison',
+        title: 'Interview Dr. Arthur Pendelton',
+        description: 'Confirm Arthur\'s timeline during the call and verify Maya\'s public YouTube video uploads.',
+        targetType: 'witness',
+        targetId: 'wit_principal_harrison',
+        isUnlocked: false,
+        isCompleted: false,
+        rewardXp: 100,
+        hint: 'Ask Dr. Pendelton about Maya\'s YouTube vlog in the Interrogation Terminal.'
+      },
+      {
+        id: 'lead_interrogate_sam',
+        title: 'Interrogate IT Assistant Julian Vance',
+        description: 'Confront student IT assistant Julian Vance about the voice cloning repository found on his server.',
+        targetType: 'witness',
+        targetId: 'wit_sam_coder',
+        isUnlocked: false,
+        isCompleted: false,
+        unlocksLeads: ['lead_voice_conference'],
+        rewardXp: 180,
+        hint: 'Present the Voice Spectral Log to Julian during interrogation.'
+      },
+      {
+        id: 'lead_voice_conference',
+        title: 'Present Case Brief at Case Conference',
+        description: 'Present your findings to Chief Detective showing how voice cloning was executed.',
+        targetType: 'conference',
+        isUnlocked: false,
+        isCompleted: false,
+        rewardXp: 280,
+        hint: 'Go to Case Conference tab and submit your analysis.'
+      }
     ],
     evidences: [
       {
-        id: 'ev_voice_log',
-        name: 'Emergency Voicemail Spectrographic Analysis',
-        type: 'image',
-        description: 'Audio spectrograph report analyzing the 0.04-second neural wave chunks of the voicemail sent to Devon Miller.',
-        category: 'Audio Forensic Report',
-        dateCollected: 'July 15, 11:45 PM',
-        source: 'Parent Phone Network Intercept',
-        importance: 'Critical',
-        content: `[AUDIO FORENSICS SPECTRAL ANALYSIS REPORT]
-Source Sample: "Davis_Emergency_Call.wav" (Length: 42 seconds)
-Biometric Frequency Match: 98.4% match with Arthur Davis's vocal timbre.
+        id: 'ev_voice_recording',
+        name: 'Voicemail & Call Intercept MP3',
+        type: 'audio',
+        description: 'Recorded satellite call received by Dr. Arthur Pendelton demanding $4,800 emergency transfer.',
+        content: `AUDIO TRANSCRIPT // DURATION: 00:32
+"Dad! Dad, please help me! I was in a terrible crash on the mountain road... my brake line snapped and I hit a local driver's vehicle... these local operators won't let me leave unless you pay the damages right now!"
 
-SPECTRAL ANOMALIES DISCOVERED:
-1. Physiological Inhalation Deficit: 0.00% natural breath sounds detected between clauses (human speech displays 4-8 breaths per minute).
-2. Spectral Silence Floor: Noise floor drops to absolute digital zero (-inf dB) during pauses, indicating synthetic text-to-speech rendering blocks.
-3. Plosive Boundary Artifacts: Hard consonant transitions (p, t, k) show synthetic phase alignments characteristic of neural vocoder patch outputs.`,
-        isLocked: false
+FORENSIC AUDIO NOTE:
+Unnatural pitch stability detected at 1.2 kHz. Lack of physiological breath pause between sentences.`,
+        isLocked: false,
+        dateCollected: '04:30 PM Yesterday',
+        source: 'Victim Phone Recorder',
+        category: 'AUDIO EVIDENCE',
+        importance: 'Critical',
+        inspectablePoints: [
+          {
+            id: 'vp1',
+            label: 'Unnatural Pitch Stability',
+            detail: 'Human speech has pitch micro-variations. Flat synthetic frequencies indicate AI generative models.',
+            revealsLeadId: 'lead_trace_voice_sample'
+          },
+          {
+            id: 'vp2',
+            label: 'Command Not to Hang Up',
+            detail: 'Scammers instruct victims not to hang up or call family to prevent out-of-band verification.',
+            revealsLeadId: 'lead_interview_harrison'
+          }
+        ]
       },
       {
-        id: 'ev_harvest_source',
-        name: 'Podcast Harvester Server Logs',
-        type: 'document',
-        description: 'Web server logs exposing the automated scraping bot that downloaded 22 hours of Principal Davis\'s weekly podcast episodes.',
-        category: 'Server Traffic Logs',
-        dateCollected: 'July 14, 11:30 PM',
-        source: 'School Web Server Repository',
-        importance: 'High',
-        content: `[WEB SERVER HARVESTING INCIDENT LOG]
-Target URL: https://kyotohigh.edu/media/podcasts/Davis_Weekly/
-Date: July 14, 02:15 AM
-User-Agent: "Python-urllib/3.10 (AudioScraperBot)"
-Downloaded Assets: 50 MP3 files (Total length: 22 hours, 14 minutes)
-Destination IP: 198.51.100.42 (Anonymous VPN Node)
-Compilation Tool Artifact: Meta-header "ElevenLabs_NeuralStudio_v2.1"
-Voice Model ID: "Model_Davis_v3" created July 14th at 04:30 AM.`,
-        isLocked: false
-      },
-      {
-        id: 'ev_spoofed_sms',
-        name: 'Telecommunications Spoofing Packet Dump',
+        id: 'ev_voice_spectral_log',
+        name: 'Spectral Frequency & Model Hash Log',
         type: 'system_file',
-        description: 'SIP header packet trace exposing the anonymous VoIP gateway used to falsify Principal Davis\'s desk phone number.',
-        category: 'Network Packet Logs',
-        dateCollected: 'July 15, 11:42 PM',
-        source: 'District Telecom Exchange',
-        importance: 'Critical',
-        content: `[SIP TELECOM HEADER PACKET TRACE]
-Call ID: SIP-40912-US
-Header Display Name: "Principal Davis Office"
-Header Display Number: +1 (555) 0192 (Official School Desk)
+        description: 'Audio forensic spectrogram analysis comparing Maya\'s speech from YouTube clips against the emergency voicemail.',
+        content: `SPECTRAL WAVEFORM COMPARISON REPORT
+Source Sample A: "North Pass Geology Camp Vlog" (YouTube Channel - 2 mins speech)
+Target Sample B: Emergency Voicemail
 
-REAL ORIGINATING NODE:
-Originating IP: 198.51.100.88 (Osaka Telecom Proxy Gateway)
-Routing Protocol: Simplex-VoIP-Bulk-Relay
-Authentication Status: UNVERIFIED (STIR/SHAKEN Protocol Failed - Invalid Certificate)
-Conclusion: Caller ID header was injected via an unauthenticated VoIP gateway.`,
+MATCH RESULTS:
+- Voice Print Similarity: 98.7%
+- Synthesis Engine Identified: ElevenTTS-v2 (Cloned Model Hash #88192)
+- Training Audio Origin: Scraped directly from YouTube video URL: youtube.com/watch?v=maya_geology_vlog
+- Creator Account IP: 192.168.1.104 (Campus IT Lab Proxy)`,
         isLocked: true,
-        unlockCondition: 'interview_witness_arthur'
-      },
-      {
-        id: 'ev_crypto_invoice',
-        name: 'Emergency Fund Wire & Crypto Transfer Receipt',
-        type: 'crypto_fragment',
-        description: 'Financial ledger showing the $12,000 wire transfer from the Parent Fund to a synthetic laundering wallet.',
-        category: 'Financial Forensics',
-        dateCollected: 'July 16, 01:00 AM',
-        source: 'Parent Association Bank Account',
-        importance: 'High',
-        content: `[WIRE TRANSFER CONFIRMATION]
-Sender: Kyoto Parent Association Emergency Fund
-Amount: $12,000.00 USD
-Beneficiary Account: "Global Clearing Service LLC"
-Recipient Wallet: 0x71C...9B42 (Automated Mixer Pool)
-Status: Completed (Non-reversible wire transfer)
-Note: Triggered by urgent phone request at 11:55 PM.`,
-        isLocked: true,
-        unlockCondition: 'interview_witness_devon'
+        unlockCondition: 'Inspect Voicemail or Complete Lead: Run Spectrogram Analysis',
+        dateCollected: '06:00 PM Yesterday',
+        source: 'Acoustic Forensics Lab',
+        category: 'FORENSIC SPECTROGRAM',
+        importance: 'Critical'
       }
     ],
     witnesses: [
       {
-        id: 'wit_arthur',
-        name: 'Arthur Davis',
-        role: 'High School Principal',
-        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400',
-        description: 'The school principal whose voice was harvested from weekly podcasts to train a neural clone.',
-        promptKnowledge: 'You are Arthur Davis, 54. You are shocked and deeply concerned. You say: "I host a weekly podcast to keep parents connected to our school. I never imagined someone would harvest my voice to steal from our parents! When I arrived at school this morning and saw crying parents in the courtyard, I thought there was a real disaster. Hearing my own voice demanding money in a voicemail was horrifying. How can we trust audio anymore if AI can replicate us so seamlessly?"',
-        status: 'available'
+        id: 'wit_principal_harrison',
+        name: 'Dr. Arthur Pendelton',
+        role: 'University History Professor (Victim)',
+        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
+        description: 'History professor for 18 years. Devoted father who acted out of sheer panic when he heard his daughter crying.',
+        promptKnowledge: 'You are Dr. Arthur Pendelton. You were grading papers when you received the panicked call. The voice sounded 100% like Maya. You transferred $4,800 out of fear.',
+        status: 'available',
+        personalityTrait: 'Calm, Protective, Devastated',
+        motive: 'Protecting his daughter and assisting the investigation.',
+        suspicionLevel: 'Innocent'
       },
       {
-        id: 'wit_devon',
-        name: 'Devon Miller',
-        role: 'Parent Association Lead',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400',
-        description: 'The parent leader who wired $12,000 after being deceived by caller ID spoofing and synthetic voice audio.',
-        promptKnowledge: 'You are Devon Miller, 42. You are wracked with guilt and shame. You say: "The caller ID literally said Principal Davis\'s office! And the voice sounded exactly like him—panicked, breathless, crying. He said the school was going to be locked down in 20 minutes if I didn\'t wire the money. I panicked because I wanted to save the school trip. Looking back, I should have hung up and called his personal mobile phone directly. I feel terrible for losing $12,000 of parent funds."',
-        status: 'available'
-      },
-      {
-        id: 'wit_tech_janitor',
-        name: 'Kenji Sato',
-        role: 'School IT Technician',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400',
-        description: 'The IT technician who noticed high night-time server bandwidth downloading the podcast archive.',
-        promptKnowledge: 'You are Kenji Sato, 29. You are observant and eager to help. You say: "On July 14 at 2:00 AM, our firewall alerted me to a single IP address downloading all 50 MP3 episodes of Principal Davis\'s podcast in under three minutes. I thought it was an enthusiastic student catching up, but when I looked closer at the headers, the user agent belonged to an automated scraping bot. That scraped audio was definitely used to train their AI speech generator!"',
-        status: 'available'
+        id: 'wit_sam_coder',
+        name: 'Julian Vance',
+        role: 'Student IT Assistant & Developer',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
+        description: 'Tech-savvy student assistant with administrative access to video tools and audio processing APIs.',
+        promptKnowledge: 'You are Julian Vance. You initially claim your code was stolen from GitHub. When confronted with spectral logs, you confess you were paid $1,500 by a Telegram contact named "Nexus" to build the voice model.',
+        status: 'locked',
+        personalityTrait: 'Defensive, Tech-savvy, Nervous',
+        motive: 'Sold voice clone models online for cash.',
+        suspicionLevel: 'Prime Suspect',
+        confrontationTriggers: [
+          {
+            evidenceId: 'ev_voice_spectral_log',
+            dialogueResponse: 'Okay! I downloaded Maya\'s YouTube vlog audio and trained an ElevenTTS voice clone because a contact named "Nexus" on Telegram paid me $1,500 in crypto!',
+            revealsLeadId: 'lead_voice_conference'
+          }
+        ]
       }
     ],
     timeline: [
       {
-        id: 'time_si1',
-        time: 'TIMESTAMP: UNVERIFIED',
-        description: 'An automated scraping bot downloads 22 hours of Principal Davis\'s public podcasts from the school server.',
+        id: 'tl_voice_1',
+        time: 'Day 1 - 08:15 AM',
+        description: 'Maya uploads 2-minute mountain geology vlog to public YouTube channel.',
         isCorrect: true,
-        orderIndex: 0
+        orderIndex: 1,
+        isInitiallyKnown: true
       },
       {
-        id: 'time_si2',
-        time: 'TIMESTAMP: UNVERIFIED',
-        description: 'Attackers compile neural voice model "Model_Davis_v3" using an AI text-to-speech voice studio.',
+        id: 'tl_voice_2',
+        time: 'Day 1 - 02:00 PM',
+        description: 'Perpetrators scrape YouTube audio and generate ElevenTTS voice clone model.',
         isCorrect: true,
-        orderIndex: 1
+        orderIndex: 2,
+        isInitiallyKnown: true
       },
       {
-        id: 'time_si3',
-        time: 'TIMESTAMP: UNVERIFIED',
-        description: 'Attackers use a spoofed VoIP gateway to call Devon Miller, displaying Davis\'s office desk number on the caller ID.',
+        id: 'tl_voice_3',
+        time: 'Day 1 - 04:30 PM',
+        description: 'Dr. Arthur Pendelton receives spoofed satellite call demanding $4,800 emergency transfer.',
         isCorrect: true,
-        orderIndex: 2
-      },
-      {
-        id: 'time_si4',
-        time: 'TIMESTAMP: UNVERIFIED',
-        description: 'Devon wires $12,000 from the parent fund and broadcasts an emergency alert to 850 parent chat groups.',
-        isCorrect: true,
-        orderIndex: 3
+        orderIndex: 3,
+        isInitiallyKnown: false
       }
     ],
     clues: [
-      { id: 'cl_voice_synth_markers', text: 'Audio spectrograph reveals 0.00% natural breathing cycles and digital zero noise floors characteristic of AI voice cloning.', isDiscovered: false, evidenceId: 'ev_voice_log' },
-      { id: 'cl_podcasts_harvest', text: 'Server traffic logs prove 22 hours of podcast audio were scraped to build the neural voice model.', isDiscovered: false, evidenceId: 'ev_harvest_source' },
-      { id: 'cl_red_herring_mic', text: 'Red Herring: Old microphone static in Episode 12 was suspected to be an insertion key but proved to be hardware noise.', isDiscovered: false }
+      {
+        id: 'cl_voice_1',
+        text: 'Voicemail exhibited synthetic pitch artifacts and unnatural sentence pauses.',
+        evidenceId: 'ev_voice_recording',
+        isDiscovered: true
+      },
+      {
+        id: 'cl_voice_2',
+        text: 'Voice model was trained on YouTube video scraped by IT assistant Julian Vance.',
+        evidenceId: 'ev_voice_spectral_log',
+        isDiscovered: false
+      }
     ],
+    initialWallNodes: [
+      { id: 'node_harrison', title: 'Dr. Pendelton (Target)', type: 'suspect', x: 20, y: 30, description: 'Voice Cloned Victim' },
+      { id: 'node_sam', title: 'Julian Vance', type: 'suspect', x: 80, y: 30, description: 'IT Assistant Developer' },
+      { id: 'node_voicemail', title: 'Voicemail MP3', type: 'evidence', x: 35, y: 70, description: 'Synthetic Frequencies' },
+      { id: 'node_spectrogram', title: 'Acoustic Log', type: 'digital', x: 65, y: 70, description: 'Model Hash Match' }
+    ],
+    conferenceConfig: {
+      promptContext: 'Evaluating AI voice cloning & family extortion case.',
+      suspectOptions: [
+        { id: 'wit_sam_coder', name: 'Julian Vance', role: 'IT Assistant & Voice Model Synthesizer' },
+        { id: 'wit_principal_harrison', name: 'Dr. Arthur Pendelton', role: 'Victim' }
+      ],
+      mechanismOptions: [
+        { id: 'm1', label: 'AI Voice Cloning & Out-of-Band Bypassing', description: 'Scraping public audio to build synthetic voice models, then calling under emergency pretexts while telling victims not to call back.' },
+        { id: 'm2', label: 'Physical Phone Tap', description: 'Tapping landline wires.' }
+      ],
+      preventionOptions: [
+        { id: 'p1', label: 'Out-of-Band Callback & Secondary Verification', description: 'Always verify emergency financial calls by calling back on known personal numbers or contacting supervisors.' },
+        { id: 'p2', label: 'Trust Voice Alone Without Verification', description: 'Rely on voice recognition.' }
+      ]
+    },
+    location: {
+      name: 'Campus IT Media Suite',
+      description: 'The broadcasting studio where campus videos are edited and server logs are archived.',
+      coordinates: '34.0522° N, 118.2437° W',
+      imageUrl: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=1200&q=80',
+      hotspots: [
+        {
+          id: 'hs_voice_1',
+          name: 'Editing Console #2',
+          x: 50,
+          y: 50,
+          description: 'Console containing audio extraction tools and ElevenTTS voice model project folders.',
+          revealsEvidenceId: 'ev_voice_spectral_log'
+        }
+      ]
+    },
     solution: {
       questions: [
         {
           id: 'q1',
-          question: 'What is the most secure protocol when receiving an unexpected emergency phone call from a family member or authority figure demanding immediate funds?',
-          choices: [
-            'Wire the funds right away to prevent any potential harm.',
-            'Hang up, independently locate the official phone number from a trusted directory, and call back directly to verify.',
-            'Ask the caller to send a text message with their bank details.',
-            'Trust the call if the caller ID matches a saved phone number.'
-          ],
-          correctAnswer: 'Hang up, independently locate the official phone number from a trusted directory, and call back directly to verify.',
-          explanation: 'Generative AI can clone a human voice print with less than 10 seconds of clear sample audio, and VoIP caller ID headers can be easily spoofed. Independent direct callbacks are mandatory for emergency verification.'
+          question: 'Who synthesized Maya\'s voice clone model from her YouTube vlog?',
+          choices: ['Julian Vance', 'Dr. Arthur Pendelton', 'Maya Pendelton', 'Mrs. Miller'],
+          correctAnswer: 'Julian Vance',
+          explanation: 'Julian Vance downloaded Maya\'s public YouTube audio and generated the synthetic voice model.'
         },
         {
           id: 'q2',
-          question: 'Which of the following spectrographic features strongly indicates an AI-generated voice recording?',
+          question: 'What is the most effective defense against voice cloning emergency scams?',
           choices: [
-            'High audio fidelity and clear pronunciation.',
-            'Complete absence of natural human breathing sounds between phrases and absolute digital zero silence during pauses.',
-            'The presence of background traffic noise.',
-            'The speaker using regional dialect words.'
+            'Out-of-band verification (calling back on a trusted personal number or checking with colleagues).',
+            'Hanging up and ignoring all calls.',
+            'Sending cash instead of wire transfers.',
+            'Relying purely on pitch quality.'
           ],
-          correctAnswer: 'Complete absence of natural human breathing sounds between phrases and absolute digital zero silence during pauses.',
-          explanation: 'Neural text-to-speech models struggle to synthesize subtle human physiological cues such as micro-inhalations, lip smacks, and ambient room noise floors, leaving unnatural digital silences.'
+          correctAnswer: 'Out-of-band verification (calling back on a trusted personal number or checking with colleagues).',
+          explanation: 'Always verify financial requests by placing a separate call to a known verified number.'
         }
-      ]
-    },
-    location: {
-      name: 'AI Audio Forensics Lab',
-      description: 'The police department\'s biometric security lab equipped with audio spectrographs and SIP telecom packet analyzers.',
-      coordinates: '34.6937° N, 135.5021° E',
-      imageUrl: 'https://images.unsplash.com/photo-1614064641938-3bbee52942c7?auto=format&fit=crop&q=80&w=800',
-      hotspots: [
-        { id: 'hs_analyzer', name: 'Audio Spectral Console', x: 50, y: 45, description: 'The audio console where voice wave metrics and biometric boundary cuts are analyzed.', revealsEvidenceId: 'ev_voice_log' }
       ]
     }
   },
 
   // =========================================================================
-  // CASE 3: THE POISONED WELL (Commercial Disinformation & WHOIS Audits)
+  // CASE 3: The Ghost in the Ledger
+  // Theme: Investment Fraud, Identity Theft & Fake Trading Terminal
   // =========================================================================
   {
-    id: 'case_profit_propaganda',
-    title: 'The Poisoned Well: The AquaShield Conspiracy',
-    topic: 'Commercial Disinformation, WHOIS Audits & Bot Networks',
+    id: 'case_ghost_ledger',
+    title: 'The Ghost in the Ledger',
+    topic: 'Investment Fraud & Identity Theft',
     difficulty: 'HIGH',
-    status: 'NEW',
-    tag: 'MEDIA ECONOMICS',
-    threatActor: 'HypeMedia LLC & AquaGuard Domestic Filters',
-    timeLimit: '48:00 Hours',
-    imageUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=800',
-    introduction: 'A viral news report published on "EcoShield News" claimed that Kyoto\'s municipal drinking water was contaminated with a dangerous chemical compound called "Toxin-X". The article triggered citywide panic buying, clearing supermarket shelves of bottled water within two hours. However, municipal safety labs confirmed tap water is 100% clean. Investigative journalist Renee Carter revealed she was offered $5,000 to publish a fake contamination story. Who created EcoShield News? Who is profiting from public terror? Audit domain ownership records, inspect campaign ledgers, and dismantle the profit-driven panic machine.',
+    status: 'HIGH PRIORITY',
+    tag: 'INVESTMENT FRAUD & IDENTITY THEFT',
+    threatActor: 'Aegis Wealth Syndicate',
+    timeLimit: '36 HOURS',
+    imageUrl: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80',
+    introduction: 'Sophia Lin, a freelance graphic artist saving for her family home, was approached by a charming investor offering access to "Aegis Wealth Terminal". After depositing her $25,000 savings into fake trading pools and uploading identity papers, the platform vanished into thin air.',
     storyIntro: {
-      summary: "A fabricated news article claiming tap water was contaminated with industrial toxins triggered mass panic buying across Kyoto. Investigations revealed 'EcoShield News' was secretly registered by the vice president of a home water filtration manufacturer to boost $500 filter sales.",
-      victimName: "Municipal Water Board & Citizens of Kyoto",
-      victimRole: "Public Infrastructure & Consumers",
-      incidentTime: "July 12, 10:00 AM",
+      summary: 'Sophia Lin was befriended by "David Sterling", a high-profile venture advisor who bought her digital artwork and introduced her to Aegis Wealth Terminal. After showing false 18% daily returns and letting her make a small $50 test withdrawal, the site vanished along with her $25,000 life savings.',
+      victimName: 'Sophia Lin',
+      victimRole: 'Freelance Graphic Artist (Age 26)',
+      incidentTime: 'Yesterday Morning',
       scenes: [
         {
-          id: "pp_s1",
+          id: 'sc_ghost_ch1_1',
           sceneNumber: 1,
-          title: "Chapter 1: A Normal Day — Clean Municipal Water Testing",
-          locationName: "Kyoto Water Testing Facility",
-          mediaType: "dialogue",
+          chapterNumber: 1,
+          chapterTitle: 'A Normal Day',
+          title: 'Art Studio & Home Savings',
+          locationName: 'Sophia\'s Design Studio',
+          mediaType: 'text_chat',
           speaker: {
-            name: "Renee Carter",
-            role: "Environmental Reporter (32 y/o)",
-            avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400",
-            mood: "confident"
+            name: 'Sophia Lin',
+            role: 'Freelance Artist (Age 26)',
+            avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80',
+            mood: 'neutral'
           },
-          dialogueText: "I was covering a routine story on Kyoto's water infrastructure. Dr. Kenzo showed me the automated sensors that test tap water every 15 seconds. Kyoto has some of the cleanest municipal water in the world, certified by global health boards.",
-          narration: "Renee Carter is an award-winning investigative journalist who takes pride in factual environmental reporting. Public municipal water tests were completely green.",
-          keyTakeaway: "Verified Fact: Municipal water testing facilities maintain automated 24/7 public safety logs showing zero contamination.",
-          soundEffect: "keyboard"
+          narration: 'Sophia Lin balances accounting work with digital illustration. She has spent 4 years meticulously saving $25,000 to purchase a modest condo for her elderly parents.',
+          dialogueText: 'I just hit $25,000 in my savings account! If I can find a safe investment vehicle that yields decent returns, I can finally put down a home deposit by next winter.',
+          keyTakeaway: 'Understanding Sophia\'s personal goal to buy a home for her parents explains her receptivity to wealth management opportunities.'
         },
         {
-          id: "pp_s2",
+          id: 'sc_ghost_ch2_2',
           sceneNumber: 2,
-          title: "Chapter 2: The Opportunity — The $5,000 Bribe",
-          locationName: "Downtown Coffee House",
-          mediaType: "dialogue",
+          chapterNumber: 2,
+          chapterTitle: 'The Opportunity',
+          title: 'The Wealth Advisor Recruiter',
+          locationName: 'Professional Art Network',
+          mediaType: 'email_preview',
           speaker: {
-            name: "Renee Carter",
-            role: "Environmental Reporter",
-            avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400",
-            mood: "suspicious"
+            name: 'David Sterling',
+            role: 'Venture Collector & Advisor',
+            avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=300&q=80',
+            mood: 'confident'
           },
-          dialogueText: "On July 8th, Marcus Sterling—CEO of HypeMedia PR—asked to meet. He offered me $5,000 in cash if I would copy-paste a pre-written draft stating that 'secret lab tests detected Toxin-X in tap water'. I angrily refused and threatened to report him!",
-          narration: "Commercial disinformers often attempt to bribe real journalists first to lend credibility to their fabrications.",
-          keyTakeaway: "Commercial Bribe Attempt: PR agencies attempt to hire credentialed reporters to launch manufactured scares.",
-          soundEffect: "notification"
+          narration: 'Sophia receives a highly complimentary message from "David Sterling", claiming to be a venture investor who wants to commission her artwork and mentor her in wealth management.',
+          dialogueText: 'Sophia, your digital art portfolio is extraordinary! I want to buy 2 pieces for $1,200 each. By the way, my firm operates Aegis Wealth Terminal—an exclusive institutional trading portal with guaranteed 18% yields.',
+          mediaContent: {
+            sender: 'david.sterling@aegiswealthterminal.org',
+            recipient: 'sophia.lin@artmail.com',
+            header: 'Art Commission Inquiry & Aegis Wealth Invitation',
+            body: 'Dear Sophia, I am thrilled to commission your artwork. Additionally, I would be honored to mentor you in high-yield institutional asset pools.'
+          },
+          keyTakeaway: 'Scammers frequently build trust by purchasing goods or paying small commissions before introducing fake investment schemes.'
         },
         {
-          id: "pp_s3",
+          id: 'sc_ghost_ch3_3',
           sceneNumber: 3,
-          title: "Chapter 3: Building Trust — EcoShield News Appears",
-          locationName: "EcoShieldNews.com Portal",
-          mediaType: "news_alert",
-          mediaContent: {
-            header: "ECOSHIELD NEWS SPECIAL REPORT // 140,000 SHARES",
-            body: "⚠️ TOXIC TAP WATER HAZARD: Industrial compound Toxin-X detected in Kyoto reservoirs! Tap water is corrosive to skin. Protect your family with certified home filters!"
-          },
-          dialogueText: "Four days after Renee rejected the bribe, a sleek new website named 'EcoShield News' appeared online, carrying the exact same fake article! It cited 'anonymous biosafety experts' and featured sleek scientific diagrams.",
-          narration: "The website looked highly professional, complete with fake editorial badges and green environmental branding designed to instill total trust.",
-          keyTakeaway: "Manufactured Media: Creating fake news outlets that masquerade as trusted environmental organizations.",
-          soundEffect: "notification"
-        },
-        {
-          id: "pp_s4",
-          sceneNumber: 4,
-          title: "Chapter 4: Warning Signs — Bot Farm & Discount Codes",
-          locationName: "Osaka Bot Farm Operations",
-          mediaType: "email_preview",
-          mediaContent: {
-            header: "CONFIDENTIAL // CAMPAIGN AQUA-FEAR",
-            sender: "marcus@hypemedia-pr.jp",
-            recipient: "botnet-dispatch@osaka-nodes.com",
-            body: "Execute 10,000 retweets targeting Kyoto parent demographics. Embed promo code 'AQUASAFE' for $500 AquaGuard filters alongside the crisis article."
-          },
-          dialogueText: "An automated bot farm flooded local social networks with the EcoShield link. Conveniently, sponsored ads for 'AquaGuard $500 Home Filters' with discount code 'AQUASAFE' popped up right beside every article share!",
-          narration: "The article generated immediate panic while seamlessly offering a $500 commercial solution to the manufactured problem.",
-          keyTakeaway: "Follow the Money: Panic campaigns are designed to sell expensive commercial solutions to manufactured problems.",
-          soundEffect: "keyboard"
-        },
-        {
-          id: "pp_s5",
-          sceneNumber: 5,
-          title: "Chapter 5: The Incident — Panic Buying & Revenue Spike",
-          locationName: "Kyoto Supermarkets & Stores",
-          mediaType: "news_alert",
-          mediaContent: {
-            header: "PANIC BUYING SPREADS // $189,000 IN FILTER SALES",
-            body: "Supermarket shelves were stripped of bottled water within two hours. AquaGuard's home filter sales exploded by +450%, generating $189,000 in 24 hours."
-          },
-          dialogueText: "Elderly citizens queued for hours in summer heat for bottled water. Meanwhile, AquaGuard Domestic Filters experienced its highest sales day in company history, collecting $189,000 in profits.",
-          narration: "Panic buying caused genuine hardship for vulnerable residents while the corporate instigators celebrated record profits.",
-          keyTakeaway: "Disinformation Monetization: Commercial panic campaigns convert public fear into corporate revenue.",
-          soundEffect: "notification"
-        },
-        {
-          id: "pp_s6",
-          sceneNumber: 6,
-          title: "Chapter 6: Investigation Begins — Media Economics Dispatch",
-          locationName: "AquaGuard Investigation Bureau",
-          mediaType: "police_dispatch",
+          chapterNumber: 3,
+          chapterTitle: 'Building Trust',
+          title: 'The Small Test Withdrawal',
+          locationName: 'Aegis Wealth Terminal Dashboard',
+          mediaType: 'text_chat',
           speaker: {
-            name: "Chief Investigator Vance",
-            role: "Media Economics Unit",
-            mood: "urgent"
+            name: 'David Sterling',
+            role: 'Venture Collector & Advisor',
+            avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=300&q=80',
+            mood: 'confident'
           },
-          dialogueText: "Investigator, we need you to follow the money! 'EcoShield News' was registered anonymously behind WHOIS privacy shields. Step into the Media Economics Lab, audit the domain domain registry, inspect the corporate marketing ledgers, and expose the conspirators.",
-          narration: "Your investigation begins. Perform WHOIS domain lookups and follow the financial trail to expose the commercial disinformers.",
-          keyTakeaway: "WHOIS Domain Audits: Uncover domain creation dates and secret corporate registrants behind fake news portals.",
-          soundEffect: "siren"
+          narration: 'David guides Sophia to register on aegiswealthterminal.org, deposit $500, and watch her balance tick up on realistic live charts. To prove legitimacy, he encourages her to withdraw $50 back into her real bank account.',
+          dialogueText: 'See Sophia? You just withdrew $50 of profit in 2 minutes! Aegis is fully regulated. Now is the perfect time to transfer your main savings into our VIP Institutional Pool before the round closes tonight.',
+          keyTakeaway: 'Allowing victims to make small initial test withdrawals is a calculated trap to build total confidence before soliciting large sums.'
+        },
+        {
+          id: 'sc_ghost_ch4_4',
+          sceneNumber: 4,
+          chapterNumber: 4,
+          chapterTitle: 'Warning Signs',
+          title: 'The 20% Tax Clearance Demand',
+          locationName: 'Aegis Compliance Portal',
+          mediaType: 'email_preview',
+          speaker: {
+            name: 'Aegis Compliance Officer',
+            role: 'Fake Terminal Audit',
+            mood: 'urgent'
+          },
+          narration: 'Convinced, Sophia deposits her full $25,000 savings. A week later, when she requests her full balance withdrawal, the portal blocks her request, demanding a 20% "IRS Anti-Money Laundering Tax Fee" of $5,000 upfront.',
+          dialogueText: 'WITHDRAWAL HOLD NOTICE: Account #9912 flags AML inspection. Customer must deposit an advance 20% Tax Clearance Fee ($5,000 USD) in crypto within 24 hours to release held funds.',
+          mediaContent: {
+            sender: 'compliance@aegiswealthterminal.org',
+            recipient: 'sophia.lin@artmail.com',
+            header: '⚠️ URGENT HOLD: 20% AML Tax Clearance Fee Required',
+            body: 'Notice: Your balance of $29,500 is locked pending AML verification. Wire $5,000 in crypto to complete release.'
+          },
+          keyTakeaway: 'Demanding advance tax clearance fees or "release deposits" to access your own investment funds is a 100% guarantee of investment fraud.'
+        },
+        {
+          id: 'sc_ghost_ch5_5',
+          sceneNumber: 5,
+          chapterNumber: 5,
+          chapterTitle: 'The Incident',
+          title: '404 Error & Stolen Identity',
+          locationName: 'Sophia\'s Apartment',
+          mediaType: 'news_alert',
+          speaker: {
+            name: 'Financial Fraud Warning',
+            role: 'Identity Theft Incident',
+            mood: 'panicked'
+          },
+          narration: 'Refusing to pay more money, Sophia tries to message David. His profile is deleted. Aegis Wealth Terminal collapses into a 404 error. Two days later, Sophia receives bank alerts for unauthorized loan applications opened in her name using identity documents she uploaded during "KYC verification".',
+          dialogueText: 'CRIME LOG: Aegis Wealth Terminal was a fake trading portal designed to harvest $25,000 in crypto savings and steal national identity papers.',
+          keyTakeaway: 'Fake trading platforms steal both money and identity papers, enabling cybercriminals to open fraudulent bank loans under victim identities.'
+        },
+        {
+          id: 'sc_ghost_ch6_6',
+          sceneNumber: 6,
+          chapterNumber: 6,
+          chapterTitle: 'Investigation Begins',
+          title: 'Financial Forensics & Domain Analysis',
+          locationName: 'Financial Crimes Task Force',
+          mediaType: 'police_dispatch',
+          speaker: {
+            name: 'Chief Investigator Vance',
+            role: 'Financial Crimes Task Force',
+            mood: 'urgent'
+          },
+          narration: 'The Financial Crimes Unit takes over the case. All domain records,fake trading scripts, WHOIS logs, and email headers are indexed in your Investigation Room.',
+          dialogueText: 'Investigator, inspect the Aegis portal code, trace the fake WHOIS domain registration, and interrogate student IT developer Julian Vance to unmask the mastermind behind Aegis Wealth.',
+          keyTakeaway: 'Proceed to the Investigation Room to examine financial records, audit WHOIS data, and interview witnesses.'
         }
       ]
     },
     learningObjectives: [
-      'Apply the "Follow-the-Money" principle to uncover commercial motivations behind online panic campaigns.',
-      'Audit domain registration records (WHOIS lookups) to uncover secret corporate ownership and domain age.',
-      'Recognize how bot farms artificially boost clickbait engagement to force algorithms to trend stories.',
-      'Identify conflicts of interest when a news publisher directly profits from selling a solution to the crisis it reports.'
+      'Identify investment fraud indicators (guaranteed high yields, test withdrawal traps, advance tax fees).',
+      'Understand how fake trading portals harvest both money and identity papers.',
+      'Verify investment firm licensing on official national financial registries.'
     ],
     warningSigns: [
-      'A scientific crisis article published on a domain registered only a few days prior.',
-      'An article citing "anonymous scientists" without linking to official government or university laboratory test reports.',
-      'Sleek commercial advertisements for filters, supplements, or security items embedded directly inside the "breaking crisis" story.',
-      'Social media accounts sharing the story that were created recently and exhibit automated bot posting behavior.'
+      'Investment offers guaranteeing 18%+ returns with zero risk.',
+      'Demands for advance tax clearance fees or AML release deposits to withdraw funds.',
+      'Unlicensed trading portals hosted on newly registered offshore domains (.org / .net).'
     ],
     manipulationTechniques: [
-      'Fear Harvesting (using health hazard scares to trigger immediate panic buying).',
-      'Synthetic Amplification (hiring bot networks to artificially boost share counts).',
-      'Conflict of Interest (owning both the "news" portal spreading panic and the company selling the solution).'
+      'Romance & Mentorship Grooming (buying art to build trust)',
+      'False Proof of Legitimacy (small test withdrawal trap)',
+      'Advance Fee Extortion (20% AML Tax fee demand)'
+    ],
+    leads: [
+      {
+        id: 'lead_inspect_email_headers',
+        title: 'Inspect Aegis Email Headers & WHOIS',
+        description: 'Examine the raw email headers and WHOIS domain registry for aegiswealthterminal.org to verify company credentials.',
+        targetType: 'evidence',
+        targetId: 'ev_scholar_email',
+        isUnlocked: true,
+        isCompleted: false,
+        unlocksLeads: ['lead_analyze_grant_portal', 'lead_interrogate_thorne'],
+        unlocksEvidenceIds: ['ev_scholar_portal'],
+        unlocksWitnessIds: ['wit_dr_thorne'],
+        rewardXp: 100,
+        hint: 'Open the Aegis Email in Evidence Lab and run Source Audit.'
+      },
+      {
+        id: 'lead_analyze_grant_portal',
+        title: 'Analyze the Phishing Trading Portal URL',
+        description: 'Compare "aegiswealthterminal.org" against official government financial registers.',
+        targetType: 'evidence',
+        targetId: 'ev_scholar_portal',
+        isUnlocked: false,
+        isCompleted: false,
+        unlocksLeads: ['lead_confront_julian'],
+        unlocksWitnessIds: ['wit_julian_vance'],
+        rewardXp: 120,
+        hint: 'Use the Evidence Verification Toolkit to check the Fact-Check database on the domain.'
+      },
+      {
+        id: 'lead_interrogate_thorne',
+        title: 'Interview Financial Fraud Analyst',
+        description: 'Speak with Dean Dr. Aris Thorne to verify regulatory compliance standards.',
+        targetType: 'witness',
+        targetId: 'wit_dr_thorne',
+        isUnlocked: false,
+        isCompleted: false,
+        unlocksLeads: ['lead_unmask_julian'],
+        rewardXp: 140,
+        hint: 'Interview Dr. Thorne in the Interrogation Terminal.'
+      },
+      {
+        id: 'lead_unmask_julian',
+        title: 'Interrogate Web Developer Julian Vance',
+        description: 'Confront student IT developer Julian Vance about why his API keys were embedded in the fake trading portal code.',
+        targetType: 'witness',
+        targetId: 'wit_julian_vance',
+        isUnlocked: false,
+        isCompleted: false,
+        unlocksLeads: ['lead_scholar_conference'],
+        rewardXp: 180,
+        hint: 'Present the Trading Portal source code evidence to Julian.'
+      },
+      {
+        id: 'lead_scholar_conference',
+        title: 'Present Case Brief at Case Conference',
+        description: 'Present your findings to Chief Detective confirming how the investment scam operated.',
+        targetType: 'conference',
+        isUnlocked: false,
+        isCompleted: false,
+        rewardXp: 250,
+        hint: 'Go to Case Conference tab and submit your deduction.'
+      }
     ],
     evidences: [
       {
-        id: 'ev_eco_article',
-        name: 'Viral EcoShield News Article & Post Log',
-        type: 'chat',
-        description: 'Sensational news post claiming tap water was poisoned with Toxin-X, driving supermarket panic buying.',
-        category: 'Social Media Capture',
-        dateCollected: 'July 12, 10:00 AM',
-        source: 'EcoShield News Portal',
-        importance: 'High',
-        content: `[VIRAL NEWS ARTICLE CAPTURE]
-Publisher: "EcoShield News Network" (@EcoShieldNews_Global)
-Headline: "⚠️ URGENT WATER CRISIS: Industrial Toxin-X detected in Kyoto municipal reservoirs! Tap water is corrosive to skin!"
-Embedded Promo: "Protect your family with AquaGuard Home Filtration Units! Use promo code 'AQUASAFE' for 20% off today!"
+        id: 'ev_scholar_email',
+        name: 'Aegis Wealth Terminal Invitation & Tax Fee Notice',
+        type: 'email',
+        description: 'Email sent to Sophia Lin demanding an advance 20% AML Tax Fee ($5,000) to release her $29,500 trading balance.',
+        content: `From: "Aegis Compliance" <compliance@aegiswealthterminal.org>
+To: sophia.lin@artmail.com
+Subject: ⚠️ URGENT: 20% AML Tax Clearance Fee Required
 
-Social Velocity: 140,000 shares in 3 hours.
-Account Audit: 88.4% of initial retweets originated from newly created automated bot profiles in Osaka.`,
-        isLocked: false
-      },
-      {
-        id: 'ev_whois_record',
-        name: 'WHOIS Domain Registration Audit Record',
-        type: 'document',
-        description: 'Public domain registry lookup revealing that EcoShield News was secretly created by the VP of Marketing at AquaGuard.',
-        category: 'Public Registry Audit',
-        dateCollected: 'July 12, 11:15 AM',
-        source: 'Global Domain Name Registry',
+Dear Sophia,
+Your account balance of $29,500 USD is currently locked pending Anti-Money Laundering tax clearance.
+
+To release funds directly into your bank account, deposit a 20% tax clearance fee ($5,000 USD) in crypto to wallet #9942 within 24 hours.
+
+WARNING: Failure to comply will result in account asset forfeiture.`,
+        isLocked: false,
+        dateCollected: '09:00 AM Yesterday',
+        source: 'Victim Inbox',
+        category: 'PHISHING EMAIL',
         importance: 'Critical',
-        content: `[WHOIS PUBLIC DOMAIN AUDIT - ECOSHIELDNEWS.COM]
-Domain Creation Date: July 5th (7 days before rumor outbreak)
-Registrant Name: WHOIS Privacy Protection Corp (Shielded)
-Real Billing Owner Identified: Eric Vance
-Billing Address: AquaGuard Domestic Filters LLC, Suite 400, Kyoto Industrial Park
-IP Host: 198.51.100.89
-
-CRITICAL FINDING: The "independent environmental news site" reporting tap water contamination is owned directly by the marketing VP of a water filter manufacturer!`,
-        isLocked: false
+        inspectablePoints: [
+          {
+            id: 'sp1',
+            label: 'Fake Domain Extension (.org vs regulated financial .com)',
+            detail: 'The domain "aegiswealthterminal.org" is not a registered financial brokerage.',
+            revealsLeadId: 'lead_analyze_grant_portal'
+          },
+          {
+            id: 'sp2',
+            label: '20% Advance Tax Clearance Fee Demand',
+            detail: 'Demanding advance tax fees in crypto to release trading balances is a 100% indicator of investment fraud.',
+            revealsLeadId: 'lead_interrogate_thorne'
+          }
+        ]
       },
       {
-        id: 'ev_marketing_ledger',
-        name: 'Confidential Marketing Budget Spreadsheet',
-        type: 'document',
-        description: 'Internal corporate accounting spreadsheet detailing the financial budget spent to manufacture the water safety panic.',
-        category: 'Financial Accounting',
-        dateCollected: 'July 12, 02:00 PM',
-        source: 'AquaGuard Corporate Server',
-        importance: 'Critical',
-        content: `[CONFIDENTIAL MARKETING BUDGET - PROJECT "AQUA-FEAR"]
-Budget Itemization:
-1. EcoShield News Portal Domain & Design: $4,500
-2. Osaka Bot Farm Retweet Campaign (10,000 retweets): $8,500
-3. Sponsored Search Ads ("Toxin-X Water"): $15,000
-
-REVENUE RETURN ON INVESTMENT:
-Filter Sales (July 12-13): $189,000.00 (Surge of +450% over baseline average)
-Projected Net Profit: $161,000.00
-
-Conclusion: Manufactured panic campaign generated $161k net profit in 48 hours.`,
+        id: 'ev_scholar_portal',
+        name: 'Fake Trading Terminal Portal Code',
+        type: 'website',
+        description: 'Source code and WHOIS data for aegiswealthterminal.org showing form submission routing to an external wallet harvesting server.',
+        content: `PORTAL SOURCE CODE AUDIT:
+Target Form Action: https://api.shadow-pay.net/harvest/credentials
+Submitted Fields: [full_name, national_id_scan, bank_account, online_banking_password]
+Developer Signature: // Built by J_Vance_Lab_Dev
+Server Host: Offshore Anonymous VPS`,
         isLocked: true,
-        unlockCondition: 'interview_witness_renee'
-      },
-      {
-        id: 'ev_water_lab_cert',
-        name: 'Municipal Water Safety Certification',
-        type: 'document',
-        description: 'Official Kyoto Water Authority laboratory test certificate proving 100% clean drinking water.',
-        category: 'Public Health Certificate',
-        dateCollected: 'July 12, 09:00 AM',
-        source: 'Kyoto Municipal Testing Lab',
-        importance: 'High',
-        content: `[KYOTO MUNICIPAL WATER QUALITY CERTIFICATE]
-Date: July 12
-Testing Node: Reservoirs #1 through #6
-Chemical Analysis:
-- Toxin-X / Industrial Contaminants: 0.000 ppm (UNDETECTED)
-- Heavy Metals / Microplastics: Pass (Well within WHO Safety Standards)
-- Microbiological Safety: 100% Pure
-
-Certified By: Dr. Kenzo Takahashi, Chief Water Biologist`,
-        isLocked: true,
-        unlockCondition: 'interview_witness_marcus'
+        unlockCondition: 'Inspect Email or Complete Lead: Analyze Grant Portal',
+        dateCollected: '11:15 AM Yesterday',
+        source: 'Cyber Forensics Lab',
+        category: 'HARVESTING CODE',
+        importance: 'Critical'
       }
     ],
     witnesses: [
       {
-        id: 'wit_renee',
-        name: 'Renee Carter',
-        role: 'Environmental Reporter',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400',
-        description: 'The investigative journalist who refused a $5,000 bribe to publish the fake water contamination story.',
-        promptKnowledge: 'You are Renee Carter, 32. You are furious at the corporate corruption of journalism. You say: "Marcus Sterling from HypeMedia offered me five thousand dollars to copy-paste a fake story about Toxin-X in tap water. I refused! But four days later, I saw the exact same draft published on EcoShieldNews.com. It is 100% fake news created to scare people into buying five-hundred-dollar water filters. Dr. Kenzo\'s municipal lab tests show our tap water is completely safe!"',
-        status: 'available'
+        id: 'wit_dr_thorne',
+        name: 'Dr. Aris Thorne',
+        role: 'Financial Crimes Compliance Director',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+        description: 'Authentic financial regulator. Confirms that legitimate brokerages never request advance tax fees in crypto to release funds.',
+        promptKnowledge: 'You are Dr. Aris Thorne. You state clearly that legitimate investment firms NEVER demand advance tax clearance fees in crypto to release funds.',
+        status: 'available',
+        personalityTrait: 'Authoritative, Protective, Academic',
+        motive: 'Protecting citizens from financial fraud.',
+        suspicionLevel: 'Innocent'
       },
       {
-        id: 'wit_marcus',
-        name: 'Marcus Sterling',
-        role: 'HypeMedia PR CEO',
-        avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=400',
-        description: 'The marketing executive who planned and executed the "Aqua-Fear" disinfo campaign.',
-        promptKnowledge: 'You are Marcus Sterling, 41, a slick, defensive corporate marketer. If confronted with the WHOIS records or Marketing Ledger, you break down and say: "Alright, look! AquaGuard paid us to create demand for their filters. Nobody buys a $500 filter if they think tap water is safe, right? We created EcoShield News, hired the bot farm in Osaka to trend it, and ran the campaign. It’s just aggressive marketing! People got clean water filters anyway, so who really got hurt?"',
-        status: 'available'
-      },
-      {
-        id: 'wit_dr_kenzo',
-        name: 'Dr. Kenzo Takahashi',
-        role: 'Chief Water Biologist',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400',
-        description: 'The chief scientist at the Kyoto Municipal Water Testing Facility whose lab reports were smeared.',
-        promptKnowledge: 'You are Dr. Kenzo Takahashi, 58. You are distressed and indignant. You say: "Our testing facility runs automated spectrographic analysis every 15 seconds! There is zero Toxin-X in Kyoto\'s water supply. Seeing elderly citizens panicking in supermarkets and buying bottled water when our tap water is 100% clean broke my heart. Disinformation for commercial profit is a public health hazard!"',
-        status: 'available'
+        id: 'wit_julian_vance',
+        name: 'Julian Vance',
+        role: 'Student IT Assistant & Web Developer',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
+        description: 'Web developer who built the fake trading terminal interface.',
+        promptKnowledge: 'You are Julian Vance. You admit you were paid $2,000 by an online contact to build the fake trading terminal interface.',
+        status: 'locked',
+        personalityTrait: 'Nervous, Defensive, Tech-savvy',
+        motive: 'Paid by cybercriminals to host fake trading portals.',
+        suspicionLevel: 'Prime Suspect',
+        confrontationTriggers: [
+          {
+            evidenceId: 'ev_scholar_portal',
+            dialogueResponse: 'Okay, okay! I built the Aegis trading terminal template because a contact named "Nexus" paid me $2,000 in crypto!',
+            revealsLeadId: 'lead_scholar_conference'
+          }
+        ]
       }
     ],
     timeline: [
       {
-        id: 'time_cf1',
-        time: 'TIMESTAMP: UNVERIFIED',
-        description: 'AquaGuard Marketing VP anonymously registers "ecoshieldnews.com" using WHOIS privacy shields.',
+        id: 'tl_scholar_1',
+        time: 'Day 1 - 08:30 AM',
+        description: 'Julian Vance deploys aegiswealthterminal.org fake trading portal.',
         isCorrect: true,
-        orderIndex: 0
+        orderIndex: 1,
+        isInitiallyKnown: true
       },
       {
-        id: 'time_cf2',
-        time: 'TIMESTAMP: UNVERIFIED',
-        description: 'Marcus Sterling offers journalist Renee Carter a $5,000 bribe to publish the fake Toxin-X article; Renee rejects it.',
+        id: 'tl_scholar_2',
+        time: 'Day 1 - 09:00 AM',
+        description: 'David Sterling contacts Sophia Lin, buys art pieces, and introduces Aegis Wealth Terminal.',
         isCorrect: true,
-        orderIndex: 1
+        orderIndex: 2,
+        isInitiallyKnown: true
       },
       {
-        id: 'time_cf3',
-        time: 'TIMESTAMP: UNVERIFIED',
-        description: 'AquaGuard launches EcoShield News with the fake article and hires an Osaka bot farm to flood 10,000 retweets to local parents.',
+        id: 'tl_scholar_3',
+        time: 'Day 5 - 02:15 PM',
+        description: 'Sophia deposits $25,000 savings into Aegis terminal after completing a $50 test withdrawal.',
         isCorrect: true,
-        orderIndex: 2
+        orderIndex: 3,
+        isInitiallyKnown: false
       },
       {
-        id: 'time_cf4',
-        time: 'TIMESTAMP: UNVERIFIED',
-        description: 'Panic buying clears stores of bottled water while AquaGuard generates $189,000 in filter sales.',
+        id: 'tl_scholar_4',
+        time: 'Day 7 - 04:00 PM',
+        description: 'Aegis portal blocks withdrawal, demands $5,000 20% AML Tax clearance fee, then goes offline (404 Error).',
         isCorrect: true,
-        orderIndex: 3
+        orderIndex: 4,
+        isInitiallyKnown: false
       }
     ],
     clues: [
-      { id: 'cl_whois_conflict', text: 'WHOIS audit reveals the "independent news site" is registered directly to AquaGuard\'s VP of Marketing.', isDiscovered: false, evidenceId: 'ev_whois_record' },
-      { id: 'cl_disinfo_roi', text: 'Internal corporate ledgers prove $28,000 was spent on ads and bot farms to generate $189,000 in filter sales.', isDiscovered: false, evidenceId: 'ev_marketing_ledger' },
-      { id: 'cl_red_herring_spill', text: 'Red Herring: A 10-year-old river spill report was circulated on forums but had no connection to current municipal tap water.', isDiscovered: false }
+      {
+        id: 'cl_scholar_1',
+        text: 'The Aegis terminal demanded an advance 20% AML Tax fee in crypto to release trading funds.',
+        evidenceId: 'ev_scholar_email',
+        isDiscovered: true
+      },
+      {
+        id: 'cl_scholar_2',
+        text: 'Developer signature in trading portal code matched student IT developer Julian Vance.',
+        evidenceId: 'ev_scholar_portal',
+        isDiscovered: false
+      }
     ],
+    initialWallNodes: [
+      { id: 'node_sophia', title: 'Sophia Lin (Victim)', type: 'suspect', x: 20, y: 30, description: 'Freelance Artist' },
+      { id: 'node_david', title: 'David Sterling', type: 'suspect', x: 50, y: 20, description: 'Fake Wealth Mentor' },
+      { id: 'node_julian', title: 'Julian Vance', type: 'suspect', x: 80, y: 30, description: 'Web Developer' },
+      { id: 'node_phish_email', title: 'Tax Clearance Email', type: 'evidence', x: 35, y: 70, description: '20% AML Fee Demand' },
+      { id: 'node_phish_portal', title: 'Trading Portal Code', type: 'digital', x: 65, y: 70, description: 'Credential Harvester' }
+    ],
+    conferenceConfig: {
+      promptContext: 'Evaluating investment fraud & identity theft case.',
+      suspectOptions: [
+        { id: 'wit_julian_vance', name: 'Julian Vance', role: 'Web Developer & Fake Trading Portal Host' },
+        { id: 'wit_dr_thorne', name: 'Dr. Aris Thorne', role: 'Legitimate Financial Regulator' },
+        { id: 'sophia_lin', name: 'Sophia Lin', role: 'Victim Artist' }
+      ],
+      mechanismOptions: [
+        { id: 'm1', label: 'Investment Fraud & Identity Harvesting', description: 'Using fake trading portals, test withdrawals, and advance tax demands to steal savings and identity papers.' },
+        { id: 'm2', label: 'Physical Burglary', description: 'Physically breaking into home offices.' }
+      ],
+      preventionOptions: [
+        { id: 'p1', label: 'Regulatory Financial Registry Check & No Advance Fees', description: 'Verify brokers on official government financial registries, and never pay advance tax clearance fees to release funds.' },
+        { id: 'p2', label: 'Pay All Upfront Fees Immediately', description: 'Pay advance tax fees to unlock balances.' }
+      ]
+    },
+    location: {
+      name: 'Aegis Server Hosting Hub',
+      description: 'The server hosting room where domain registration traffic was routed.',
+      coordinates: '37.7749° N, 122.4194° W',
+      imageUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80',
+      hotspots: [
+        {
+          id: 'hs_scholar_1',
+          name: 'IT Terminal #4',
+          x: 40,
+          y: 50,
+          description: 'Terminal logged into Julian Vance\'s account showing open SSH connections to aegiswealthterminal.org.',
+          revealsEvidenceId: 'ev_scholar_portal'
+        }
+      ]
+    },
     solution: {
       questions: [
         {
           id: 'q1',
-          question: 'What is the "Follow-the-Money" principle in Media and Information Literacy (MIL)?',
-          choices: [
-            'A technique for calculating cryptocurrency exchange rates.',
-            'Analyzing who profits financially or politically from the creation and spread of a panic rumor to uncover hidden motives.',
-            'Tracking government tax expenditures on public libraries.',
-            'Comparing prices between different online shopping platforms.'
-          ],
-          correctAnswer: 'Analyzing who profits financially or politically from the creation and spread of a panic rumor to uncover hidden motives.',
-          explanation: 'Disinformation is rarely accidental. In many cases, it is a deliberate commercial campaign designed to induce fear because fearful consumers buy solutions (such as expensive filters, supplements, or subscriptions).'
+          question: 'Who hosted the fake Aegis Wealth Terminal portal?',
+          choices: ['Julian Vance', 'Dr. Aris Thorne', 'Sophia Lin', 'Victor Sterling'],
+          correctAnswer: 'Julian Vance',
+          explanation: 'Julian Vance built and hosted the fake trading terminal interface for cybercriminals.'
         },
         {
           id: 'q2',
-          question: 'How does performing a WHOIS domain lookup assist a media investigator?',
+          question: 'What is the primary indicator of investment fraud?',
           choices: [
-            'It automatically removes fake news websites from the internet.',
-            'It exposes the domain registration date, billing details, and hidden corporate ownership, revealing conflicts of interest.',
-            'It translates foreign language news websites into English.',
-            'It speeds up internet connection bandwidth during investigations.'
+            'Guaranteed 18%+ returns, test withdrawal traps, and demands for advance 20% AML tax clearance fees in crypto.',
+            'Receiving quarterly financial statements.',
+            'Trading during regular market hours.',
+            'Opening an account with a licensed broker.'
           ],
-          correctAnswer: 'It exposes the domain registration date, billing details, and hidden corporate ownership, revealing conflicts of interest.',
-          explanation: 'A WHOIS lookup reveals when a domain was registered and who paid for it. If a "breaking news site" was created seven days ago by the marketing director of a product featured in the article, it exposes a massive conflict of interest.'
+          correctAnswer: 'Guaranteed 18%+ returns, test withdrawal traps, and demands for advance 20% AML tax clearance fees in crypto.',
+          explanation: 'Real brokerages never guarantee 18%+ returns or demand advance tax clearance fees in crypto to release your own money.'
         }
-      ]
-    },
-    location: {
-      name: 'AquaGuard Marketing Office',
-      description: 'The corporate marketing suite where campaign ledgers and clickbait analytics were engineered.',
-      coordinates: '34.6902° N, 135.5021° E',
-      imageUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=800',
-      hotspots: [
-        { id: 'hs_marketing_desk', name: 'Marcus Sterling\'s Desk', x: 60, y: 70, description: 'Marcus\'s computer terminal displaying advertising receipts and bot network orders.', revealsEvidenceId: 'ev_marketing_ledger' }
       ]
     }
   }

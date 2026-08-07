@@ -1,19 +1,17 @@
 import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { 
-  ShieldCheck, Award, Loader2, LogOut, User
+  Award, LogOut, User
 } from 'lucide-react';
-import Markdown from 'react-markdown';
 
 // Core Subcomponents
-import CaseCard from './components/CaseCard';
 import CaseLibraryView from './components/CaseLibraryView';
+import InvestigationLeads from './components/InvestigationLeads';
 import EvidenceViewer from './components/EvidenceViewer';
 import InterrogationTerminal from './components/InterrogationTerminal';
 import ClueBoard from './components/ClueBoard';
 import TimelineBuilder from './components/TimelineBuilder';
 import MentorDrone from './components/MentorDrone';
-import ShaderGradient from './components/ShaderGradient';
 import VantaBackground from './components/VantaBackground';
 import LoginSignup from './components/LoginSignup';
 import UserProfileSection from './components/UserProfileSection';
@@ -23,11 +21,11 @@ import DetectiveNotebook from './components/DetectiveNotebook';
 import ResumeRestartModal from './components/ResumeRestartModal';
 import DigitalSafetyReport from './components/DigitalSafetyReport';
 import InvestigationHeader from './components/InvestigationHeader';
-import DetectiveCaseReportForm, { DetectiveReportSubmission } from './components/DetectiveCaseReportForm';
+import DetectiveCaseReportForm from './components/DetectiveCaseReportForm';
 import NotificationToast, { NotificationState } from './components/NotificationToast';
 
 // Shared types and handcrafted cases
-import { Case, UserProfile, CaseState } from './types';
+import { Case, UserProfile, CaseState, InvestigationLead, WallNode, WallConnection } from './types';
 import { HANDCRAFTED_CASES } from './data/cases';
 import { safeGet, safeSet } from './lib/safeLookup';
 
@@ -40,7 +38,7 @@ const DEFAULT_ACHIEVEMENTS = [
 ];
 
 const DEFAULT_USER_PROFILE: UserProfile = {
-  name: 'Investigator',
+  name: localStorage.getItem('detective_user_name') || 'Investigator',
   email: '',
   casesSolved: 0,
   solvedCaseIds: [],
@@ -105,7 +103,24 @@ export default function App() {
   const currentRank = getMilRank(xp);
 
   // Track state for each case independently to preserve progress
-  const [casesState, setCasesState] = useState<Record<string, CaseState>>({});
+  const [casesState, setCasesState] = useState<Record<string, CaseState>>(() => {
+    try {
+      const saved = localStorage.getItem('detective_cases_state');
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    try {
+      if (Object.keys(casesState).length > 0) {
+        localStorage.setItem('detective_cases_state', JSON.stringify(casesState));
+      }
+    } catch {
+      // ignore
+    }
+  }, [casesState]);
 
   // Active quiz submissions
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -133,7 +148,7 @@ export default function App() {
 
   // --- Supabase Synchronization Engines ---
 
-  const loadUserData = async (token: string) => {
+  const loadUserData = async (token: string, signupName?: string) => {
     setSupabaseError(null);
     setSupabaseTableMissing(false);
     try {
@@ -170,12 +185,17 @@ export default function App() {
       });
       const casesStateData = await casesStateRes.json();
 
-      let resolvedName = profileData.name || 'Investigator';
-      if (resolvedName === 'Cadet Detective') {
-        resolvedName = profileData.email ? profileData.email.split('@')[0] : 'Investigator';
+      const storedLocalName = localStorage.getItem('detective_user_name');
+      let resolvedName = profileData.name;
+      if (!resolvedName || resolvedName === 'Investigator' || resolvedName === 'Cadet Detective') {
+        resolvedName = signupName || storedLocalName || (profileData.email ? profileData.email.split('@')[0] : 'Investigator');
       }
 
-      setUserProfile({
+      if (resolvedName && resolvedName !== 'Investigator') {
+        localStorage.setItem('detective_user_name', resolvedName);
+      }
+
+      const updatedProfile: UserProfile = {
         name: resolvedName,
         email: profileData.email || '',
         casesSolved: profileData.cases_solved || 0,
@@ -183,7 +203,13 @@ export default function App() {
         activeCaseId: null,
         achievements: profileData.achievements && profileData.achievements.length > 0 ? profileData.achievements : DEFAULT_ACHIEVEMENTS,
         customCases: customCasesData || []
-      });
+      };
+
+      setUserProfile(updatedProfile);
+
+      if (profileData.name !== resolvedName && token) {
+        void syncProfileToSupabase(token, updatedProfile);
+      }
 
       if (typeof profileData.xp === 'number') {
         setXp(profileData.xp);
@@ -259,9 +285,26 @@ export default function App() {
 
   const handleAuthSuccess = (token: string, email: string, name: string) => {
     localStorage.setItem('supabase_token', token);
+    if (name && name !== 'Investigator' && name !== 'Cadet Detective') {
+      localStorage.setItem('detective_user_name', name);
+    }
     setAuthToken(token);
     notify({ kind: 'success', title: 'Signed in successfully', message: `Welcome back, ${name || email || 'investigator'}. Your case archives are being restored.` });
-    void loadUserData(token);
+    void loadUserData(token, name);
+  };
+
+  const handleUpdateProfileName = (newName: string) => {
+    const trimmed = newName.trim();
+    if (!trimmed) return;
+    localStorage.setItem('detective_user_name', trimmed);
+    setUserProfile(prev => {
+      const updated = { ...prev, name: trimmed };
+      if (authToken) {
+        void syncProfileToSupabase(authToken, updated);
+      }
+      return updated;
+    });
+    notify({ kind: 'success', title: 'Profile Updated', message: `Your investigator alias is now "${trimmed}".` });
   };
 
   const handleLogout = () => {
@@ -270,6 +313,8 @@ export default function App() {
     localStorage.removeItem('detective_active_case');
     localStorage.removeItem('detective_active_tab');
     localStorage.removeItem('detective_selected_evidence');
+    localStorage.removeItem('detective_cases_state');
+    localStorage.removeItem('detective_user_name');
     setAuthToken(null);
     setIsProfileLoaded(false);
     setCurrentView('library');
@@ -372,7 +417,7 @@ export default function App() {
   const startCaseFresh = (caseId: string, showStoryIntro: boolean = true) => {
     setActiveCaseId(caseId);
     setCurrentView(showStoryIntro ? 'story_intro' : 'game');
-    setActiveTab('evidence');
+    setActiveTab('leads');
     setEvaluationResult(null);
     setSelectedEvidenceId(null);
 
@@ -395,6 +440,10 @@ export default function App() {
         discoveredEvidenceIds: targetCase.evidences.filter(e => !e.isLocked).map(e => e.id),
         discoveredClueIds: [],
         unlockedWitnessIds: targetCase.witnesses.filter(w => w.status === 'available').map(w => w.id),
+        unlockedLeadIds: (targetCase.leads || []).filter(l => l.isUnlocked).map(l => l.id),
+        completedLeadIds: [],
+        wallNodes: targetCase.initialWallNodes || [],
+        wallConnections: [],
         notebookNotes: [],
         timelinePlacements: {},
         witnessChats: {},
@@ -414,7 +463,7 @@ export default function App() {
   const handleResumeCase = (caseId: string) => {
     setActiveCaseId(caseId);
     setCurrentView('game'); // Skips story prologue directly to ongoing investigation!
-    setActiveTab('evidence');
+    setActiveTab('leads');
     setEvaluationResult(null);
     setSelectedEvidenceId(null);
     setPendingCaseId(null);
@@ -445,25 +494,267 @@ export default function App() {
         discoveredEvidenceIds: [],
         discoveredClueIds: [],
         unlockedWitnessIds: [],
+        unlockedLeadIds: [],
+        completedLeadIds: [],
+        wallNodes: [],
+        wallConnections: [],
         notebookNotes: [],
         timelinePlacements: {},
         witnessChats: {},
         isCompleted: false
       };
     }
-    return safeGet(casesState, activeCaseId) ?? {
-      caseId: activeCaseId,
-      discoveredEvidenceIds: [],
-      discoveredClueIds: [],
-      unlockedWitnessIds: [],
-      notebookNotes: [],
-      timelinePlacements: {},
-      witnessChats: {},
-      isCompleted: false
+    const state = safeGet(casesState, activeCaseId);
+    const targetCase = allCases.find(c => c.id === activeCaseId);
+
+    const initialUnlockedLeads = (targetCase?.leads || []).filter(l => l.isUnlocked).map(l => l.id);
+    const initialUnlockedEvidences = targetCase?.evidences.filter(e => !e.isLocked).map(e => e.id) || [];
+    const initialUnlockedWitnesses = targetCase?.witnesses.filter(w => w.status === 'available').map(w => w.id) || [];
+
+    if (!state) {
+      return {
+        caseId: activeCaseId,
+        discoveredEvidenceIds: initialUnlockedEvidences,
+        discoveredClueIds: [],
+        unlockedWitnessIds: initialUnlockedWitnesses,
+        unlockedLeadIds: initialUnlockedLeads,
+        completedLeadIds: [],
+        wallNodes: targetCase?.initialWallNodes || [],
+        wallConnections: [],
+        notebookNotes: [],
+        timelinePlacements: {},
+        witnessChats: {},
+        isCompleted: false
+      };
+    }
+
+    const mergedUnlockedLeads = Array.from(new Set([...initialUnlockedLeads, ...(state.unlockedLeadIds || [])]));
+    const mergedEvidences = Array.from(new Set([...initialUnlockedEvidences, ...(state.discoveredEvidenceIds || [])]));
+    const mergedWitnesses = Array.from(new Set([...initialUnlockedWitnesses, ...(state.unlockedWitnessIds || [])]));
+
+    return {
+      ...state,
+      unlockedLeadIds: mergedUnlockedLeads,
+      discoveredEvidenceIds: mergedEvidences,
+      unlockedWitnessIds: mergedWitnesses
     };
   };
 
   const currentCaseState = getActiveCaseState();
+
+  // Lead selection & completion handler
+  const handleSelectLead = (lead: InvestigationLead) => {
+    if (!activeCaseId) return;
+    if (lead.targetType === 'evidence') setActiveTab('evidence');
+    else if (lead.targetType === 'witness') setActiveTab('witnesses');
+    else if (lead.targetType === 'timeline') setActiveTab('timeline');
+    else if (lead.targetType === 'board') setActiveTab('clues');
+    else if (lead.targetType === 'conference') setActiveTab('submit');
+  };
+
+  const handleCompleteLead = (leadId: string) => {
+    if (!activeCaseId || !activeCase) return;
+    setCasesState(prev => {
+      const state = safeGet(prev, activeCaseId);
+      if (!state) return prev;
+      if (state.completedLeadIds?.includes(leadId)) return prev;
+
+      const lead = activeCase.leads?.find(l => l.id === leadId);
+      const updatedCompleted = [...(state.completedLeadIds || []), leadId];
+
+      let updatedUnlockedLeads = [...(state.unlockedLeadIds || [])];
+      if (!updatedUnlockedLeads.includes(leadId)) {
+        updatedUnlockedLeads.push(leadId);
+      }
+
+      let updatedEvidences = [...state.discoveredEvidenceIds];
+      let updatedWitnesses = [...state.unlockedWitnessIds];
+
+      if (lead) {
+        if (lead.unlocksLeads) {
+          lead.unlocksLeads.forEach(id => {
+            if (!updatedUnlockedLeads.includes(id)) updatedUnlockedLeads.push(id);
+          });
+        }
+        if (lead.unlocksEvidenceIds) {
+          lead.unlocksEvidenceIds.forEach(id => {
+            if (!updatedEvidences.includes(id)) updatedEvidences.push(id);
+          });
+        }
+        if (lead.unlocksWitnessIds) {
+          lead.unlocksWitnessIds.forEach(id => {
+            if (!updatedWitnesses.includes(id)) updatedWitnesses.push(id);
+          });
+        }
+      }
+
+      notify({
+        kind: 'success',
+        title: 'Investigative Lead Resolved!',
+        message: lead ? `Completed: "${lead.title}". New clues and leads unlocked.` : 'Lead completed.'
+      });
+
+      return safeSet(prev, activeCaseId, {
+        ...state,
+        completedLeadIds: updatedCompleted,
+        unlockedLeadIds: updatedUnlockedLeads,
+        discoveredEvidenceIds: updatedEvidences,
+        unlockedWitnessIds: updatedWitnesses
+      });
+    });
+  };
+
+  // Called when evidence points or tools are inspected
+  const handleCompleteLeadByEvidence = (evidenceId: string, pointId?: string, revealsLeadId?: string) => {
+    if (!activeCaseId || !activeCase) return;
+
+    if (revealsLeadId) {
+      setCasesState(prev => {
+        const state = safeGet(prev, activeCaseId);
+        if (!state) return prev;
+        let updatedLeads = [...(state.unlockedLeadIds || [])];
+        if (!updatedLeads.includes(revealsLeadId)) {
+          updatedLeads.push(revealsLeadId);
+        }
+        return safeSet(prev, activeCaseId, {
+          ...state,
+          unlockedLeadIds: updatedLeads
+        });
+      });
+    }
+
+    const currentState = getActiveCaseState();
+    const unlockedSet = new Set(currentState.unlockedLeadIds || []);
+
+    const matchingLeads = activeCase.leads?.filter(l => 
+      l.targetType === 'evidence' && 
+      l.targetId === evidenceId && 
+      (unlockedSet.has(l.id) || l.isUnlocked)
+    );
+
+    if (matchingLeads && matchingLeads.length > 0) {
+      matchingLeads.forEach(lead => {
+        handleCompleteLead(lead.id);
+      });
+    }
+  };
+
+  // Called when witness is interviewed (sending message)
+  const handleInterviewWitness = (witnessId: string) => {
+    if (!activeCaseId || !activeCase) return;
+
+    const currentState = getActiveCaseState();
+    const unlockedSet = new Set(currentState.unlockedLeadIds || []);
+
+    const matchingLeads = activeCase.leads?.filter(l => 
+      l.targetType === 'witness' && 
+      l.targetId === witnessId && 
+      (unlockedSet.has(l.id) || l.isUnlocked)
+    );
+    if (matchingLeads && matchingLeads.length > 0) {
+      matchingLeads.forEach(lead => {
+        handleCompleteLead(lead.id);
+      });
+    }
+  };
+
+  // Called when witness is confronted with evidence
+  const handleConfrontWitnessWithEvidence = (witnessId: string, evidenceId: string) => {
+    if (!activeCaseId || !activeCase) return;
+
+    const currentState = getActiveCaseState();
+    const unlockedSet = new Set(currentState.unlockedLeadIds || []);
+
+    const matchingLeads = activeCase.leads?.filter(l => 
+      l.targetType === 'witness' && 
+      l.targetId === witnessId && 
+      (unlockedSet.has(l.id) || l.isUnlocked)
+    );
+    if (matchingLeads && matchingLeads.length > 0) {
+      matchingLeads.forEach(lead => {
+        handleCompleteLead(lead.id);
+      });
+    }
+
+    const witness = activeCase.witnesses.find(w => w.id === witnessId);
+    if (witness?.confrontationTriggers) {
+      const trigger = witness.confrontationTriggers.find(t => t.evidenceId === evidenceId);
+      if (trigger) {
+        if (trigger.revealsLeadId) {
+          setCasesState(prev => {
+            const state = safeGet(prev, activeCaseId);
+            if (!state) return prev;
+            let updatedLeads = [...(state.unlockedLeadIds || [])];
+            if (!updatedLeads.includes(trigger.revealsLeadId!)) {
+              updatedLeads.push(trigger.revealsLeadId!);
+            }
+            return safeSet(prev, activeCaseId, {
+              ...state,
+              unlockedLeadIds: updatedLeads
+            });
+          });
+        }
+        if (trigger.revealsEvidenceId) {
+          handleRevealEvidence(trigger.revealsEvidenceId);
+        }
+        if (trigger.revealsWitnessId) {
+          setCasesState(prev => {
+            const state = safeGet(prev, activeCaseId);
+            if (!state) return prev;
+            if (state.unlockedWitnessIds.includes(trigger.revealsWitnessId!)) return prev;
+            return safeSet(prev, activeCaseId, {
+              ...state,
+              unlockedWitnessIds: [...state.unlockedWitnessIds, trigger.revealsWitnessId!]
+            });
+          });
+        }
+      }
+    }
+  };
+
+  // Called when timeline sequence is verified
+  const handleCompleteTimeline = () => {
+    if (!activeCaseId || !activeCase) return;
+
+    const matchingLeads = activeCase.leads?.filter(l => l.targetType === 'timeline');
+    if (matchingLeads && matchingLeads.length > 0) {
+      matchingLeads.forEach(lead => {
+        handleCompleteLead(lead.id);
+      });
+    }
+  };
+
+  // Called when Clue Board theory is evaluated
+  const handleCompleteClueBoard = () => {
+    if (!activeCaseId || !activeCase) return;
+
+    const currentState = getActiveCaseState();
+    const unlockedSet = new Set(currentState.unlockedLeadIds || []);
+
+    const matchingLeads = activeCase.leads?.filter(l => 
+      l.targetType === 'board' && 
+      (unlockedSet.has(l.id) || l.isUnlocked)
+    );
+    if (matchingLeads && matchingLeads.length > 0) {
+      matchingLeads.forEach(lead => {
+        handleCompleteLead(lead.id);
+      });
+    }
+  };
+
+  // Called when Investigation Wall nodes/connections are updated
+  const handleUpdateWall = (nodes: WallNode[], connections: WallConnection[]) => {
+    if (!activeCaseId) return;
+    setCasesState(prev => {
+      const state = safeGet(prev, activeCaseId);
+      if (!state) return prev;
+      return safeSet(prev, activeCaseId, {
+        ...state,
+        wallNodes: nodes,
+        wallConnections: connections
+      });
+    });
+  };
 
   // Highlight or extract evidence text directly into user's notebook
   const handleLogToNotebook = (text: string) => {
@@ -579,7 +870,7 @@ export default function App() {
   };
 
   // submit case evaluation
-  const handleSubmitCase = async (report: DetectiveReportSubmission) => {
+  const handleSubmitCase = async (report: any) => {
     if (!activeCaseId || !activeCase) return;
 
     setIsSubmitting(true);
@@ -668,10 +959,13 @@ export default function App() {
 
   if (isInitializing) {
     return (
-      <LoadingScreen
-        isDataReady={systemStatus !== null && (!authToken || isProfileLoaded)}
-        onComplete={() => setIsInitializing(false)}
-      />
+      <div className="relative min-h-screen w-full bg-slate-950 overflow-hidden">
+        <VantaBackground />
+        <LoadingScreen
+          isDataReady={systemStatus !== null && (!authToken || isProfileLoaded)}
+          onComplete={() => setIsInitializing(false)}
+        />
+      </div>
     );
   }
 
@@ -962,6 +1256,15 @@ export default function App() {
                     
                     {/* Main Dynamic Workspace Frame */}
                     <div className="flex-1 min-h-[420px]">
+                      {activeTab === 'leads' && (
+                        <InvestigationLeads
+                          caseData={activeCase}
+                          unlockedLeadIds={currentCaseState.unlockedLeadIds || []}
+                          completedLeadIds={currentCaseState.completedLeadIds || []}
+                          onSelectLead={handleSelectLead}
+                        />
+                      )}
+
                       {activeTab === 'evidence' && (
                         <EvidenceViewer
                           caseData={activeCase}
@@ -969,6 +1272,7 @@ export default function App() {
                           activeEvidenceId={selectedEvidenceId ?? (currentCaseState.discoveredEvidenceIds[0] ?? null)}
                           setActiveEvidenceId={setSelectedEvidenceId}
                           onCopyToNotebook={handleLogToNotebook}
+                          onCompleteLeadByEvidence={handleCompleteLeadByEvidence}
                         />
                       )}
 
@@ -980,6 +1284,8 @@ export default function App() {
                           onUnlockWitness={() => {}}
                           chatsState={currentCaseState.witnessChats}
                           onAddMessage={handleAddWitnessMessage}
+                          onConfrontWitnessWithEvidence={handleConfrontWitnessWithEvidence}
+                          onInterviewWitness={handleInterviewWitness}
                         />
                       )}
 
@@ -988,15 +1294,22 @@ export default function App() {
                           caseData={activeCase}
                           discoveredClueIds={currentCaseState.discoveredClueIds}
                           discoveredEvidenceIds={currentCaseState.discoveredEvidenceIds}
+                          wallNodesState={currentCaseState.wallNodes || []}
+                          wallConnectionsState={currentCaseState.wallConnections || []}
+                          onUpdateWall={handleUpdateWall}
                           onSelectEvidence={setSelectedEvidenceId}
                           onNavigateToTab={setActiveTab}
+                          onCompleteClueBoard={handleCompleteClueBoard}
                         />
                       )}
 
                       {activeTab === 'timeline' && activeCase && (
                         <TimelineBuilder
                           caseData={activeCase}
+                          discoveredEvidenceIds={currentCaseState.discoveredEvidenceIds}
+                          discoveredClueIds={currentCaseState.discoveredClueIds}
                           placements={currentCaseState.timelinePlacements}
+                          onCompleteTimeline={handleCompleteTimeline}
                           onUpdatePlacements={(placements) => {
                             if (!activeCase?.id) return;
                             setCasesState(prev => {
@@ -1007,7 +1320,7 @@ export default function App() {
                               } as CaseState);
                             });
                             if (Object.keys(placements).length === activeCase.timeline.length) {
-                              notify({ kind: 'success', title: 'Timeline complete', message: 'Every incident has been placed. Review your sequence before submitting the case report.' });
+                              notify({ kind: 'success', title: 'Case Reconstruction Complete', message: 'Every incident has been pinned to the Case Reconstruction Wall. Review your sequence before presenting at Case Conference.' });
                             }
                           }}
                         />
@@ -1027,9 +1340,9 @@ export default function App() {
                         ) : (
                           <DetectiveCaseReportForm
                             caseData={activeCase}
-                            caseState={currentCaseState}
-                            isSubmitting={isSubmitting}
-                            onSubmit={report => { void handleSubmitCase(report); }}
+                            discoveredEvidenceIds={currentCaseState.discoveredEvidenceIds}
+                            unlockedWitnessIds={currentCaseState.unlockedWitnessIds}
+                            onSubmitReport={report => handleSubmitCase(report as any)}
                           />
                         )
                       )}
@@ -1067,6 +1380,7 @@ export default function App() {
               xp={xp}
               allCases={allCases}
               onSelectCase={handleSelectCase}
+              onUpdateProfileName={handleUpdateProfileName}
             />
           )}
 

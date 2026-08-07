@@ -8,11 +8,9 @@ import {
   FileText, 
   Calendar, 
   User, 
-  ArrowLeft, 
-  AlertTriangle,
+  ArrowLeft,
   Download,
-  BookOpen,
-  Sparkles
+  BookOpen
 } from 'lucide-react';
 import { Case } from '../types';
 
@@ -163,7 +161,7 @@ HONOR BADGES AWARDED: ${unlockedBadges.join(', ') || 'None'}
           <div className="flex flex-wrap items-start justify-between gap-6">
             <div className="space-y-2">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 font-mono text-[11px] font-bold tracking-wider uppercase">
-                <Sparkles className="w-3.5 h-3.5" />
+                <ShieldCheck className="w-3.5 h-3.5" />
                 <span>UNESCO CYBER TRAINING LABS // INCIDENT AUDIT</span>
               </div>
               

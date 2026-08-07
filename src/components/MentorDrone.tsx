@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, X, Send, Loader2, Minimize2, Maximize2 } from 'lucide-react';
+import { Radio, X, Send, Loader2, Minimize2, Maximize2 } from 'lucide-react';
 import { Case } from '../types';
 
 interface MentorDroneProps {
@@ -89,7 +89,7 @@ export default function MentorDrone({ caseData, discoveredEvidenceIds, notebookN
           onClick={() => { setIsOpen(true); }}
           className="flex items-center gap-2 rounded-full bg-[#1e110a] border border-white/10 hover:border-[#ff8533] p-4 text-white shadow-xl hover:translate-y-[-2px] transition-all focus:outline-none cursor-pointer"
         >
-          <Bot className="h-6 w-6 text-[#ff8533] animate-pulse" />
+          <Radio className="h-6 w-6 text-[#ff8533] animate-pulse" />
           <span className="font-sans font-bold text-xs tracking-wider pr-1.5 hidden sm:inline-block text-[#d9d2c9]">ACADEMY ADVISOR</span>
         </button>
       )}
@@ -102,7 +102,7 @@ export default function MentorDrone({ caseData, discoveredEvidenceIds, notebookN
           {/* Header */}
           <div className="flex justify-between items-center bg-white/[0.04] px-4 py-3.5 rounded-t-[24px] border-b border-white/10">
             <div className="flex items-center gap-2">
-              <Bot className="h-4 w-4 text-[#ff8533] animate-pulse" />
+              <Radio className="h-4 w-4 text-[#ff8533] animate-pulse" />
               <span className="font-sans font-bold text-xs text-white tracking-wider">CASE ADVISOR</span>
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
             </div>

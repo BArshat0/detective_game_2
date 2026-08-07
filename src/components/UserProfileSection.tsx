@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Award, BookOpen, 
   ShieldCheck, Lock, CheckCircle2, ChevronRight, User, Star,
-  Sparkles, Compass, Zap
+  Compass, Zap, Pencil, Check, X
 } from 'lucide-react';
 import { Case, UserProfile } from '../types';
 
@@ -17,6 +17,7 @@ interface UserProfileSectionProps {
   xp: number;
   allCases: Case[];
   onSelectCase: (caseId: string) => void;
+  onUpdateProfileName?: (newName: string) => void;
 }
 
 export default function UserProfileSection({ 
@@ -24,8 +25,23 @@ export default function UserProfileSection({
   currentRank, 
   xp, 
   allCases, 
-  onSelectCase
+  onSelectCase,
+  onUpdateProfileName
 }: UserProfileSectionProps) {
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState(userProfile.name);
+
+  useEffect(() => {
+    setEditedName(userProfile.name);
+  }, [userProfile.name]);
+
+  const handleSaveName = () => {
+    const trimmed = editedName.trim();
+    if (trimmed && onUpdateProfileName) {
+      onUpdateProfileName(trimmed);
+    }
+    setIsEditingName(false);
+  };
   
   // Calculate progress percent to next rank from 0
   let xpProgressPercent = 100;
@@ -71,9 +87,53 @@ export default function UserProfileSection({
             
             <div className="space-y-2 max-w-xl">
               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                <h1 className="font-serif text-3xl sm:text-4xl font-extrabold tracking-tight text-white uppercase">
-                  {userProfile.name}
-                </h1>
+                {isEditingName ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={editedName}
+                      onChange={(e) => setEditedName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSaveName();
+                        if (e.key === 'Escape') setIsEditingName(false);
+                      }}
+                      className="bg-slate-900 border border-amber-400 text-white font-serif text-xl sm:text-2xl px-3 py-1 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400"
+                      autoFocus
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSaveName}
+                      className="p-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-lg transition-colors cursor-pointer"
+                      title="Save Name"
+                    >
+                      <Check className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingName(false)}
+                      className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors cursor-pointer"
+                      title="Cancel"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <h1 className="font-serif text-3xl sm:text-4xl font-extrabold tracking-tight text-white uppercase">
+                      {userProfile.name}
+                    </h1>
+                    {onUpdateProfileName && (
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingName(true)}
+                        className="p-1.5 text-slate-400 hover:text-amber-300 hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                        title="Edit Username"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                )}
                 <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-amber-300 bg-amber-400/15 border border-amber-400/40 px-3 py-1 rounded-full uppercase tracking-wider self-center sm:self-start">
                   <Star className="h-3.5 w-3.5 fill-current text-amber-400" />
                   LEVEL {currentRank.level} DETECTIVE

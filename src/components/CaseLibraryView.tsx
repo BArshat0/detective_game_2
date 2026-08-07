@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShieldCheck, ArrowRight, BookOpen, 
-  Sparkles, CheckCircle2,
+  CheckCircle2,
   FileText, Compass, Shield, Target, UserCheck
 } from 'lucide-react';
 import { Case } from '../types';

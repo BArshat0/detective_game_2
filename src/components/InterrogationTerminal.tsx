@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { User, Send, ShieldAlert, MessageSquare, Loader2, HelpCircle, FileText, Check } from 'lucide-react';
-import { Case } from '../types';
+import { User, Send, ShieldAlert, MessageSquare, Loader2, FileText, Check, AlertTriangle, Key, HelpCircle } from 'lucide-react';
+import { Case, Witness } from '../types';
 import { safeGet, safeSet } from '../lib/safeLookup';
 
 interface InterrogationTerminalProps {
@@ -8,8 +8,10 @@ interface InterrogationTerminalProps {
   unlockedWitnessIds: string[];
   discoveredEvidenceIds: string[];
   onUnlockWitness: (witnessId: string) => void;
-  chatsState: Record<string, { sender: 'user' | 'witness'; text: string; timestamp: string }[]>;
-  onAddMessage: (witnessId: string, sender: 'user' | 'witness', text: string) => void;
+  chatsState: Record<string, { sender: 'user' | 'witness'; text: string; timestamp: string; evidencePresented?: string }[]>;
+  onAddMessage: (witnessId: string, sender: 'user' | 'witness', text: string, evidencePresented?: string) => void;
+  onConfrontWitnessWithEvidence?: (witnessId: string, evidenceId: string) => void;
+  onInterviewWitness?: (witnessId: string) => void;
 }
 
 export default function InterrogationTerminal({
@@ -17,7 +19,9 @@ export default function InterrogationTerminal({
   unlockedWitnessIds,
   discoveredEvidenceIds,
   chatsState,
-  onAddMessage
+  onAddMessage,
+  onConfrontWitnessWithEvidence,
+  onInterviewWitness
 }: InterrogationTerminalProps) {
   const [selectedWitnessId, setSelectedWitnessId] = useState<string | null>(null);
   const [inputText, setInputText] = useState('');
@@ -26,7 +30,7 @@ export default function InterrogationTerminal({
   const [trustLevels, setTrustLevels] = useState<Record<string, number>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto scroll to bottom of chat
+  // Auto scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatsState, selectedWitnessId, isTyping]);
@@ -41,7 +45,7 @@ export default function InterrogationTerminal({
 
   const activeWitness = caseData.witnesses.find(w => w.id === selectedWitnessId);
   const activeChat = selectedWitnessId ? safeGet(chatsState, selectedWitnessId) ?? [] : [];
-  const activeTrust = selectedWitnessId ? safeGet(trustLevels, selectedWitnessId) ?? 35 : 35;
+  const activeTrust = selectedWitnessId ? safeGet(trustLevels, selectedWitnessId) ?? 40 : 40;
   const presentableEvidence = caseData.evidences.filter(evidence => discoveredEvidenceIds.includes(evidence.id));
   const presentedEvidence = presentableEvidence.find(evidence => evidence.id === presentedEvidenceId);
 
@@ -49,26 +53,45 @@ export default function InterrogationTerminal({
     const messageText = textToSend ?? inputText;
     if (!messageText.trim() || !selectedWitnessId || !activeWitness) return;
 
+    if (onInterviewWitness) {
+      onInterviewWitness(selectedWitnessId);
+    }
+
     if (!textToSend) {
       setInputText('');
     }
 
-    onAddMessage(selectedWitnessId, 'user', messageText);
+    const currentEvidenceId = presentedEvidenceId;
+    const currentEvidenceName = presentedEvidence ? presentedEvidence.name : undefined;
+
+    onAddMessage(selectedWitnessId, 'user', messageText, currentEvidenceName);
     setIsTyping(true);
 
-    // Dynamic trust levels increment - compute current and next outside updater
-    const currentTrust = safeGet(trustLevels, selectedWitnessId) ?? 35;
+    // Increase trust / rapport
+    const currentTrust = safeGet(trustLevels, selectedWitnessId) ?? 40;
     const nextTrust = Math.min(100, currentTrust + 15);
-
-    // Award XP for interaction outside state updater callback to avoid side effects during rendering/reconciliation
-    window.dispatchEvent(new CustomEvent('mil-xp-earned', { 
-      detail: { 
-        xp: nextTrust === 100 && currentTrust < 100 ? 100 : 30, 
-        msg: nextTrust === 100 && currentTrust < 100 ? `Max Rapport with ${activeWitness.name}!` : `Inquiry Sent to ${activeWitness.name}` 
-      } 
-    }));
-
     setTrustLevels(prev => safeSet(prev, selectedWitnessId, nextTrust));
+
+    // Check if presenting evidence matches a confrontation trigger
+    if (currentEvidenceId && activeWitness.confrontationTriggers) {
+      const trigger = activeWitness.confrontationTriggers.find(t => t.evidenceId === currentEvidenceId);
+      if (trigger) {
+        setTimeout(() => {
+          onAddMessage(selectedWitnessId, 'witness', `[CONFRONTED WITH EVIDENCE: ${currentEvidenceName}]: ${trigger.dialogueResponse}`);
+          setIsTyping(false);
+          setPresentedEvidenceId(null);
+
+          if (onConfrontWitnessWithEvidence) {
+            onConfrontWitnessWithEvidence(selectedWitnessId, currentEvidenceId);
+          }
+
+          window.dispatchEvent(new CustomEvent('mil-xp-earned', {
+            detail: { xp: 150, msg: `Contradiction Discovered in ${activeWitness.name}'s Testimony!` }
+          }));
+        }, 1200);
+        return;
+      }
+    }
 
     try {
       const response = await fetch('/api/witness-chat', {
@@ -93,70 +116,32 @@ export default function InterrogationTerminal({
       if (data.text) {
         onAddMessage(selectedWitnessId, 'witness', data.text);
       } else {
-        onAddMessage(selectedWitnessId, 'witness', "I'm sorry, my signal is fluctuating. Repeat that?");
+        onAddMessage(selectedWitnessId, 'witness', "I have answered all I know about this matter.");
       }
     } catch (e) {
       console.error(e);
-      onAddMessage(selectedWitnessId, 'witness', "[CONNECTION FAULT]: The server failed to connect to the active interview node. Please try again.");
+      onAddMessage(selectedWitnessId, 'witness', "I won't speak without my legal representative if you keep asking contradictory questions.");
     } finally {
       setIsTyping(false);
+      setPresentedEvidenceId(null);
     }
   };
 
-  const getQuickPrompts = (witnessId: string) => {
-    switch (witnessId) {
-      case 'wit_clara':
-        return [
-          "How did the anonymous messages affect your study group?",
-          "Did you notice anyone acting strangely before the rumors spread?",
-          "What did the group admin Chloe say when you asked for help?"
-        ];
-      case 'wit_chloe':
-        return [
-          "Why didn't you remove the fake accounts spreading rumors?",
-          "Did anyone pressure you to keep Clara out of the group?",
-          "What can you tell us about the 'Toxic Whisper' profile?"
-        ];
-      case 'wit_arthur':
-        return [
-          "How did the person on the phone know your grandson's name?",
-          "Why did they insist you send cash via courier immediately?",
-          "Did they threaten you or make you feel panicked?"
-        ];
-      case 'wit_devon':
-        return [
-          "Who provided you with Arthur's family contact details?",
-          "Did you use voice cloning to mimic Devon's voice?",
-          "Where are the stolen funds being routed?"
-        ];
-      case 'wit_renee':
-        return [
-          "What source first provided the document about water poisoning?",
-          "Why didn't the editorial team fact-check the chemical formula?",
-          "Did you notice the image was an AI-generated composite?"
-        ];
-      case 'wit_marcus':
-        return [
-          "Who pressured you to publish the story without double verification?",
-          "Did you receive any monetary incentives to amplify this rumor?",
-          "Tell me about the 'Sovereign Intel' forum account."
-        ];
-      default:
-        return [
-          "Where were you when this incident occurred?",
-          "What is your relationship to the parties involved?",
-          "What can you tell me about the social messages sent?"
-        ];
-    }
+  const getInterrogationPrompts = (witness: Witness) => {
+    return [
+      `Where were you during the time of the incident?`,
+      `Who provided you with these instructions or access codes?`,
+      `How do you explain the contradiction in the official logs?`
+    ];
   };
 
   return (
     <div id="interrogation-terminal" className="grid grid-cols-1 md:grid-cols-3 gap-4 h-full text-white">
-      {/* Witnesses Roster Panel */}
-      <div className="md:col-span-1 rounded-[24px] border border-white/15 glass-panel bg-slate-900/65 p-4 flex flex-col h-full min-h-[220px]">
-        <h4 className="text-nav-label text-white mb-3 flex items-center gap-1.5 border-b border-white/10 pb-3">
-          <User className="h-4 w-4 text-[#ff8533] animate-pulse" />
-          Witnesses Directory
+      {/* Witness Roster Side Panel */}
+      <div className="md:col-span-1 rounded-[24px] border border-white/15 glass-panel bg-slate-900/70 p-4 flex flex-col h-full min-h-[220px]">
+        <h4 className="text-xs font-mono font-bold text-white mb-3 flex items-center gap-2 border-b border-white/10 pb-3 uppercase tracking-wider">
+          <User className="h-4 w-4 text-[#ff8533]" />
+          Interrogation Roster
         </h4>
 
         <div className="flex-1 overflow-y-auto space-y-2 pr-1">
@@ -170,12 +155,12 @@ export default function InterrogationTerminal({
                 onClick={() => {
                   if (isUnlocked) setSelectedWitnessId(witness.id);
                 }}
-                className={`w-full text-left rounded-[24px] p-3 border transition-all duration-200 flex gap-3 items-center focus:outline-none cursor-pointer ${
+                className={`w-full text-left rounded-2xl p-3 border transition-all duration-200 flex gap-3 items-center focus:outline-none cursor-pointer ${
                   !isUnlocked
                     ? 'border-white/5 bg-transparent text-[#9a9a9a]/30 cursor-not-allowed'
                     : isSelected
-                      ? 'border-[#ff8533] bg-[#ff8533]/10 text-white font-extrabold'
-                      : 'border-white/5 bg-transparent text-[#bdbdbd] hover:border-white/20 hover:bg-white/5'
+                      ? 'border-[#ff8533] bg-[#ff8533]/10 text-white font-bold'
+                      : 'border-white/5 bg-black/20 text-[#bdbdbd] hover:border-white/20 hover:bg-white/5'
                 }`}
                 disabled={!isUnlocked}
               >
@@ -183,7 +168,7 @@ export default function InterrogationTerminal({
                   <img 
                     src={witness.avatar} 
                     alt={witness.name}
-                    className={`h-10 w-10 rounded-full object-cover border ${
+                    className={`h-11 w-11 rounded-full object-cover border ${
                       !isUnlocked 
                         ? 'border-white/5 filter grayscale opacity-30' 
                         : isSelected 
@@ -193,23 +178,36 @@ export default function InterrogationTerminal({
                     referrerPolicy="no-referrer"
                   />
                   {!isUnlocked && (
-                    <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center">
+                    <div className="absolute inset-0 bg-black/70 rounded-full flex items-center justify-center">
                       <ShieldAlert className="h-4 w-4 text-[#ffb829]" />
                     </div>
                   )}
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <h5 className={`text-xs font-bold truncate ${
-                    !isUnlocked ? 'text-[#9a9a9a]/40' : 'text-white'
-                  }`}>
-                    {witness.name}
-                  </h5>
+                  <div className="flex items-center justify-between gap-1">
+                    <h5 className={`text-xs font-bold font-serif truncate ${
+                      !isUnlocked ? 'text-[#9a9a9a]/40' : 'text-white'
+                    }`}>
+                      {witness.name}
+                    </h5>
+                    {witness.suspicionLevel && isUnlocked && (
+                      <span className={`text-[8px] font-mono px-1.5 py-0.5 rounded uppercase font-black ${
+                        witness.suspicionLevel === 'Prime Suspect' 
+                          ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40' 
+                          : witness.suspicionLevel === 'Suspect'
+                            ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
+                            : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                      }`}>
+                        {witness.suspicionLevel}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-[10px] font-mono truncate opacity-60 mt-0.5">{witness.role}</p>
                   
                   {!isUnlocked && (
                     <span className="text-[8px] font-mono text-[#ffb829] bg-[#ffb829]/10 px-1.5 py-0.5 rounded-full border border-[#ffb829]/30 mt-1 inline-block uppercase tracking-wider font-bold">
-                      LOCKED INTERVIEW
+                      LOCKED WITNESS
                     </span>
                   )}
                 </div>
@@ -219,61 +217,62 @@ export default function InterrogationTerminal({
         </div>
       </div>
 
-      {/* Interrogation Terminal Console */}
-      <div className="md:col-span-2 rounded-[24px] border border-white/15 glass-panel bg-slate-900/65 p-5 flex flex-col h-full min-h-[350px]">
+      {/* Interrogation Console */}
+      <div className="md:col-span-2 rounded-[24px] border border-white/15 glass-panel bg-slate-900/70 p-5 flex flex-col h-full min-h-[350px]">
         {activeWitness && unlockedWitnessIds.includes(activeWitness.id) ? (
           <div className="flex flex-col h-full animate-fade-in">
-            {/* Witness Info Banner */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-3 mb-4">
+            {/* Header / Profile info */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3 mb-3">
               <div className="flex items-center gap-3">
                 <img 
                   src={activeWitness.avatar} 
                   alt={activeWitness.name}
-                  className="h-10 w-10 rounded-full object-cover border border-[#ff8533]"
+                  className="h-11 w-11 rounded-full object-cover border-2 border-[#ff8533]"
                   referrerPolicy="no-referrer"
                 />
                 <div>
-                  <h4 className="text-xs font-mono font-bold text-white flex items-center gap-1.5 uppercase tracking-wider">
+                  <h3 className="text-sm font-bold font-serif text-white flex items-center gap-2">
                     {activeWitness.name}
-                    <span className="h-2 w-2 rounded-full bg-[#5c7f5c] animate-ping" />
-                  </h4>
+                    <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+                  </h3>
                   <p className="text-xs text-[#9a9a9a] font-mono">{activeWitness.role}</p>
                 </div>
               </div>
 
-              {/* Dynamic trust rapport indicator */}
-              <div className="bg-white/[0.02] border border-white/5 rounded-full px-4 py-2 flex items-center gap-3 min-w-[200px]">
-                <div className="flex-1">
-                  <div className="flex justify-between text-[8px] font-mono font-extrabold mb-1">
-                    <span className="text-[#9a9a9a] uppercase tracking-widest">RAPPORT TRUST</span>
+              {/* Rapport / Trust level */}
+              <div className="bg-black/40 border border-white/10 rounded-xl px-3 py-1.5 flex items-center gap-3">
+                <div>
+                  <div className="flex justify-between text-[9px] font-mono font-bold mb-1">
+                    <span className="text-[#9a9a9a] uppercase">COOPERATION RAPPORT</span>
                     <span className="text-[#ff8533]">{activeTrust}%</span>
                   </div>
-                  <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden border border-white/5">
+                  <div className="w-24 bg-white/10 h-1.5 rounded-full overflow-hidden">
                     <div 
-                      className={`h-full rounded-full transition-all duration-500 ${
-                        activeTrust === 100 ? 'bg-emerald-500' : 'bg-[#ff8533]'
-                      }`}
+                      className="bg-gradient-to-r from-[#ff8533] to-[#ffb829] h-1.5 rounded-full transition-all duration-500"
                       style={{ width: `${activeTrust}%` }}
                     />
                   </div>
                 </div>
-                <span className="text-[10px] font-mono text-white font-extrabold">
-                  {activeTrust === 100 ? '⭐ MAX' : `${activeTrust}%`}
-                </span>
               </div>
             </div>
 
-            {/* REPORT Summary */}
-            <p className="text-[11px] text-[#bdbdbd] bg-slate-950/40 border border-white/10 rounded-[24px] p-4 mb-4 leading-relaxed font-mono backdrop-blur-md">
-              <span className="font-mono text-[#ff8533] font-extrabold uppercase mr-1.5">REPORT FILE:</span>
+            {/* Profile Brief */}
+            <p className="text-xs text-[#bdbdbd] bg-black/30 border border-white/10 rounded-2xl p-3 mb-3 leading-relaxed font-sans">
+              <span className="font-mono text-[#ff8533] font-bold uppercase mr-1.5">DOSSIER NOTES:</span>
               {activeWitness.description}
             </p>
 
-            <div className="mb-4 rounded-[22px] border border-[#8052ff]/25 bg-[#8052ff]/[0.06] p-3.5">
-              <div className="mb-2 flex items-center gap-2 text-[10px] font-mono font-black uppercase tracking-wider text-[#b9a5ff]">
-                <FileText className="h-3.5 w-3.5" /> Present evidence to challenge the testimony
+            {/* Evidence Challenge Toolbar */}
+            <div className="mb-3 rounded-2xl border border-[#8052ff]/30 bg-[#8052ff]/[0.08] p-3">
+              <div className="mb-2 flex items-center justify-between gap-2 text-[10px] font-mono font-bold uppercase text-[#b9a5ff]">
+                <span className="flex items-center gap-1.5">
+                  <Key className="h-3.5 w-3.5" /> Present Evidence to Challenge Statement
+                </span>
+                {presentedEvidence && (
+                  <span className="text-emerald-400 font-black animate-pulse">EVIDENCE ATTACHED</span>
+                )}
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {presentableEvidence.map(evidence => {
                   const selected = presentedEvidenceId === evidence.id;
                   return (
@@ -281,23 +280,26 @@ export default function InterrogationTerminal({
                       key={evidence.id}
                       type="button"
                       onClick={() => setPresentedEvidenceId(selected ? null : evidence.id)}
-                      className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-mono font-bold transition-all ${selected ? 'border-[#b9a5ff] bg-[#8052ff]/25 text-white' : 'border-white/10 bg-black/20 text-[#bdbdbd] hover:border-[#b9a5ff]/50 hover:text-white'}`}
+                      className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-mono font-bold transition-all cursor-pointer ${
+                        selected 
+                          ? 'border-[#b9a5ff] bg-[#8052ff]/30 text-white shadow-md' 
+                          : 'border-white/10 bg-black/40 text-[#bdbdbd] hover:border-[#b9a5ff]/50 hover:text-white'
+                      }`}
                     >
-                      {selected && <Check className="h-3 w-3" />}
+                      {selected && <Check className="h-3 w-3 text-emerald-400" />}
                       {evidence.name}
                     </button>
                   );
                 })}
               </div>
-              {presentedEvidence && <p className="mt-2 text-[10px] font-mono text-[#d9d0ff]">Selected: {presentedEvidence.name}. Your next question will reference this file.</p>}
             </div>
 
-            {/* Chat Messages Frame */}
-            <div className="flex-1 bg-white/[0.01] border border-white/10 rounded-[24px] p-4.5 mb-4 overflow-y-auto space-y-4 max-h-[220px]">
+            {/* Chat Transcript Area */}
+            <div className="flex-1 bg-[#0b0f19] border border-white/10 rounded-2xl p-4 mb-3 overflow-y-auto space-y-3 max-h-[200px]">
               {activeChat.length === 0 ? (
-                <div className="text-center py-8 text-[#9a9a9a] font-mono text-[11px]">
-                  <span>[INTERVIEW CHANNEL ESTABLISHED // SECURE]</span>
-                  <p className="mt-1.5 text-[#9a9a9a]/60">Select a question below or interview the witness directly.</p>
+                <div className="text-center py-6 text-[#9a9a9a] font-mono text-xs">
+                  <span>[INTERROGATION CHANNEL ESTABLISHED]</span>
+                  <p className="mt-1 text-[#9a9a9a]/60">Select a question or present evidence to begin questioning.</p>
                 </div>
               ) : (
                 activeChat.map((msg, idx) => (
@@ -305,16 +307,21 @@ export default function InterrogationTerminal({
                     key={idx}
                     className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div className={`max-w-[85%] rounded-[24px] px-4 py-3 text-xs leading-relaxed border ${
+                    <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-xs leading-relaxed border ${
                       msg.sender === 'user'
-                        ? 'bg-white/5 border-white/10 text-white font-bold'
-                        : 'bg-[#ff8533]/10 border-[#ff8533]/30 text-white font-mono'
+                        ? 'bg-white/10 border-white/15 text-white font-medium'
+                        : msg.text.includes('CONFRONTED')
+                          ? 'bg-rose-950/40 border-rose-500/40 text-rose-200 font-mono'
+                          : 'bg-[#ff8533]/10 border-[#ff8533]/30 text-white font-mono'
                     }`}>
-                      <div className="flex items-center justify-between text-[8px] opacity-60 font-mono mb-1.5 gap-4">
-                        <span className="tracking-wider uppercase">{msg.sender === 'user' ? 'INVESTIGATOR' : activeWitness.name}</span>
+                      <div className="flex items-center justify-between text-[8px] opacity-60 font-mono mb-1 gap-3">
+                        <span className="tracking-wider uppercase font-bold">{msg.sender === 'user' ? 'INVESTIGATOR' : activeWitness.name}</span>
+                        {msg.evidencePresented && (
+                          <span className="text-[#ffb829] font-black">[ATTACHED: {msg.evidencePresented}]</span>
+                        )}
                         <span>{msg.timestamp}</span>
                       </div>
-                      <p className="font-mono">{msg.text}</p>
+                      <p className="whitespace-pre-wrap">{msg.text}</p>
                     </div>
                   </div>
                 ))
@@ -322,28 +329,27 @@ export default function InterrogationTerminal({
 
               {isTyping && (
                 <div className="flex justify-start">
-                  <div className="bg-white/5 border border-white/10 rounded-full px-4 py-2 text-xs font-mono text-[#9a9a9a] flex items-center gap-2">
+                  <div className="bg-slate-900 border border-white/10 rounded-full px-4 py-2 text-xs font-mono text-[#9a9a9a] flex items-center gap-2">
                     <Loader2 className="h-3.5 w-3.5 animate-spin text-[#ff8533]" />
-                    <span>ANALYZING TESTIMONY...</span>
+                    <span>ANALYZING TESTIMONY RESPONSE...</span>
                   </div>
                 </div>
               )}
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Quick Prompts */}
-            <div className="mb-4">
-              <p className="text-[10px] font-mono text-[#ff8533] mb-2 uppercase tracking-wider flex items-center gap-1.5 font-bold">
-                <HelpCircle className="h-4 w-4 text-[#ff8533] shrink-0" />
-                <span>Interview Questions:</span>
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {getQuickPrompts(activeWitness.id).map((prompt, pIdx) => (
+            {/* Interrogation Quick Questions */}
+            <div className="mb-3">
+              <div className="flex items-center gap-1.5 text-[10px] font-mono text-[#ff8533] mb-1.5 font-bold uppercase">
+                <HelpCircle className="h-3.5 w-3.5" /> Quick Questioning Angles:
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {getInterrogationPrompts(activeWitness).map((prompt, pIdx) => (
                   <button
                     key={pIdx}
                     onClick={() => handleSendMessage(prompt)}
                     disabled={isTyping}
-                    className="text-[10px] font-mono text-[#bdbdbd] bg-white/5 border border-white/10 hover:border-[#ff8533] hover:text-white rounded-full px-3.5 py-1.5 hover:bg-[#ff8533]/10 transition-all text-left max-w-full truncate focus:outline-none disabled:opacity-50 cursor-pointer"
+                    className="text-[10px] font-mono text-[#bdbdbd] bg-black/40 border border-white/10 hover:border-[#ff8533] hover:text-white rounded-full px-3 py-1 hover:bg-[#ff8533]/10 transition-all text-left max-w-full truncate focus:outline-none disabled:opacity-50 cursor-pointer"
                   >
                     {prompt}
                   </button>
@@ -351,25 +357,23 @@ export default function InterrogationTerminal({
               </div>
             </div>
 
-            {/* Input Form */}
+            {/* Input Box */}
             <div className="flex gap-2">
               <input
                 type="text"
                 value={inputText}
-                onChange={(e) => { setInputText(e.target.value); }}
+                onChange={(e) => setInputText(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') void handleSendMessage();
                 }}
-                placeholder={`Ask ${activeWitness.name} about social clues or warning signs...`}
-                className="flex-1 bg-black border border-white/10 focus:border-[#ff8533] rounded-full px-4 py-2.5 text-xs outline-none text-white transition-colors"
+                placeholder={`Ask ${activeWitness.name} a question...`}
+                className="flex-1 bg-black border border-white/15 focus:border-[#ff8533] rounded-full px-4 py-2 text-xs outline-none text-white transition-colors"
                 disabled={isTyping}
               />
               <button
                 onClick={() => handleSendMessage()}
                 disabled={isTyping || !inputText.trim()}
-                className="bg-[#ff8533] hover:bg-[#ff9955] text-[#1e110a] disabled:bg-white/5 disabled:text-[#9a9a9a]/40 disabled:border-white/5 border-transparent rounded-full px-5 flex items-center justify-center transition-all focus:outline-none cursor-pointer"
-                aria-label="Send message to witness"
-                title="Send message"
+                className="bg-[#ff8533] hover:bg-[#ff9955] text-[#1e110a] disabled:opacity-40 border-transparent rounded-full px-5 flex items-center justify-center font-bold cursor-pointer transition-all"
               >
                 <Send className="h-3.5 w-3.5" />
               </button>
@@ -378,9 +382,9 @@ export default function InterrogationTerminal({
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-8 text-[#9a9a9a]">
             <MessageSquare className="h-12 w-12 text-[#9a9a9a]/20 mb-3 animate-pulse" />
-            <h5 className="text-nav-label text-[#9a9a9a] mb-1">Interview Channel Offline</h5>
-            <p className="text-xs text-[#9a9a9a]/60 max-w-sm leading-relaxed font-mono">
-              Access credentials to a witness profile to initiate interviews. Analyze hotspots map or uncover clues to unlock.
+            <h5 className="text-sm font-bold font-serif text-white mb-1">Select Witness for Interrogation</h5>
+            <p className="text-xs text-[#9a9a9a] max-w-sm leading-relaxed font-mono">
+              Select an unlocked witness from the roster on the left to initiate questioning and present evidence.
             </p>
           </div>
         )}

@@ -245,11 +245,15 @@ app.get("/api/user/profile", requireAuth, async (req: AuthenticatedRequest, res)
       .eq("id", req.user.id)
       .single();
 
+    const metaName = req.user.user_metadata?.name;
+    const emailPrefix = req.user.email ? req.user.email.split("@")[0] : null;
+    const fallbackName = metaName || emailPrefix || "Investigator";
+
     if (error || !profile) {
       // Lazy-create profile if not found but table exists
       const defaultProfile: Record<string, unknown> = {
         id: req.user.id,
-        name: req.user.user_metadata?.name || req.user.email?.split("@")[0] || "Investigator",
+        name: fallbackName,
         email: req.user.email || "",
         cases_solved: 0,
         solved_case_ids: [],
@@ -279,6 +283,15 @@ app.get("/api/user/profile", requireAuth, async (req: AuthenticatedRequest, res)
       }
       return res.json(inserted);
     }
+
+    // Profile exists in DB. If profile.name is generic, update it with metadata or email prefix if available
+    if (!profile.name || profile.name === "Investigator" || profile.name === "Cadet Detective") {
+      if (fallbackName && fallbackName !== "Investigator") {
+        profile.name = fallbackName;
+        void supabase.from("profiles").update({ name: fallbackName }).eq("id", req.user.id);
+      }
+    }
+
     res.json(profile);
   } catch (error: unknown) {
     handleSupabaseError(error, res, "get profile");
@@ -290,9 +303,17 @@ app.post("/api/user/profile", requireAuth, async (req: AuthenticatedRequest, res
     const supabase = getSupabaseUserClient(req.token);
     const { name, cases_solved, solved_case_ids, achievements, xp } = req.body;
     
+    const metaName = req.user.user_metadata?.name;
+    const emailPrefix = req.user.email ? req.user.email.split("@")[0] : null;
+
+    let resolvedName = name;
+    if (!resolvedName || resolvedName === "Investigator" || resolvedName === "Cadet Detective") {
+      resolvedName = metaName || emailPrefix || "Investigator";
+    }
+    
     const payload: Record<string, unknown> = {
       id: req.user.id,
-      name: name && name !== "Cadet Detective" ? name : (req.user.user_metadata?.name || req.user.email?.split("@")[0] || "Investigator"),
+      name: resolvedName,
       email: req.user.email,
       cases_solved: cases_solved ?? 0,
       solved_case_ids: solved_case_ids || [],

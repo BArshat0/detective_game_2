@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Folder, FileText, Lock, Unlock, Eye, Copy, FileCode, MessageSquare, Mail, Key, Check, Search, Clock3, Fingerprint } from 'lucide-react';
-import { Case } from '../types';
+import { Folder, FileText, Lock, Unlock, Eye, Copy, FileCode, MessageSquare, Mail, Key, Check, Search, Clock3, Fingerprint, Globe, Volume2 } from 'lucide-react';
+import { Case, Evidence } from '../types';
 
 interface EvidenceViewerProps {
   caseData: Case;
@@ -8,6 +8,7 @@ interface EvidenceViewerProps {
   activeEvidenceId: string | null;
   setActiveEvidenceId: (id: string) => void;
   onCopyToNotebook: (text: string) => void;
+  onCompleteLeadByEvidence?: (evidenceId: string, pointId?: string, revealsLeadId?: string) => void;
 }
 
 export default function EvidenceViewer({ 
@@ -15,48 +16,32 @@ export default function EvidenceViewer({
   discoveredEvidenceIds, 
   activeEvidenceId, 
   setActiveEvidenceId,
-  onCopyToNotebook
+  onCopyToNotebook,
+  onCompleteLeadByEvidence
 }: EvidenceViewerProps) {
   const [copiedTextId, setCopiedTextId] = useState<string | null>(null);
   const [activeAnalysis, setActiveAnalysis] = useState<{ type: 'source' | 'emotion' | 'fact' | null; content: string | null }>({ type: null, content: null });
-  const [completedInspections, setCompletedInspections] = useState<string[]>([]);
+  const [inspectedPointIds, setInspectedPointIds] = useState<string[]>([]);
 
   // Reset verification pane when active evidence changes
   React.useEffect(() => {
     setActiveAnalysis({ type: null, content: null });
-    setCompletedInspections([]);
   }, [activeEvidenceId]);
 
-  const getInspectionChecks = (type: string) => {
-    if (type === 'email') return [
-      { id: 'sender', label: 'Inspect sender and reply address', icon: Fingerprint },
-      { id: 'urgency', label: 'Look for pressure or urgency', icon: Search },
-      { id: 'timing', label: 'Compare dates and timestamps', icon: Clock3 },
-    ];
-    if (type === 'chat') return [
-      { id: 'pressure', label: 'Find the pressure tactic', icon: Search },
-      { id: 'sequence', label: 'Trace who spoke first', icon: Clock3 },
-      { id: 'contradiction', label: 'Mark a contradiction', icon: Fingerprint },
-    ];
-    if (type === 'image') return [
-      { id: 'context', label: 'Inspect the missing context', icon: Search },
-      { id: 'source', label: 'Check where this came from', icon: Fingerprint },
-      { id: 'timestamp', label: 'Compare the visible timestamp', icon: Clock3 },
-    ];
-    return [
-      { id: 'source', label: 'Verify the source', icon: Fingerprint },
-      { id: 'language', label: 'Circle suspicious language', icon: Search },
-      { id: 'timeline', label: 'Compare the timeline', icon: Clock3 },
-    ];
-  };
+  const activeEvidence = caseData.evidences.find(e => e.id === activeEvidenceId);
 
-  const handleInspection = (inspectionId: string, label: string) => {
-    if (!activeEvidence || completedInspections.includes(inspectionId)) return;
-    setCompletedInspections(prev => [...prev, inspectionId]);
-    onCopyToNotebook(`Observation — ${activeEvidence.name}: ${label}.`);
+  const handleInspectPoint = (pointId: string, label: string, detail: string, revealsLeadId?: string) => {
+    if (inspectedPointIds.includes(pointId)) return;
+    setInspectedPointIds(prev => [...prev, pointId]);
+    onCopyToNotebook(`Forensic Inspection — ${activeEvidence?.name || 'Evidence'}: ${label} (${detail})`);
+    
     window.dispatchEvent(new CustomEvent('mil-xp-earned', {
-      detail: { xp: 15, msg: `Observation recorded: ${label}` }
+      detail: { xp: 25, msg: `Critical Detail Uncovered: ${label}` }
     }));
+
+    if (onCompleteLeadByEvidence && activeEvidence) {
+      onCompleteLeadByEvidence(activeEvidence.id, pointId, revealsLeadId);
+    }
   };
 
   const getEvidenceIcon = (type: string) => {
@@ -67,18 +52,22 @@ export default function EvidenceViewer({
       case 'system_file': return <FileCode className="h-4 w-4 text-[#ffb829]" />;
       case 'crypto_fragment': return <Key className="h-4 w-4 text-[#5c7f5c]" />;
       case 'image': return <Eye className="h-4 w-4 text-[#ff8533]" />;
+      case 'audio': return <Volume2 className="h-4 w-4 text-[#a855f7]" />;
+      case 'website': return <Globe className="h-4 w-4 text-[#38bdf8]" />;
       default: return <FileText className="h-4 w-4 text-[#9a9a9a]" />;
     }
   };
 
   const getEvidenceTypeName = (type: string) => {
     switch (type) {
-      case 'document': return 'OFFICIAL DOCUMENT';
-      case 'chat': return 'CHAT TRANSCRIPT';
-      case 'email': return 'EMAIL/POST SOURCE';
-      case 'system_file': return 'SYSTEM DATA FILE';
+      case 'document': return 'OFFICIAL CONTRACT / DOCUMENT';
+      case 'chat': return 'ENCRYPTED CHAT LOG';
+      case 'email': return 'SPOOFED EMAIL SOURCE';
+      case 'system_file': return 'SYSTEM METADATA FILE';
       case 'crypto_fragment': return 'VERIFIED SIGNATURE';
-      case 'image': return 'CASE ATTACHMENT';
+      case 'image': return 'IMAGE & AVATAR FORENSICS';
+      case 'audio': return 'AUDIO SPECTROGRAM';
+      case 'website': return 'DOMAIN WHOIS CODE';
       default: return 'CASE EVIDENCE FILE';
     }
   };
@@ -91,13 +80,11 @@ export default function EvidenceViewer({
     setTimeout(() => { setCopiedTextId(null); }, 2000);
   };
 
-  const activeEvidence = caseData.evidences.find(e => e.id === activeEvidenceId);
-
   return (
-    <div id="evidence-viewer-container" className="grid grid-cols-1 md:grid-cols-3 gap-4 h-full">
-      {/* Evidence Side Panel */}
-      <div className="md:col-span-1 rounded-[24px] border border-white/15 glass-panel bg-slate-900/65 p-4 flex flex-col h-full min-h-[250px]">
-        <h4 className="text-nav-label text-white mb-3 flex items-center gap-1.5 border-b border-white/10 pb-3">
+    <div id="evidence-viewer-container" className="grid grid-cols-1 md:grid-cols-3 gap-4 h-full text-white">
+      {/* Evidence Side Cabinet */}
+      <div className="md:col-span-1 rounded-[24px] border border-white/15 glass-panel bg-slate-900/70 p-4 flex flex-col h-full min-h-[250px]">
+        <h4 className="text-xs font-mono font-bold text-white mb-3 flex items-center gap-2 border-b border-white/10 pb-3 uppercase tracking-wider">
           <Folder className="h-4 w-4 text-[#ff8533]" />
           Evidence Cabinet
         </h4>
@@ -111,28 +98,29 @@ export default function EvidenceViewer({
               <button
                 key={evidence.id}
                 onClick={() => {
-                  if (isUnlocked) setActiveEvidenceId(evidence.id);
+                  if (isUnlocked) {
+                    setActiveEvidenceId(evidence.id);
+                  }
                 }}
-                className={`w-full text-left rounded-[24px] p-3.5 border transition-all duration-200 flex items-start gap-3 relative focus:outline-none cursor-pointer ${
+                className={`w-full text-left rounded-2xl p-3.5 border transition-all duration-200 flex items-start gap-3 relative focus:outline-none cursor-pointer ${
                   !isUnlocked
                     ? 'border-white/5 bg-transparent text-[#9a9a9a]/40 cursor-not-allowed'
                     : isActive
-                      ? 'border-[#ff8533] bg-[#ff8533]/10 text-white font-bold'
-                      : 'border-white/5 bg-transparent text-[#bdbdbd] hover:border-white/20 hover:bg-white/5'
+                      ? 'border-[#ff8533] bg-[#ff8533]/10 text-white font-bold shadow-md'
+                      : 'border-white/5 bg-black/20 text-[#bdbdbd] hover:border-white/20 hover:bg-white/5'
                 }`}
                 disabled={!isUnlocked}
               >
-                {/* Visual side highlights */}
                 {isUnlocked && isActive && (
                   <span className="absolute left-0 top-3 bottom-3 w-1 rounded-r bg-[#ff8533]" />
                 )}
 
-                <div className={`mt-0.5 p-1 rounded-full ${
+                <div className={`mt-0.5 p-1.5 rounded-xl border ${
                   !isUnlocked 
-                    ? 'bg-transparent border border-white/5' 
+                    ? 'bg-transparent border-white/5' 
                     : isActive 
-                      ? 'bg-[#ff8533]/20' 
-                      : 'bg-white/5'
+                      ? 'bg-[#ff8533]/20 border-[#ff8533]/40' 
+                      : 'bg-white/5 border-white/5'
                 }`}>
                   {!isUnlocked ? (
                     <Lock className="h-3.5 w-3.5 text-[#9a9a9a]/30" />
@@ -152,15 +140,15 @@ export default function EvidenceViewer({
                       <span className="text-[8px] font-mono text-[#ffb829] bg-[#ffb829]/10 px-1.5 py-0.5 rounded border border-[#ffb829]/30 uppercase tracking-widest font-extrabold">LOCKED</span>
                     )}
                   </div>
-                  <h5 className={`text-xs font-semibold font-mono truncate ${
+                  <h5 className={`text-xs font-bold font-serif truncate ${
                     !isUnlocked ? 'text-[#9a9a9a]/40' : 'text-white'
                   }`}>
                     {evidence.name}
                   </h5>
                   {!isUnlocked && evidence.unlockCondition && (
-                    <p className="text-[9px] text-[#ffb829] font-mono mt-1.5 flex items-center gap-1.5">
+                    <p className="text-[9px] text-[#ffb829] font-mono mt-1 flex items-center gap-1">
                       <Unlock className="h-2.5 w-2.5 shrink-0 animate-pulse" />
-                      <span>Unlock with: {evidence.unlockCondition.includes('witness') || evidence.unlockCondition.includes('suspect') ? 'Witness Interrogation' : 'Investigation clues'}</span>
+                      <span>{evidence.unlockCondition}</span>
                     </p>
                   )}
                 </div>
@@ -170,22 +158,22 @@ export default function EvidenceViewer({
         </div>
       </div>
 
-      {/* Evidence Read Out Panel */}
-      <div className="md:col-span-2 rounded-[24px] border border-white/15 glass-panel bg-slate-900/65 p-5 flex flex-col h-full min-h-[300px]">
+      {/* Evidence Interactive Inspection Console */}
+      <div className="md:col-span-2 rounded-[24px] border border-white/15 glass-panel bg-slate-900/70 p-5 flex flex-col h-full min-h-[350px]">
         {activeEvidence && discoveredEvidenceIds.includes(activeEvidence.id) ? (
           <div className="flex flex-col h-full animate-fade-in">
             {/* Active File Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4 border-b border-white/10 pb-4 mb-3">
               <div>
                 <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                  <span className="p-1 rounded-full bg-white/5 border border-white/10">
+                  <span className="p-1.5 rounded-xl bg-white/5 border border-white/10">
                     {getEvidenceIcon(activeEvidence.type)}
                   </span>
-                  <span className="text-[9px] font-mono tracking-wider text-[#ff8533] bg-[#ff8533]/10 px-2.5 py-0.5 rounded-full border border-[#ff8533]/30 uppercase font-extrabold">
+                  <span className="text-[9px] font-mono tracking-wider text-[#ff8533] bg-[#ff8533]/10 px-2.5 py-0.5 rounded-full border border-[#ff8533]/30 uppercase font-black">
                     {activeEvidence.category || getEvidenceTypeName(activeEvidence.type)}
                   </span>
                   {activeEvidence.importance && (
-                    <span className={`text-[9px] font-mono px-2 py-0.5 rounded-full border uppercase font-extrabold ${
+                    <span className={`text-[9px] font-mono px-2 py-0.5 rounded-full border uppercase font-black ${
                       activeEvidence.importance === 'Critical' 
                         ? 'bg-rose-500/10 border-rose-500/30 text-rose-400'
                         : activeEvidence.importance === 'High'
@@ -196,21 +184,21 @@ export default function EvidenceViewer({
                     </span>
                   )}
                 </div>
-                <h4 className="text-heading-xs tracking-[-0.48px] text-white">{activeEvidence.name}</h4>
+                <h3 className="text-lg font-bold font-serif text-white">{activeEvidence.name}</h3>
               </div>
 
-              {/* Action utilities */}
+              {/* Copy / Log button */}
               <button
                 onClick={handleCopyText}
-                className={`flex items-center gap-1.5 text-xs font-mono border px-3 py-1.5 rounded-full transition-all focus:outline-none font-bold cursor-pointer shrink-0 ${
+                className={`flex items-center gap-1.5 text-xs font-mono border px-3.5 py-2 rounded-full transition-all focus:outline-none font-bold shrink-0 cursor-pointer ${
                   copiedTextId === 'copied'
-                    ? 'bg-[#5c7f5c]/10 border-[#5c7f5c]/40 text-[#5c7f5c]'
+                    ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
                     : 'bg-[#ff8533] hover:bg-[#ff9955] border-transparent text-[#1e110a]'
                 }`}
               >
                 {copiedTextId === 'copied' ? (
                   <>
-                    <Check className="h-3.5 w-3.5 text-[#5c7f5c]" />
+                    <Check className="h-3.5 w-3.5 text-emerald-400" />
                     <span>LOGGED TO NOTEBOOK</span>
                   </>
                 ) : (
@@ -223,8 +211,8 @@ export default function EvidenceViewer({
             </div>
 
             {/* Metadata Bar */}
-            {(activeEvidence.source || activeEvidence.dateCollected) && (
-              <div className="grid grid-cols-2 gap-2 mb-3 bg-white/5 border border-white/5 rounded-2xl p-2.5 text-[11px] font-mono">
+            {(activeEvidence.source || activeEvidence.dateCollected || activeEvidence.metadata) && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3 bg-black/40 border border-white/5 rounded-2xl p-3 text-[11px] font-mono">
                 {activeEvidence.source && (
                   <div>
                     <span className="text-[#9a9a9a]">Source: </span>
@@ -237,71 +225,97 @@ export default function EvidenceViewer({
                     <span className="text-[#ffb829] font-semibold">{activeEvidence.dateCollected}</span>
                   </div>
                 )}
+                {activeEvidence.metadata?.ipAddress && (
+                  <div>
+                    <span className="text-[#9a9a9a]">IP Trace: </span>
+                    <span className="text-cyan-400 font-semibold">{activeEvidence.metadata.ipAddress}</span>
+                  </div>
+                )}
+                {activeEvidence.metadata?.domainAge && (
+                  <div>
+                    <span className="text-[#9a9a9a]">Domain Age: </span>
+                    <span className="text-rose-400 font-semibold">{activeEvidence.metadata.domainAge}</span>
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Evidence Description */}
-            <p className="text-xs text-[#bdbdbd] bg-white/[0.02] border border-white/5 rounded-[24px] p-4.5 mb-4 leading-relaxed">
-              <span className="text-[#ffb829] font-mono font-bold uppercase mr-1.5">WHY IT MATTERS:</span> 
+            {/* Why it matters */}
+            <p className="text-xs text-[#bdbdbd] bg-white/[0.03] border border-white/5 rounded-2xl p-3.5 mb-3 leading-relaxed">
+              <span className="text-[#ffb829] font-mono font-bold uppercase mr-1.5">ANALYSIS SUMMARY:</span> 
               {activeEvidence.description}
             </p>
 
-            <div className="mb-4 rounded-[24px] border border-[#ffb829]/20 bg-[#ffb829]/[0.05] p-4">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2 text-[10px] font-mono font-black uppercase tracking-wider text-[#ffb829]">
-                    <Search className="h-3.5 w-3.5" /> Field inspection
+            {/* Inspectable Details Hotspot Panel */}
+            {activeEvidence.inspectablePoints && activeEvidence.inspectablePoints.length > 0 && (
+              <div className="mb-4 rounded-2xl border border-[#ffb829]/25 bg-[#ffb829]/[0.05] p-3.5">
+                <div className="mb-2.5 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-[10px] font-mono font-extrabold uppercase text-[#ffb829]">
+                    <Search className="h-3.5 w-3.5" /> Interactive Observation Hotspots
                   </div>
-                  <p className="mt-1 text-[11px] text-[#bdbdbd]">Choose an observation to investigate. Your finding will be added to the notebook.</p>
+                  <span className="text-[9px] font-mono text-[#ffb829] bg-black/30 border border-[#ffb829]/30 px-2 py-0.5 rounded-full font-bold">
+                    {inspectedPointIds.filter(id => activeEvidence.inspectablePoints?.some(p => p.id === id)).length}/{activeEvidence.inspectablePoints.length} DISCOVERED
+                  </span>
                 </div>
-                <span className="shrink-0 rounded-full border border-[#ffb829]/25 bg-black/20 px-2 py-1 text-[9px] font-mono text-[#ffb829]">
-                  {completedInspections.length}/{getInspectionChecks(activeEvidence.type).length} checked
-                </span>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {activeEvidence.inspectablePoints.map((pt) => {
+                    const inspected = inspectedPointIds.includes(pt.id);
+                    return (
+                      <button
+                        key={pt.id}
+                        type="button"
+                        onClick={() => handleInspectPoint(pt.id, pt.label, pt.detail, pt.revealsLeadId)}
+                        className={`flex flex-col text-left rounded-xl border p-2.5 text-[11px] font-mono transition-all cursor-pointer ${
+                          inspected 
+                            ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200' 
+                            : 'border-white/10 bg-black/30 text-[#bdbdbd] hover:border-[#ffb829] hover:text-white'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-1 mb-1">
+                          <span className="font-bold flex items-center gap-1.5">
+                            <Fingerprint className="h-3.5 w-3.5 text-[#ff8533]" />
+                            {pt.label}
+                          </span>
+                          {inspected && <Check className="h-3.5 w-3.5 text-emerald-400 shrink-0" />}
+                        </div>
+                        {inspected && (
+                          <p className="text-[10px] text-emerald-300 mt-1 border-t border-emerald-500/20 pt-1 leading-normal">
+                            {pt.detail}
+                          </p>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                {getInspectionChecks(activeEvidence.type).map(({ id, label, icon: Icon }) => {
-                  const completed = completedInspections.includes(id);
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => handleInspection(id, label)}
-                      disabled={completed}
-                      className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-[10px] font-mono font-bold transition-all ${completed ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-white/10 bg-black/20 text-[#bdbdbd] hover:border-[#ffb829]/50 hover:text-white'}`}
-                    >
-                      <Icon className="h-3.5 w-3.5 shrink-0" />
-                      <span>{completed ? 'Observation logged' : label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            )}
 
-            {/* File Interactive Body View */}
-            <div className="flex-1 bg-[#121214] border border-white/10 rounded-[24px] p-5 font-mono text-xs overflow-y-auto text-[#bdbdbd] leading-relaxed max-h-[250px] mb-4">
-              <div className="flex items-center justify-between text-[10px] text-[#9a9a9a]/40 border-b border-white/5 pb-2.5 mb-4 font-mono">
-                <span>INVESTIGATION TIMELINE // DATA FILE</span>
-                <span>CASE REGISTRY</span>
+            {/* Interactive Raw Content Display */}
+            <div className="flex-1 bg-[#0b0f19] border border-white/10 rounded-2xl p-4 font-mono text-xs overflow-y-auto text-[#bdbdbd] leading-relaxed max-h-[220px] mb-3">
+              <div className="flex items-center justify-between text-[10px] text-[#9a9a9a]/50 border-b border-white/5 pb-2 mb-3">
+                <span>EVIDENCE FILE READOUT // FORENSIC ARCHIVE</span>
+                <span>ID: #{activeEvidence.id.toUpperCase()}</span>
               </div>
               
               <div className="space-y-1.5 whitespace-pre-wrap select-text">
                 {activeEvidence.content.split('\n').map((line, idx) => (
-                  <div key={idx} className="flex gap-4">
-                    <span className="text-[#9a9a9a]/30 select-none text-right w-8">{(idx + 1).toString().padStart(2, '0')}</span>
-                    <span className="text-[#ffffff]">{line}</span>
+                  <div key={idx} className="flex gap-3">
+                    <span className="text-[#9a9a9a]/30 select-none text-right w-6">{(idx + 1).toString().padStart(2, '0')}</span>
+                    <span className="text-white">{line}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* MIL Gamified Verification Toolkit */}
-            <div className="bg-[#1e110a]/50 border border-[#ff8533]/20 rounded-[24px] p-4 space-y-3.5">
-              <div className="flex items-center justify-between border-b border-[#ff8533]/15 pb-2">
+            {/* Evidence Verification Toolkit */}
+            <div className="bg-black/40 border border-[#ff8533]/20 rounded-2xl p-3.5 space-y-2.5">
+              <div className="flex items-center justify-between border-b border-white/10 pb-2">
                 <span className="text-[10px] font-mono font-extrabold text-[#ff8533] uppercase tracking-wider flex items-center gap-1.5">
-                  🛡️ EVIDENCE VERIFICATION TOOLKIT
+                  <Search className="h-3.5 w-3.5 text-[#ff8533]" />
+                  EVIDENCE VERIFICATION LAB
                 </span>
-                <span className="text-[9px] font-mono text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full font-bold">
-                  +50 XP PER COMPLETED ANALYSIS
+                <span className="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full font-bold">
+                  +50 XP PER VERIFICATION
                 </span>
               </div>
 
@@ -315,14 +329,11 @@ export default function EvidenceViewer({
                       localStorage.setItem(testId, 'true');
                       window.dispatchEvent(new CustomEvent('mil-xp-earned', { detail: { xp: 50, msg: 'Source Credibility Audited' } }));
                     }
-                    const text = activeEvidence.id === 'ev_spliced_video'
-                      ? "🔍 SOURCE AUDIT RESULT:\n\n- Context-Splicing Detected: A 10-second snippet was carved from a 2-hour forum recording.\n- Metadata Check: Found artificial audio-wave cuts.\n- Credibility Score: 12% (Highly Distorted)"
-                      : activeEvidence.id === 'ev_whois_record'
-                      ? "🔍 SOURCE AUDIT RESULT:\n\n- Ownership Verification: ecoshieldnews.com is anonymously registered.\n- Hidden Affiliation: Billing profile lists Marcus Sterling (AquaGuard Filter Marketing).\n- Credibility Score: 0% (Direct Corporate Conflict of Interest!)"
-                      : "🔍 SOURCE AUDIT RESULT:\n\n- Digital Signature: Synthesized file signature verified.\n- Audio Harvesting: Voice cloning model compiled via scraped YouTube addresses.\n- Credibility Score: 15% (Fabricated Biometrics)";
+                    const text = `🔍 SOURCE & DOMAIN AUDIT RESULT:\n\n- Entity Authentication: ${activeEvidence.source || 'Unknown Source'}\n- IP Trace: ${activeEvidence.metadata?.ipAddress || 'Anonymized Proxy Server'}\n- Domain Age / File Signature: ${activeEvidence.metadata?.domainAge || 'Unverified External Domain'}\n- Credibility Score: 18% (High Risk / Fraud Indicator)`;
                     setActiveAnalysis({ type: 'source', content: text });
+                    if (onCompleteLeadByEvidence) onCompleteLeadByEvidence(activeEvidence.id);
                   }}
-                  className="py-2.5 px-3 rounded-full bg-black hover:bg-[#ff8533]/15 border border-[#ff8533]/30 hover:border-[#ff8533] text-xs font-mono font-bold text-white transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer focus:outline-none"
+                  className="py-2 px-3 rounded-xl bg-slate-900 hover:bg-[#ff8533]/20 border border-white/10 hover:border-[#ff8533] text-xs font-mono font-bold text-white transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   🔍 Source Audit
                 </button>
@@ -333,14 +344,13 @@ export default function EvidenceViewer({
                     const testId = `${activeEvidence.id}_bait`;
                     if (!localStorage.getItem(testId)) {
                       localStorage.setItem(testId, 'true');
-                      window.dispatchEvent(new CustomEvent('mil-xp-earned', { detail: { xp: 50, msg: 'Emotional Bait Analyzed' } }));
+                      window.dispatchEvent(new CustomEvent('mil-xp-earned', { detail: { xp: 50, msg: 'Emotional Manipulation Analyzed' } }));
                     }
-                    const text = activeEvidence.id === 'ev_eco_article'
-                      ? "🧠 EMOTIONAL BIAS RADAR:\n\n- Sensation Meter: 98% (CRITICAL ALERT)\n- Hostility Level: Extreme\n- Manipulation Cues: Outrage spikes ('⚠️ URGENT WATER CRISIS', 'corrosive to skin', 'supermarket bottled-water panic'). Designed to bypass user logic through visceral terror."
-                      : "🧠 EMOTIONAL BIAS RADAR:\n\n- Sensation Meter: 85% (HIGH)\n- Triggers Detected: Fabricated panic ('embezzlement emergency', 'classes cancelled', 'deep anxiety'). Utilized artificial authority voice vectors to bypass safety protocols.";
+                    const text = `🧠 EMOTIONAL MANIPULATION RADAR:\n\n- Urgency Index: 95% (CRITICAL ALERT)\n- Pressure Vectors: Artificial deadlines, fear of loss, flattery.\n- Social Strategy: Bypassing logical reasoning using manufactured crisis.`;
                     setActiveAnalysis({ type: 'emotion', content: text });
+                    if (onCompleteLeadByEvidence) onCompleteLeadByEvidence(activeEvidence.id);
                   }}
-                  className="py-2.5 px-3 rounded-full bg-black hover:bg-[#ff8533]/15 border border-[#ff8533]/30 hover:border-[#ff8533] text-xs font-mono font-bold text-white transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer focus:outline-none"
+                  className="py-2 px-3 rounded-xl bg-slate-900 hover:bg-[#ff8533]/20 border border-white/10 hover:border-[#ff8533] text-xs font-mono font-bold text-white transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   🧠 Emotion Radar
                 </button>
@@ -351,36 +361,34 @@ export default function EvidenceViewer({
                     const testId = `${activeEvidence.id}_fact`;
                     if (!localStorage.getItem(testId)) {
                       localStorage.setItem(testId, 'true');
-                      window.dispatchEvent(new CustomEvent('mil-xp-earned', { detail: { xp: 50, msg: 'Fact-Check Logs Query' } }));
+                      window.dispatchEvent(new CustomEvent('mil-xp-earned', { detail: { xp: 50, msg: 'Database Cross-Referenced' } }));
                     }
-                    const text = activeEvidence.id === 'ev_whois_record' || activeEvidence.id === 'ev_marketing_ledger'
-                      ? "🛡️ FACT-CHECK PORTAL CROSS-REFERENCE:\n\n- Municipal Database: Kyoto Municipal Water testing logs show 100% safety parameters (chlorine/bacteria 0.00%).\n- Verification Status: DEBUNKED. The EcoShield article is a commercial marketing fraud designed to sell domestic filter hardware."
-                      : "🛡️ FACT-CHECK PORTAL CROSS-REFERENCE:\n\n- Forensic Archives: Original student forum footage shows Maya defending the project.\n- Verification Status: FALSIFIED. This 11-second audio has been digitally edited with context-splicing.";
+                    const text = `🛡️ OFFICIAL FACT-CHECK DATABASE LOG:\n\n- Cross-Reference: Ministry & Cyber Crime Registry\n- Status: DEBUNKED / FRAUDULENT PATTERN IDENTIFIED\n- Matches known recruitment / phishing / deepfake attack signatures.`;
                     setActiveAnalysis({ type: 'fact', content: text });
+                    if (onCompleteLeadByEvidence) onCompleteLeadByEvidence(activeEvidence.id);
                   }}
-                  className="py-2.5 px-3 rounded-full bg-black hover:bg-[#ff8533]/15 border border-[#ff8533]/30 hover:border-[#ff8533] text-xs font-mono font-bold text-white transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer focus:outline-none"
+                  className="py-2 px-3 rounded-xl bg-slate-900 hover:bg-[#ff8533]/20 border border-white/10 hover:border-[#ff8533] text-xs font-mono font-bold text-white transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   🛡️ Fact-Check DB
                 </button>
               </div>
 
-              {/* Active Verification Report Box */}
+              {/* Verification Report Output */}
               {activeAnalysis.type && activeAnalysis.content && (
-                <div className="bg-black/90 border border-[#ff8533]/30 rounded-[20px] p-4 text-xs font-mono text-[#d9d2c9] space-y-2 animate-fade-in">
-                  <div className="flex justify-between items-center border-b border-white/5 pb-1.5 mb-2">
-                    <span className="text-[#ffb829] font-bold uppercase tracking-wider">
-                      {activeAnalysis.type === 'source' ? '🔍 Source Audit Report' : activeAnalysis.type === 'emotion' ? '🧠 Emotional Radar Analytics' : '🛡️ Fact-Check Database Log'}
+                <div className="bg-black/80 border border-[#ff8533]/40 rounded-xl p-3.5 text-xs font-mono text-[#d9d2c9] space-y-1.5 animate-fade-in">
+                  <div className="flex justify-between items-center border-b border-white/10 pb-1.5 mb-1.5">
+                    <span className="text-[#ffb829] font-bold uppercase">
+                      {activeAnalysis.type === 'source' ? '🔍 Source Audit Report' : activeAnalysis.type === 'emotion' ? '🧠 Emotional Manipulation Radar' : '🛡️ Fact-Check Database Log'}
                     </span>
                     <button
                       type="button"
                       onClick={() => setActiveAnalysis({ type: null, content: null })}
-                      className="text-[10px] text-[#9a9a9a] hover:text-white font-bold border border-white/10 px-2 py-0.5 rounded bg-white/5 cursor-pointer focus:outline-none"
-                      aria-label="Close report pane"
+                      className="text-[10px] text-[#9a9a9a] hover:text-white font-bold border border-white/10 px-2 py-0.5 rounded bg-white/5 cursor-pointer"
                     >
                       [x] CLOSE
                     </button>
                   </div>
-                  <p className="whitespace-pre-wrap leading-relaxed select-text font-mono">
+                  <p className="whitespace-pre-wrap leading-relaxed select-text">
                     {activeAnalysis.content}
                   </p>
                 </div>
@@ -390,9 +398,9 @@ export default function EvidenceViewer({
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-8 text-[#9a9a9a]">
             <Lock className="h-12 w-12 text-[#9a9a9a]/20 mb-3 animate-pulse" />
-            <h5 className="text-nav-label text-[#9a9a9a] mb-1">Evidence Abstract Protected</h5>
-            <p className="text-xs text-[#9a9a9a]/60 max-w-sm leading-relaxed font-mono">
-              Please choose a discovered file from your cabinet. Node hotspots inspection or active witness records will reveal files here.
+            <h5 className="text-sm font-bold font-serif text-white mb-1">Select Discovered Evidence File</h5>
+            <p className="text-xs text-[#9a9a9a] max-w-sm leading-relaxed font-mono">
+              Choose a file from your evidence cabinet on the left. Uncover new evidence by pursuing investigation leads and exploring location hotspots.
             </p>
           </div>
         )}

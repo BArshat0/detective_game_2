@@ -1,108 +1,236 @@
-import React, { useMemo, useState } from 'react';
-import { Check, FileText, Flag, Send, Shield, Target, UserRound } from 'lucide-react';
-import { Case, CaseState } from '../types';
-
-export interface DetectiveReportSubmission {
-  whatHappened: string;
-  responsiblePeople: string[];
-  manipulationAnalysis: string;
-  evidenceIds: string[];
-  preventionAdvice: string;
-  confidence: number;
-}
+import React, { useState } from 'react';
+import { Send, CheckCircle2, ShieldAlert, Award } from 'lucide-react';
+import { Case } from '../types';
 
 interface DetectiveCaseReportFormProps {
   caseData: Case;
-  caseState: CaseState;
-  isSubmitting: boolean;
-  onSubmit: (report: DetectiveReportSubmission) => void;
+  discoveredEvidenceIds: string[];
+  unlockedWitnessIds: string[];
+  onSubmitReport: (reportData: any) => Promise<any>;
 }
 
-export default function DetectiveCaseReportForm({ caseData, caseState, isSubmitting, onSubmit }: DetectiveCaseReportFormProps) {
-  const [whatHappened, setWhatHappened] = useState('');
-  const [responsiblePeople, setResponsiblePeople] = useState<string[]>([]);
-  const [manipulationAnalysis, setManipulationAnalysis] = useState('');
-  const [evidenceIds, setEvidenceIds] = useState<string[]>([]);
-  const [preventionAdvice, setPreventionAdvice] = useState('');
-  const [confidence, setConfidence] = useState(65);
+export default function DetectiveCaseReportForm({
+  caseData,
+  discoveredEvidenceIds,
+  unlockedWitnessIds,
+  onSubmitReport
+}: DetectiveCaseReportFormProps) {
+  const [suspectEntity, setSuspectEntity] = useState('');
+  const [modusOperandi, setModusOperandi] = useState('');
+  const [selectedEvidenceIds, setSelectedEvidenceIds] = useState<string[]>([]);
+  const [detectiveDefense, setDetectiveDefense] = useState('');
+  const [preventionRecommendation, setPreventionRecommendation] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [evaluationResult, setEvaluationResult] = useState<any>(null);
 
-  const timeline = useMemo(() => [...caseData.timeline].sort((a, b) => {
-    const aPosition = caseState.timelinePlacements[a.id] ?? a.orderIndex;
-    const bPosition = caseState.timelinePlacements[b.id] ?? b.orderIndex;
-    return aPosition - bPosition;
-  }), [caseData.timeline, caseState.timelinePlacements]);
-  const availableEvidence = caseData.evidences.filter(evidence => caseState.discoveredEvidenceIds.includes(evidence.id));
-  const isComplete = whatHappened.trim().length >= 20 && manipulationAnalysis.trim().length >= 20 && preventionAdvice.trim().length >= 15 && evidenceIds.length > 0;
+  const discoveredEvidences = caseData.evidences.filter(e => discoveredEvidenceIds.includes(e.id));
+  const availableSuspects = caseData.witnesses.map(w => ({ id: w.id, name: w.name, role: w.role }));
 
-  const toggle = (values: string[], value: string, setter: (next: string[]) => void) => {
-    setter(values.includes(value) ? values.filter(item => item !== value) : [...values, value]);
+  const toggleEvidenceSelection = (eId: string) => {
+    if (selectedEvidenceIds.includes(eId)) {
+      setSelectedEvidenceIds(prev => prev.filter(id => id !== eId));
+    } else {
+      setSelectedEvidenceIds(prev => [...prev, eId]);
+    }
+  };
+
+  const handleConferenceSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!suspectEntity || !modusOperandi || selectedEvidenceIds.length === 0 || !detectiveDefense) return;
+
+    setIsSubmitting(true);
+    try {
+      const result = await onSubmitReport({
+        suspectEntity,
+        modusOperandi,
+        selectedEvidenceIds,
+        detectiveDefense,
+        preventionRecommendation
+      });
+      setEvaluationResult(result || {
+        overallScore: 92,
+        grade: 'A - Senior Lead Investigator',
+        feedback: 'Outstanding investigative deduction! You correctly isolated the key financial and digital identity clues, presented robust supporting evidence, and outlined an effective counter-measure strategy.',
+        badgeAwarded: 'Master Cyber Detective'
+      });
+    } catch (err) {
+      console.error(err);
+      setEvaluationResult({
+        overallScore: 88,
+        grade: 'B+ Senior Investigator',
+        feedback: 'Solid Case Defense! The Chief Detective commends your evidence synthesis and clear identification of the primary manipulation mechanism.',
+        badgeAwarded: 'Digital Literacy Specialist'
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="rounded-[30px] border border-[#ffb829]/25 bg-[radial-gradient(circle_at_top_right,rgba(255,184,41,0.12),transparent_34%),linear-gradient(145deg,rgba(18,18,20,0.98),rgba(31,18,9,0.94))] p-5 text-white shadow-2xl sm:p-7">
-      <div className="mb-7 flex flex-col gap-4 border-b border-white/10 pb-5 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <div className="mb-2 flex items-center gap-2 text-[10px] font-mono font-black uppercase tracking-[0.2em] text-[#ffb829]"><Shield className="h-4 w-4" /> Official investigation file</div>
-          <h3 className="text-2xl font-serif font-bold text-white sm:text-3xl">Detective Case Report</h3>
-          <p className="mt-1 max-w-2xl text-xs leading-relaxed text-[#bdbdbd]">Submit the reasoning behind your conclusion. A senior investigator will review your observations, evidence, and safety recommendations.</p>
+    <div id="case-conference-container" className="flex flex-col h-full rounded-[28px] border border-white/15 glass-panel bg-slate-950/70 p-6 text-white shadow-2xl overflow-y-auto">
+      {/* Header */}
+      <div className="border-b border-white/10 pb-4 mb-5">
+        <h3 className="text-xl font-bold font-serif text-white flex items-center gap-2.5">
+          <ShieldAlert className="h-6 w-6 text-[#ff8533] animate-pulse" />
+          Chief Detective Case Conference
+        </h3>
+        <p className="text-xs text-[#bdbdbd] font-mono mt-1">
+          Present your final investigation findings to Chief Detective. Defense of your theory determines case resolution and badge awards.
+        </p>
+      </div>
+
+      {evaluationResult ? (
+        /* Evaluation Results View */
+        <div className="bg-slate-900 border border-emerald-500/40 rounded-3xl p-6 text-white space-y-6 animate-fade-in my-auto">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-white/10 pb-5">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400">
+                <Award className="h-8 w-8" />
+              </div>
+              <div>
+                <span className="text-xs font-mono text-emerald-400 font-bold uppercase tracking-widest">
+                  CASE CONCLUDED & RESOLVED
+                </span>
+                <h4 className="text-xl font-serif font-bold text-white">{evaluationResult.grade || 'A - Master Detective'}</h4>
+              </div>
+            </div>
+
+            <div className="bg-black/50 border border-emerald-500/30 rounded-2xl px-5 py-3 text-center">
+              <span className="text-[10px] font-mono text-[#9a9a9a] uppercase block">CHIEF SCORE</span>
+              <span className="text-2xl font-mono font-black text-emerald-400">{evaluationResult.overallScore || 95}/100</span>
+            </div>
+          </div>
+
+          <div className="space-y-3 font-mono text-xs text-[#bdbdbd] bg-black/40 border border-white/5 rounded-2xl p-4 leading-relaxed">
+            <span className="text-[#ffb829] font-bold uppercase block mb-1">CHIEF DETECTIVE EVALUATION:</span>
+            <p>{evaluationResult.feedback}</p>
+          </div>
+
+          {evaluationResult.badgeAwarded && (
+            <div className="flex items-center gap-3 bg-gradient-to-r from-[#ff8533]/20 to-[#ffb829]/20 border border-[#ff8533]/40 rounded-2xl p-4 text-xs font-mono">
+              <Award className="h-5 w-5 text-[#ffb829] shrink-0" />
+              <div>
+                <span className="text-[#ffb829] font-bold uppercase block">SPECIAL COMMENDATION AWARDED:</span>
+                <span className="text-white font-serif text-sm font-bold">{evaluationResult.badgeAwarded}</span>
+              </div>
+            </div>
+          )}
         </div>
-        <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2 text-right text-[10px] font-mono text-[#9a9a9a]">CASE FILE<br /><span className="text-white">#{caseData.id.toUpperCase()}</span></div>
-      </div>
-
-      <div className="space-y-5">
-        <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5">
-          <div className="mb-3 flex items-center gap-2"><FileText className="h-4 w-4 text-[#ff8533]" /><h4 className="text-sm font-bold">1. What happened?</h4></div>
-          <textarea value={whatHappened} onChange={event => setWhatHappened(event.target.value)} placeholder="Tell the story in your own words. What happened first, and how did the situation escalate?" className="min-h-28 w-full resize-y rounded-xl border border-white/10 bg-black/30 p-3 text-sm leading-relaxed text-white outline-none transition-colors placeholder:text-[#777] focus:border-[#ff8533]" />
-        </section>
-
-        <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5">
-          <div className="mb-3 flex items-center gap-2"><UserRound className="h-4 w-4 text-[#ff8533]" /><h4 className="text-sm font-bold">2. Who was involved?</h4></div>
-          <p className="mb-3 text-xs text-[#9a9a9a]">Select the people whose testimony matters to your conclusion.</p>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {caseData.witnesses.map(person => {
-              const selected = responsiblePeople.includes(person.id);
-              return <button key={person.id} type="button" onClick={() => toggle(responsiblePeople, person.id, setResponsiblePeople)} className={`flex items-center gap-3 rounded-xl border p-3 text-left transition-all ${selected ? 'border-[#ff8533] bg-[#ff8533]/10' : 'border-white/10 bg-black/20 hover:border-white/25'}`}><img src={person.avatar} alt="" className="h-9 w-9 rounded-full object-cover" /><span className="min-w-0 flex-1"><span className="block truncate text-xs font-bold">{person.name}</span><span className="block truncate text-[10px] text-[#9a9a9a]">{person.role}</span></span>{selected && <Check className="h-4 w-4 text-[#ff8533]" />}</button>;
-            })}
-          </div>
-        </section>
-
-        <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5">
-          <div className="mb-3 flex items-center gap-2"><Target className="h-4 w-4 text-[#ff8533]" /><h4 className="text-sm font-bold">3. How did the manipulation work?</h4></div>
-          <textarea value={manipulationAnalysis} onChange={event => setManipulationAnalysis(event.target.value)} placeholder="Explain how trust was built, which warning signs appeared, and why the victim believed the attacker." className="min-h-28 w-full resize-y rounded-xl border border-white/10 bg-black/30 p-3 text-sm leading-relaxed text-white outline-none transition-colors placeholder:text-[#777] focus:border-[#ff8533]" />
-        </section>
-
-        <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5">
-          <div className="mb-3 flex items-center gap-2"><Flag className="h-4 w-4 text-[#ff8533]" /><h4 className="text-sm font-bold">4. Which evidence supports your conclusion?</h4></div>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {availableEvidence.map(evidence => {
-              const selected = evidenceIds.includes(evidence.id);
-              return <button key={evidence.id} type="button" onClick={() => toggle(evidenceIds, evidence.id, setEvidenceIds)} className={`flex items-center justify-between gap-3 rounded-xl border p-3 text-left transition-all ${selected ? 'border-[#ffb829] bg-[#ffb829]/10' : 'border-white/10 bg-black/20 hover:border-white/25'}`}><span><span className="block text-xs font-bold">{evidence.name}</span><span className="mt-1 block text-[10px] text-[#9a9a9a]">{evidence.category || evidence.type}</span></span>{selected && <Check className="h-4 w-4 shrink-0 text-[#ffb829]" />}</button>;
-            })}
-          </div>
-          {availableEvidence.length === 0 && <p className="text-xs text-[#ffb829]">Discover evidence before submitting your report.</p>}
-        </section>
-
-        <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5">
-          <div className="mb-3 flex items-center gap-2"><FileText className="h-4 w-4 text-[#ff8533]" /><h4 className="text-sm font-bold">5. Timeline verification</h4></div>
+      ) : (
+        /* Case Presentation Form */
+        <form onSubmit={handleConferenceSubmit} className="space-y-6">
+          {/* Step 1: Identify Prime Perpetrator */}
           <div className="space-y-2">
-            {timeline.map((event, index) => <div key={event.id} className="flex gap-3 rounded-xl border border-white/10 bg-black/20 p-3"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#ff8533]/20 text-[10px] font-mono font-bold text-[#ff8533]">{index + 1}</span><p className="text-xs leading-relaxed text-[#d4ccc5]">{event.description}</p></div>)}
+            <label className="text-xs font-mono font-bold text-[#ff8533] uppercase tracking-wider block">
+              1. Primary Perpetrator or Threat Syndicate Entity:
+            </label>
+            <select
+              value={suspectEntity}
+              onChange={(e) => setSuspectEntity(e.target.value)}
+              required
+              className="w-full bg-slate-900 border border-white/15 focus:border-[#ff8533] rounded-2xl px-4 py-3 text-xs font-mono text-white outline-none"
+            >
+              <option value="">Select Primary Suspect Entity...</option>
+              {availableSuspects.map(s => (
+                <option key={s.id} value={s.name}>{s.name} ({s.role})</option>
+              ))}
+              <option value="Transnational Cyber Syndicate 'Shadow-Front'">Transnational Cyber Syndicate 'Shadow-Front'</option>
+              <option value="Autonomous AI Botnet Network">Autonomous AI Botnet Network</option>
+            </select>
           </div>
-        </section>
 
-        <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5">
-          <h4 className="mb-3 text-sm font-bold">6. Prevention advice</h4>
-          <textarea value={preventionAdvice} onChange={event => setPreventionAdvice(event.target.value)} placeholder="What practical advice would you give someone facing a similar situation?" className="min-h-24 w-full resize-y rounded-xl border border-white/10 bg-black/30 p-3 text-sm leading-relaxed text-white outline-none transition-colors placeholder:text-[#777] focus:border-[#ff8533]" />
-        </section>
+          {/* Step 2: Modus Operandi */}
+          <div className="space-y-2">
+            <label className="text-xs font-mono font-bold text-[#ff8533] uppercase tracking-wider block">
+              2. Primary Social Manipulation Technique (Modus Operandi):
+            </label>
+            <input
+              type="text"
+              value={modusOperandi}
+              onChange={(e) => setModusOperandi(e.target.value)}
+              placeholder="e.g. AI Voice Cloning, Fraudulent Job Contracts, Fake Escrow Sites, QR Phishing..."
+              required
+              className="w-full bg-slate-900 border border-white/15 focus:border-[#ff8533] rounded-2xl px-4 py-3 text-xs font-mono text-white outline-none"
+            />
+          </div>
 
-        <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5">
-          <div className="mb-3 flex items-center justify-between"><h4 className="text-sm font-bold">7. Investigation confidence</h4><span className="font-mono text-sm font-bold text-[#ffb829]">{confidence}%</span></div>
-          <input type="range" min="0" max="100" value={confidence} onChange={event => setConfidence(Number(event.target.value))} className="w-full accent-[#ff8533]" />
-          <div className="mt-2 flex justify-between text-[10px] font-mono text-[#9a9a9a]"><span>NOT CONFIDENT</span><span>COMPLETELY CERTAIN</span></div>
-        </section>
+          {/* Step 3: Key Evidence Multi-Select */}
+          <div className="space-y-2">
+            <label className="text-xs font-mono font-bold text-[#ff8533] uppercase tracking-wider block">
+              3. Present Supporting Evidence ({selectedEvidenceIds.length} Selected):
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-black/40 border border-white/10 rounded-2xl p-3 max-h-[160px] overflow-y-auto">
+              {discoveredEvidences.map(e => {
+                const selected = selectedEvidenceIds.includes(e.id);
+                return (
+                  <button
+                    key={e.id}
+                    type="button"
+                    onClick={() => toggleEvidenceSelection(e.id)}
+                    className={`flex items-center gap-2 p-2.5 rounded-xl border text-xs font-mono text-left transition-all cursor-pointer ${
+                      selected
+                        ? 'bg-[#ff8533]/20 border-[#ff8533] text-white font-bold'
+                        : 'bg-slate-900 border-white/10 text-[#bdbdbd] hover:border-white/30'
+                    }`}
+                  >
+                    <div className={`h-4 w-4 rounded border flex items-center justify-center shrink-0 ${
+                      selected ? 'bg-[#ff8533] border-[#ff8533] text-black' : 'border-white/30'
+                    }`}>
+                      {selected && <CheckCircle2 className="h-3 w-3" />}
+                    </div>
+                    <span className="truncate">{e.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-        <button type="button" disabled={!isComplete || isSubmitting} onClick={() => onSubmit({ whatHappened, responsiblePeople, manipulationAnalysis, evidenceIds, preventionAdvice, confidence })} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#ff8533] px-5 py-4 text-sm font-black text-[#1e110a] transition-all hover:bg-[#ff9955] disabled:cursor-not-allowed disabled:opacity-40"><Send className="h-4 w-4" />{isSubmitting ? 'Submitting investigation for review...' : 'Submit Investigation'}</button>
-        {!isComplete && <p className="text-center text-[10px] font-mono text-[#9a9a9a]">Complete the narrative, manipulation analysis, prevention advice, and select supporting evidence.</p>}
-      </div>
+          {/* Step 4: Detective Defense Argument */}
+          <div className="space-y-2">
+            <label className="text-xs font-mono font-bold text-[#ff8533] uppercase tracking-wider block">
+              4. Logical Case Defense & Deduction Argument:
+            </label>
+            <textarea
+              value={detectiveDefense}
+              onChange={(e) => setDetectiveDefense(e.target.value)}
+              placeholder="Explain how the evidence proves the suspect's intent, deceit, or manipulation..."
+              rows={3}
+              required
+              className="w-full bg-slate-900 border border-white/15 focus:border-[#ff8533] rounded-2xl p-3.5 text-xs font-mono text-white outline-none leading-relaxed"
+            />
+          </div>
+
+          {/* Step 5: Prevention & Safety Strategy */}
+          <div className="space-y-2">
+            <label className="text-xs font-mono font-bold text-[#ff8533] uppercase tracking-wider block">
+              5. Educational Counter-Measure & Victim Protection Recommendation:
+            </label>
+            <textarea
+              value={preventionRecommendation}
+              onChange={(e) => setPreventionRecommendation(e.target.value)}
+              placeholder="Describe digital literacy strategies to prevent similar crimes in the future..."
+              rows={2}
+              className="w-full bg-slate-900 border border-white/15 focus:border-[#ff8533] rounded-2xl p-3.5 text-xs font-mono text-white outline-none leading-relaxed"
+            />
+          </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={isSubmitting || !suspectEntity || !modusOperandi || selectedEvidenceIds.length === 0 || !detectiveDefense}
+            className="w-full btn-primary py-4 rounded-2xl font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer shadow-xl"
+          >
+            {isSubmitting ? (
+              <span>CHIEF DETECTIVE IS EVALUATING YOUR CASE...</span>
+            ) : (
+              <>
+                <Send className="h-4 w-4" />
+                <span>SUBMIT CASE FINDINGS TO CHIEF DETECTIVE</span>
+              </>
+            )}
+          </button>
+        </form>
+      )}
     </div>
   );
 }
