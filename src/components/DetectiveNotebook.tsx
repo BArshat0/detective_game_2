@@ -75,7 +75,7 @@ export default function DetectiveNotebook({
             {notes.length > 0 && onClearNotes && (
               <button
                 type="button"
-                onClick={() => setShowClearConfirm(true)}
+                onClick={() => { setShowClearConfirm(true); }}
                 className="text-[9px] font-sans text-rose-700 hover:text-rose-900 bg-rose-100 hover:bg-rose-200 border border-rose-200 px-2 py-0.5 rounded transition-colors cursor-pointer flex items-center gap-1 font-semibold"
                 title="Tear out page"
               >
@@ -106,7 +106,7 @@ export default function DetectiveNotebook({
               </button>
               <button
                 type="button"
-                onClick={() => setShowClearConfirm(false)}
+                onClick={() => { setShowClearConfirm(false); }}
                 className="px-2 py-1 bg-[#e6dfd3] hover:bg-zinc-300 text-zinc-700 rounded text-[10px] cursor-pointer"
               >
                 Cancel
@@ -143,7 +143,7 @@ export default function DetectiveNotebook({
                     {onDeleteNote && (
                       <button
                         type="button"
-                        onClick={() => onDeleteNote(idx)}
+                        onClick={() => { onDeleteNote(idx); }}
                         className="opacity-0 group-hover:opacity-100 absolute right-0 top-1 text-[#8c786a] hover:text-rose-600 transition-opacity p-0.5 cursor-pointer focus:outline-none focus:opacity-100"
                         title="Delete entry"
                         aria-label={`Delete note entry number ${idx + 1}`}
@@ -165,7 +165,7 @@ export default function DetectiveNotebook({
           <input
             type="text"
             value={inputNote}
-            onChange={(e) => setInputNote(e.target.value)}
+            onChange={(e) => { setInputNote(e.target.value); }}
             placeholder="Type a case finding..."
             className="flex-1 bg-black/40 border border-[#ff8533]/20 focus:border-[#ff8533] rounded-xl px-3.5 py-2 text-xs text-white placeholder-[#8c786a] outline-none transition-colors"
             aria-label="New note content"

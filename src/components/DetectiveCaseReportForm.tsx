@@ -29,17 +29,17 @@ export default function DetectiveCaseReportForm({
   const [detectiveNotes, setDetectiveNotes] = useState<string>('');
 
   // Auto-compile state data
-  const suspectClassifications = caseState?.suspectClassifications || {};
-  const keyEvidenceTags = caseState?.keyEvidenceTags || {};
-  const timelinePlacements = caseState?.timelinePlacements || {};
-  const wallConnections = caseState?.wallConnections || [];
-  const wallNodes = caseState?.wallNodes || [];
-  const unlockedLeadIds = caseState?.unlockedLeadIds || [];
-  const completedLeadIds = caseState?.completedLeadIds || [];
+  const suspectClassifications = caseState?.suspectClassifications ?? {};
+  const keyEvidenceTags = caseState?.keyEvidenceTags ?? {};
+  const timelinePlacements = caseState?.timelinePlacements ?? {};
+  const wallConnections = caseState?.wallConnections ?? [];
+  const wallNodes = caseState?.wallNodes ?? [];
+  const unlockedLeadIds = caseState?.unlockedLeadIds ?? [];
+  const completedLeadIds = caseState?.completedLeadIds ?? [];
 
   // Discovered evidence files
   const discoveredEvidences = caseData.evidences.filter(e => 
-    (caseState?.discoveredEvidenceIds || discoveredEvidenceIds).includes(e.id)
+    (caseState?.discoveredEvidenceIds ?? discoveredEvidenceIds).includes(e.id)
   );
 
   // User tagged key evidence
@@ -77,14 +77,14 @@ export default function DetectiveCaseReportForm({
   );
 
   // 4. Mechanism Options from conferenceConfig or caseData
-  const mechanismOptions = caseData.conferenceConfig?.mechanismOptions || 
-    caseData.manipulationTechniques?.map((m, i) => ({ id: `m_${i}`, label: m, description: m })) || [];
+  const mechanismOptions = caseData.conferenceConfig?.mechanismOptions ?? 
+    (caseData.manipulationTechniques?.map((m, i) => ({ id: `m_${i}`, label: m, description: m })) ?? []);
 
   const handleAuthorizeSubmit = async () => {
     setIsSubmitting(true);
     try {
       const selectedEvIds = userKeyEvidences.map(e => e.id);
-      const chosenMechanism = selectedMechanism || caseData.conferenceConfig?.mechanismOptions?.[0]?.label || caseData.manipulationTechniques?.[0] || 'Social Engineering';
+      const chosenMechanism = selectedMechanism || (caseData.conferenceConfig?.mechanismOptions?.[0]?.label ?? caseData.manipulationTechniques?.[0]) || 'Social Engineering';
 
       const defenseSummary = `Detective Investigation Dossier submitted. ${placedEventEntries.length} chronological timeline events verified. Primary suspect(s): ${primarySuspectName}. Key evidence linked: ${selectedEvIds.length} files. ${detectiveNotes ? `Notes: ${detectiveNotes}` : ''}`;
 
@@ -156,7 +156,7 @@ export default function DetectiveCaseReportForm({
           {onNavigateToTab && (
             <button
               type="button"
-              onClick={() => onNavigateToTab('interrogation')}
+              onClick={() => { onNavigateToTab('interrogation'); }}
               className="text-[11px] font-mono text-slate-300 hover:text-white flex items-center gap-1 bg-white/5 border border-white/10 rounded-xl px-3 py-1 cursor-pointer hover:bg-white/10 transition-all"
             >
               <Edit3 className="h-3 w-3 text-[#ff8533]" />
@@ -250,7 +250,7 @@ export default function DetectiveCaseReportForm({
           {onNavigateToTab && (
             <button
               type="button"
-              onClick={() => onNavigateToTab('timeline')}
+              onClick={() => { onNavigateToTab('timeline'); }}
               className="text-[11px] font-mono text-slate-300 hover:text-white flex items-center gap-1 bg-white/5 border border-white/10 rounded-xl px-3 py-1 cursor-pointer hover:bg-white/10 transition-all"
             >
               <Edit3 className="h-3 w-3 text-[#ff8533]" />
@@ -316,7 +316,7 @@ export default function DetectiveCaseReportForm({
             {onNavigateToTab && (
               <button
                 type="button"
-                onClick={() => onNavigateToTab('leads')}
+                onClick={() => { onNavigateToTab('leads'); }}
                 className="mt-2 text-xs text-[#ff8533] font-bold underline cursor-pointer"
               >
                 Go to Field Leads to investigate →
@@ -332,13 +332,14 @@ export default function DetectiveCaseReportForm({
                   SELECT DEDUCED PRIMARY TACTICAL MECHANISM:
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {mechanismOptions.map((opt: any) => {
-                    const isSelected = selectedMechanism === opt.label || selectedMechanism === opt.id;
+                  {mechanismOptions.map((opt: unknown) => {
+                    const option = opt as { id?: string; label: string; description?: string };
+                    const isSelected = selectedMechanism === option.label || selectedMechanism === option.id;
                     return (
                       <button
-                        key={opt.id}
+                        key={option.id || option.label}
                         type="button"
-                        onClick={() => setSelectedMechanism(opt.label)}
+                        onClick={() => { setSelectedMechanism(option.label); }}
                         className={`p-3 rounded-xl border text-left transition-all cursor-pointer font-mono text-xs ${
                           isSelected 
                             ? 'bg-[#ff8533]/20 border-[#ff8533] text-white font-bold ring-1 ring-[#ff8533]' 
@@ -346,12 +347,12 @@ export default function DetectiveCaseReportForm({
                         }`}
                       >
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-white font-bold">{opt.label}</span>
+                          <span className="text-white font-bold">{option.label}</span>
                           {isSelected && <CheckCircle2 className="h-3.5 w-3.5 text-[#ff8533]" />}
                         </div>
-                        {opt.description && (
+                        {option.description && (
                           <p className="text-[10px] text-slate-400 font-sans font-normal leading-tight">
-                            {opt.description}
+                            {option.description}
                           </p>
                         )}
                       </button>
@@ -391,7 +392,7 @@ export default function DetectiveCaseReportForm({
           {onNavigateToTab && (
             <button
               type="button"
-              onClick={() => onNavigateToTab('evidence')}
+              onClick={() => { onNavigateToTab('evidence'); }}
               className="text-[11px] font-mono text-slate-300 hover:text-white flex items-center gap-1 bg-white/5 border border-white/10 rounded-xl px-3 py-1 cursor-pointer hover:bg-white/10 transition-all"
             >
               <Edit3 className="h-3 w-3 text-[#ff8533]" />
@@ -483,7 +484,7 @@ export default function DetectiveCaseReportForm({
           {onNavigateToTab && (
             <button
               type="button"
-              onClick={() => onNavigateToTab('wall')}
+              onClick={() => { onNavigateToTab('wall'); }}
               className="text-[11px] font-mono text-slate-300 hover:text-white flex items-center gap-1 bg-white/5 border border-white/10 rounded-xl px-3 py-1 cursor-pointer hover:bg-white/10 transition-all"
             >
               <Edit3 className="h-3 w-3 text-[#ff8533]" />
@@ -503,11 +504,11 @@ export default function DetectiveCaseReportForm({
               const toN = wallNodes.find(n => n.id === conn.toId);
               return (
                 <div key={cIdx} className="bg-black/40 border border-white/10 rounded-xl p-3 font-mono text-xs flex items-center justify-between">
-                  <span className="text-white font-bold">{fromN?.title || conn.fromId}</span>
+                  <span className="text-white font-bold">{fromN?.title ?? conn.fromId}</span>
                   <span className="text-[9px] px-2 py-0.5 rounded-full bg-[#ff8533]/20 border border-[#ff8533] text-[#ff8533] uppercase font-bold">
                     {conn.relationshipLabel || 'Connected'}
                   </span>
-                  <span className="text-white font-bold">{toN?.title || conn.toId}</span>
+                  <span className="text-white font-bold">{toN?.title ?? conn.toId}</span>
                 </div>
               );
             })}
@@ -589,7 +590,7 @@ export default function DetectiveCaseReportForm({
                       <button
                         key={cIdx}
                         type="button"
-                        onClick={() => setDeductionAnswers(prev => ({ ...prev, [q.id || `q_${qIdx}`]: choice }))}
+                        onClick={() => { setDeductionAnswers(prev => ({ ...prev, [q.id || `q_${qIdx}`]: choice })); }}
                         className={`p-3 rounded-xl border text-left text-xs font-mono transition-all cursor-pointer ${
                           isSelected
                             ? 'bg-purple-600/30 border-purple-400 text-white font-bold ring-1 ring-purple-400'

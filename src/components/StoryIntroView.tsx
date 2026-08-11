@@ -342,7 +342,7 @@ export default function StoryIntroView({ caseData, onCompleteStory, onSkipStory,
   // Preload all scene images to ensure instant, glitch-free page transitions
   useEffect(() => {
     scenes.forEach((sc) => {
-      const imgUrl = sc.speaker?.avatar || caseData.imageUrl;
+      const imgUrl = sc.speaker?.avatar ?? caseData.imageUrl;
       if (imgUrl) {
         const img = new Image();
         img.src = imgUrl;
@@ -355,17 +355,17 @@ export default function StoryIntroView({ caseData, onCompleteStory, onSkipStory,
     const idx = sceneIdx >= 0 ? sceneIdx : 0;
 
     if (caseData.id !== 'borderland-trap') {
-      const location = scene.locationName || caseData.location.name || 'CRIME SCENE LOCATION';
+      const location = (scene.locationName ?? caseData.location.name) || 'CRIME SCENE LOCATION';
       const dateTag = `${10 + idx * 2} OCT 2035 • 09:00 UTC`;
-      const sceneSummaryText = scene.narration || scene.dialogueText || scene.keyTakeaway || scene.title;
-      const cluesText = scene.keyTakeaway || sceneSummaryText;
+      const sceneSummaryText = (scene.narration ?? scene.dialogueText) || scene.keyTakeaway || scene.title;
+      const cluesText = scene.keyTakeaway ?? sceneSummaryText;
 
       return {
         stampedDate: dateTag,
         stampedLocation: location.toUpperCase(),
-        marginNote: scene.marginAnnotation || `INVESTIGATIVE NOTE: ${sceneSummaryText}`,
+        marginNote: scene.marginAnnotation ?? `INVESTIGATIVE NOTE: ${sceneSummaryText}`,
         sketchCaption: `Scene Sketch: ${scene.title} at ${location}. Key forensic evidence logged.`,
-        mapLabel: `${caseData.title.substring(0, 18).toUpperCase()}`,
+        mapLabel: caseData.title.substring(0, 18).toUpperCase(),
         mapSector: `Sector Grid 0${idx + 1}`,
         letterText: `Official Transcript from ${scene.title}: "${sceneSummaryText.substring(0, 120)}..."`,
         letterSender: `Forensic Field Operative`,
@@ -673,7 +673,7 @@ export default function StoryIntroView({ caseData, onCompleteStory, onSkipStory,
 
   // Render Left Page with Police Composite Scene Sketch Artwork
   const renderLeftPage = (scene: StoryScene, pageNum: number, sceneIdx?: number) => {
-    const activeIdx = sceneIdx !== undefined ? sceneIdx : currentSceneIndex;
+    const activeIdx = sceneIdx ?? currentSceneIndex;
     const data = getCuratedArtifacts(activeIdx, scene);
     const sceneSketchArt = getSceneSketchArt(caseData.id, activeIdx);
 
@@ -780,7 +780,7 @@ export default function StoryIntroView({ caseData, onCompleteStory, onSkipStory,
         {/* Page Header */}
         <div className="flex items-center justify-between border-b border-[#a88a62] pb-2.5 mb-4">
           <span className="font-['Cinzel'] text-xs font-extrabold uppercase tracking-[0.2em] text-[#6e5033]">
-            {scene.chapterTitle || `CHAPTER ${activeIdx + 1}`}
+            {scene.chapterTitle ?? `CHAPTER ${activeIdx + 1}`}
           </span>
           <span className="font-mono text-[11px] text-[#6e5033]">
             PAGE 0{pageNum}
@@ -800,7 +800,7 @@ export default function StoryIntroView({ caseData, onCompleteStory, onSkipStory,
               {scene.title}
             </h2>
             <p className="font-serif italic text-xs text-[#593d22]">
-              {story?.incidentTime || 'Autumn 2035'} &bull; {scene.locationName || caseData.location.name}
+              {story?.incidentTime ?? 'Autumn 2035'} &bull; {scene.locationName || caseData.location.name}
             </p>
           </div>
 
@@ -821,7 +821,7 @@ export default function StoryIntroView({ caseData, onCompleteStory, onSkipStory,
             <blockquote className="my-3 p-3.5 bg-[#dfccaa] border-l-4 border-[#7a542b] font-serif italic text-sm text-[#22130a] leading-relaxed rounded-r shadow-xs">
               “{scene.dialogueText}”
               <span className="block not-italic font-sans font-bold text-[11px] text-[#6e5033] uppercase tracking-wider mt-2">
-                — {scene.speaker?.name || 'Witness'}, {scene.speaker?.role || 'Statement Log'}
+                — {scene.speaker?.name ?? 'Witness'}, {scene.speaker?.role || 'Statement Log'}
               </span>
             </blockquote>
           )}
@@ -904,7 +904,7 @@ export default function StoryIntroView({ caseData, onCompleteStory, onSkipStory,
 
           {/* Page FX Audio Toggle */}
           <button
-            onClick={() => setIsMuted(!isMuted)}
+            onClick={() => { setIsMuted(!isMuted); }}
             className="px-3 py-1.5 border border-amber-500/30 bg-slate-900/60 hover:bg-slate-800/80 text-amber-200 transition-all cursor-pointer flex items-center gap-1.5 rounded-xl shadow-xs backdrop-blur-md"
             title={isMuted ? 'Unmute Page Flip Sound' : 'Mute Page Flip Sound'}
           >
@@ -1128,7 +1128,7 @@ export default function StoryIntroView({ caseData, onCompleteStory, onSkipStory,
                     className="bg-[#1c130c] border-2 border-[#a88254] rounded-lg max-w-lg w-full p-6 text-[#ebd8b7] shadow-2xl relative space-y-4 font-serif"
                   >
                     <button
-                      onClick={() => setSelectedArtifact(null)}
+                      onClick={() => { setSelectedArtifact(null); }}
                       className="absolute top-4 right-4 p-1.5 rounded-full bg-[#2a1c12] hover:bg-[#3d291a] text-[#c9a677] transition-colors"
                     >
                       <X className="w-5 h-5" />

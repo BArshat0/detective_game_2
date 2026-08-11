@@ -19,7 +19,7 @@ export default function MysteryAudioControl({ className = '', variant = 'header'
       setVolume(vol);
       setMode(currentMode);
     });
-    return () => unsubscribe();
+    return () => { unsubscribe(); };
   }, []);
 
   const getModeLabel = (m: AudioMode) => {
@@ -97,7 +97,7 @@ export default function MysteryAudioControl({ className = '', variant = 'header'
     <div className={`relative inline-flex items-center gap-2 ${className}`}>
       <button
         onClick={handleToggle}
-        onMouseEnter={() => setShowSlider(true)}
+        onMouseEnter={() => { setShowSlider(true); }}
         className={`flex items-center gap-2 px-3 py-1.5 rounded-2xl border text-xs font-mono font-bold transition-all duration-300 cursor-pointer ${
           isPlaying
             ? 'border-[#ff8533]/50 bg-[#ff8533]/20 text-[#ff8533] shadow-lg shadow-[#ff8533]/10'
@@ -125,7 +125,7 @@ export default function MysteryAudioControl({ className = '', variant = 'header'
       {/* Popover volume slider on hover or active */}
       {(isPlaying || showSlider) && (
         <div 
-          onMouseLeave={() => setShowSlider(false)}
+          onMouseLeave={() => { setShowSlider(false); }}
           className="hidden md:flex items-center gap-1.5 bg-slate-900/90 border border-white/10 px-2.5 py-1 rounded-xl"
         >
           <input

@@ -101,7 +101,7 @@ export default function InvestigationLeads({
                       </span>
                       {isCompleted ? (
                         <span className="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold uppercase">
-                          RESOLVED (+{lead.rewardXp || 100} XP)
+                          RESOLVED (+{lead.rewardXp ?? 100} XP)
                         </span>
                       ) : isUnlocked ? (
                         <span className="text-[9px] font-mono text-[#ffb829] bg-[#ffb829]/10 border border-[#ffb829]/30 px-2 py-0.5 rounded-full font-bold uppercase">
@@ -155,7 +155,7 @@ export default function InvestigationLeads({
                 {/* Action button */}
                 {isUnlocked && !isCompleted && (
                   <button
-                    onClick={() => onSelectLead(lead)}
+                    onClick={() => { onSelectLead(lead); }}
                     className="shrink-0 btn-primary py-2.5 px-4 text-xs font-mono font-bold flex items-center gap-2 cursor-pointer focus:outline-none"
                   >
                     <span>PURSUE LEAD</span>

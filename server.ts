@@ -247,14 +247,14 @@ app.get("/api/user/profile", requireAuth, async (req: AuthenticatedRequest, res)
 
     const metaName = req.user.user_metadata?.name;
     const emailPrefix = req.user.email ? req.user.email.split("@")[0] : null;
-    const fallbackName = metaName || emailPrefix || "Investigator";
+    const fallbackName = (metaName || emailPrefix) ?? "Investigator";
 
     if (error || !profile) {
       // Lazy-create profile if not found but table exists
       const defaultProfile: Record<string, unknown> = {
         id: req.user.id,
         name: fallbackName,
-        email: req.user.email || "",
+        email: req.user.email ?? "",
         cases_solved: 0,
         solved_case_ids: [],
         achievements: [],
@@ -308,7 +308,7 @@ app.post("/api/user/profile", requireAuth, async (req: AuthenticatedRequest, res
 
     let resolvedName = name;
     if (!resolvedName || resolvedName === "Investigator" || resolvedName === "Cadet Detective") {
-      resolvedName = metaName || emailPrefix || "Investigator";
+      resolvedName = (metaName || emailPrefix) ?? "Investigator";
     }
     
     const payload: Record<string, unknown> = {
@@ -507,8 +507,8 @@ async function callGeminiWithRetry<T>(fn: () => Promise<T>, retries = 3, delay =
       errorStr.includes("UNAVAILABLE") || 
       errorStr.includes("high demand") || 
       errorStr.includes("temporary") ||
-      (errObj?.status === 503) ||
-      (errObj?.code === 503);
+      (errObj.status === 503) ||
+      (errObj.code === 503);
 
     if (isRetryable && retries > 0) {
       console.warn(`Gemini error (503/UNAVAILABLE) encountered. Retrying in ${delay}ms... (${retries} retries left)`);
@@ -523,7 +523,7 @@ async function callGeminiWithRetry<T>(fn: () => Promise<T>, retries = 3, delay =
 function handleGeminiError(error: unknown, res: Response, contextMsg: string) {
   console.error(`Gemini error during ${contextMsg}:`, error);
   const err = error as Error | null;
-  if (err && (err.message === "GEMINI_NOT_CONFIGURED" || err.message?.includes("API_KEY"))) {
+  if (err && (err.message === "GEMINI_NOT_CONFIGURED" || err.message.includes("API_KEY"))) {
     return res.status(530).json({
       error: "GEMINI_NOT_CONFIGURED",
       message: "The AI Core is not configured yet. Please enter the GEMINI_API_KEY in the Secrets panel.",
@@ -575,7 +575,7 @@ async function checkSupabaseStatus(): Promise<ServiceStatus> {
       const { error: testErr } = await client.from("profiles").select("id").limit(1);
       
       if (testErr) {
-        if (testErr.message && testErr.message.includes("Invalid API key")) {
+        if (testErr.message?.includes("Invalid API key")) {
           status.configured = false;
           status.status = "error";
           status.message = "Supabase API key validation failed. Please check your SUPABASE_KEY in Secrets.";
@@ -654,7 +654,7 @@ app.get("/api/system-status", async (req, res) => {
     const withTimeout = <T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> => {
       return Promise.race([
         promise,
-        new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms))
+        new Promise<T>((resolve) => setTimeout(() => { resolve(fallback); }, ms))
       ]);
     };
 

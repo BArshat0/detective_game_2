@@ -374,7 +374,7 @@ export default function InterrogationTerminal({
                       <input
                         type="text"
                         value={customReason}
-                        onChange={(e) => setCustomReason(e.target.value)}
+                        onChange={(e) => { setCustomReason(e.target.value); }}
                         placeholder="Or enter custom reason..."
                         className="flex-1 bg-black/60 border border-white/15 rounded-lg px-3 py-1 text-[11px] text-white"
                       />
@@ -421,7 +421,7 @@ export default function InterrogationTerminal({
                     <button
                       key={evidence.id}
                       type="button"
-                      onClick={() => setPresentedEvidenceId(selected ? null : evidence.id)}
+                      onClick={() => { setPresentedEvidenceId(selected ? null : evidence.id); }}
                       className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-mono font-bold transition-all cursor-pointer ${
                         selected 
                           ? 'border-[#ff8533] bg-[#ff8533] text-[#1e110a] shadow-lg shadow-[#ff8533]/20' 
@@ -504,7 +504,7 @@ export default function InterrogationTerminal({
               <input
                 type="text"
                 value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
+                onChange={(e) => { setInputText(e.target.value); }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') void handleSendMessage();
                 }}

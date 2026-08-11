@@ -1603,7 +1603,7 @@ export function getSuspectSketchArt(nameOrId: string, avatarFallback?: string): 
     result = SUSPECT_SKETCHES.david_sterling;
   } else if (clean.includes('sophia') || clean.includes('lin')) {
     result = SUSPECT_SKETCHES.kaelen_miller;
-  } else if (avatarFallback && avatarFallback.trim()) {
+  } else if (avatarFallback?.trim()) {
     return encodeSvgDataUri(avatarFallback);
   }
 

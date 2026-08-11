@@ -71,7 +71,7 @@ export default function DigitalSafetyReport({
   const verdict = evaluationResult.feedback ?? evaluationResult.verdict ?? 'Forensic investigation completed and verified.';
   const analysis = evaluationResult.analysis;
   const unlockedBadges = evaluationResult.unlockedBadges ?? [];
-  const badgeAwarded = evaluationResult.badgeAwarded || unlockedBadges[0] || 'Master Cyber Detective';
+  const badgeAwarded = (evaluationResult.badgeAwarded ?? unlockedBadges[0]) || 'Master Cyber Detective';
 
   const reportId = `CYBER-AUDIT-${(caseData.id || 'CASE').toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
   const timestamp = new Date().toLocaleDateString('en-US', {
@@ -89,18 +89,18 @@ export default function DigitalSafetyReport({
 
   // Calculate investigation state metrics
   const totalEvidences = caseData.evidences?.length || 0;
-  const discoveredEvidenceIds = caseState?.discoveredEvidenceIds || [];
+  const discoveredEvidenceIds = caseState?.discoveredEvidenceIds ?? [];
   const discoveredEvidenceCount = discoveredEvidenceIds.length;
   const missedEvidences = caseData.evidences?.filter(e => !discoveredEvidenceIds.includes(e.id)) || [];
 
   const totalWitnesses = caseData.witnesses?.length || 0;
-  const unlockedWitnessIds = caseState?.unlockedWitnessIds || [];
+  const unlockedWitnessIds = caseState?.unlockedWitnessIds ?? [];
   const interviewedWitnessCount = unlockedWitnessIds.length;
 
   const totalTimelineEvents = caseData.timeline?.length || 0;
-  const placedTimelineCount = Object.keys(caseState?.timelinePlacements || {}).length;
+  const placedTimelineCount = Object.keys(caseState?.timelinePlacements ?? {}).length;
 
-  const selectedEvidenceCount = submittedReport?.selectedEvidenceIds?.length || 0;
+  const selectedEvidenceCount = submittedReport?.selectedEvidenceIds?.length ?? 0;
 
   // Performance metrics calculation
   const observationScore = Math.min(100, Math.round((discoveredEvidenceCount / Math.max(1, totalEvidences)) * 100));
@@ -315,7 +315,7 @@ ${caseData.warningSigns?.map(sign => `• ${sign}`).join('\n') || '• Always ve
               <div>
                 <span className="font-bold text-white block">Identified Prime Threat Entity</span>
                 <span className="text-slate-400 block mt-0.5">
-                  Identified: <strong className="text-emerald-300">{submittedReport?.suspectEntity || caseThreatActor}</strong>
+                  Identified: <strong className="text-emerald-300">{submittedReport?.suspectEntity ?? caseThreatActor}</strong>
                 </span>
               </div>
             </div>
@@ -424,12 +424,12 @@ ${caseData.warningSigns?.map(sign => `• ${sign}`).join('\n') || '• Always ve
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-bold text-[#ff8533]">{ev.name}</span>
                     <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 uppercase font-bold">
-                      Importance: {ev.importance || 'High'}
+                      Importance: {ev.importance ?? 'High'}
                     </span>
                   </div>
                   <p className="text-slate-300 text-[11px] leading-relaxed">{ev.description}</p>
                   <p className="text-[10px] text-slate-500">
-                    <strong>Discovery Method:</strong> {ev.unlockCondition || 'Inspect location hotspots or complete lead tasks'}
+                    <strong>Discovery Method:</strong> {ev.unlockCondition ?? 'Inspect location hotspots or complete lead tasks'}
                   </p>
                 </div>
               ))}
@@ -482,16 +482,16 @@ ${caseData.warningSigns?.map(sign => `• ${sign}`).join('\n') || '• Always ve
               </span>
               <div>
                 <span className="text-slate-400 text-[10px] uppercase font-bold block">Primary Suspect</span>
-                <span className="text-white font-bold">{submittedReport?.suspectEntity || 'Threat Entity'}</span>
+                <span className="text-white font-bold">{submittedReport?.suspectEntity ?? 'Threat Entity'}</span>
               </div>
               <div>
                 <span className="text-slate-400 text-[10px] uppercase font-bold block">Social Technique</span>
-                <span className="text-white font-bold">{submittedReport?.modusOperandi || caseTopic}</span>
+                <span className="text-white font-bold">{submittedReport?.modusOperandi ?? caseTopic}</span>
               </div>
               <div>
                 <span className="text-slate-400 text-[10px] uppercase font-bold block">Defense Argument</span>
                 <p className="text-slate-300 text-[11px] leading-relaxed mt-1 italic bg-black/40 p-3 rounded-xl border border-white/5">
-                  "{submittedReport?.detectiveDefense || verdict}"
+                  "{submittedReport?.detectiveDefense ?? verdict}"
                 </p>
               </div>
             </div>
@@ -507,7 +507,7 @@ ${caseData.warningSigns?.map(sign => `• ${sign}`).join('\n') || '• Always ve
               </div>
               <div>
                 <span className="text-slate-400 text-[10px] uppercase font-bold block">Primary Attack Vector</span>
-                <span className="text-emerald-300 font-bold">{caseData.manipulationTechniques?.[0] || caseTopic}</span>
+                <span className="text-emerald-300 font-bold">{caseData.manipulationTechniques[0] || caseTopic}</span>
               </div>
               <div>
                 <span className="text-slate-400 text-[10px] uppercase font-bold block">Chief Detective Feedback</span>

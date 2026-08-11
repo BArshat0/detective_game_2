@@ -84,7 +84,7 @@ export default function UserProfileSection({
                     <input
                       type="text"
                       value={editedName}
-                      onChange={(e) => setEditedName(e.target.value)}
+                      onChange={(e) => { setEditedName(e.target.value); }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') handleSaveName();
                         if (e.key === 'Escape') setIsEditingName(false);
@@ -102,7 +102,7 @@ export default function UserProfileSection({
                     </button>
                     <button
                       type="button"
-                      onClick={() => setIsEditingName(false)}
+                      onClick={() => { setIsEditingName(false); }}
                       className="p-1.5 bg-white/10 hover:bg-white/20 text-slate-300 rounded-lg transition-colors cursor-pointer"
                       title="Cancel"
                     >
@@ -117,7 +117,7 @@ export default function UserProfileSection({
                     {onUpdateProfileName && (
                       <button
                         type="button"
-                        onClick={() => setIsEditingName(true)}
+                        onClick={() => { setIsEditingName(true); }}
                         className="p-1.5 text-slate-400 hover:text-[#ff8533] hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
                         title="Edit Username"
                       >
@@ -363,7 +363,7 @@ export default function UserProfileSection({
                     </div>
 
                     <button
-                      onClick={() => onSelectCase(caseData.id)}
+                      onClick={() => { onSelectCase(caseData.id); }}
                       className="pt-2 border-t border-white/5 flex items-center gap-1.5 text-xs font-mono font-bold text-[#ff8533] hover:text-[#ff9955] uppercase transition-colors text-left cursor-pointer"
                     >
                       <span>DEPLOY TO DIRECTIVE</span>

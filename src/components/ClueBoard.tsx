@@ -133,7 +133,7 @@ export default function ClueBoard({
     if (wallNodesState && wallNodesState.length > 0) {
       return wallNodesState;
     }
-    return caseData.initialWallNodes || [];
+    return caseData.initialWallNodes ?? [];
   }, [wallNodesState, caseData.initialWallNodes]);
 
   // Unplaced Discovered Evidences
@@ -164,7 +164,7 @@ export default function ClueBoard({
       anime({
         targets: `#wall-node-${newNode.id}`,
         scale: [0.4, 1],
-        rotate: [-8, newNode.rotation || 0],
+        rotate: [-8, newNode.rotation ?? 0],
         duration: 500,
         easing: 'easeOutElastic(1, .6)'
       });
@@ -227,7 +227,7 @@ export default function ClueBoard({
         anime({
           targets: `#wall-node-${releasedId}`,
           scale: 1.0,
-          rotate: node.rotation || 0,
+          rotate: node.rotation ?? 0,
           duration: 350,
           easing: 'easeOutElastic(1, .6)'
         });
@@ -308,7 +308,7 @@ export default function ClueBoard({
     anime({
       targets: `#wall-node-${nodeId}`,
       scale: 1.08,
-      rotate: (node.rotation || 0) - 2,
+      rotate: (node.rotation ?? 0) - 2,
       duration: 180,
       easing: 'easeOutQuad'
     });
@@ -679,7 +679,7 @@ export default function ClueBoard({
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center bg-black/40 border border-white/10 rounded-xl p-1 text-xs font-mono">
             <button
-              onClick={() => setZoomLevel(prev => Math.max(0.6, prev - 0.1))}
+              onClick={() => { setZoomLevel(prev => Math.max(0.6, prev - 0.1)); }}
               className="p-1.5 text-slate-400 hover:text-white cursor-pointer"
               title="Zoom Out"
             >
@@ -687,7 +687,7 @@ export default function ClueBoard({
             </button>
             <span className="px-2 text-[10px] text-[#ffb829] font-bold">{Math.round(zoomLevel * 100)}%</span>
             <button
-              onClick={() => setZoomLevel(prev => Math.min(1.4, prev + 0.1))}
+              onClick={() => { setZoomLevel(prev => Math.min(1.4, prev + 0.1)); }}
               className="p-1.5 text-slate-400 hover:text-white cursor-pointer"
               title="Zoom In"
             >
@@ -704,7 +704,7 @@ export default function ClueBoard({
 
           {unplacedEvidences.length > 0 && (
             <button
-              onClick={() => setShowEvidenceDrawer(!showEvidenceDrawer)}
+              onClick={() => { setShowEvidenceDrawer(!showEvidenceDrawer); }}
               className="flex items-center gap-1.5 text-xs font-mono font-bold text-amber-200 bg-amber-500/15 border border-amber-500/30 px-3.5 py-1.5 rounded-xl hover:bg-amber-500/25 transition-colors cursor-pointer shadow-md"
             >
               <FilePlus className="h-3.5 w-3.5 text-amber-400" />
@@ -713,7 +713,7 @@ export default function ClueBoard({
           )}
 
           <button
-            onClick={() => setIsAddingStickyNote(!isAddingStickyNote)}
+            onClick={() => { setIsAddingStickyNote(!isAddingStickyNote); }}
             className="flex items-center gap-1.5 text-xs font-mono font-bold text-white bg-white/5 border border-white/10 px-3.5 py-1.5 rounded-xl hover:bg-white/10 transition-colors cursor-pointer shadow-md"
           >
             <Plus className="h-3.5 w-3.5 text-[#ff8533]" />
@@ -739,7 +739,7 @@ export default function ClueBoard({
         {/* Node A */}
         <select
           value={selectedFromNodeId || ''}
-          onChange={(e) => setSelectedFromNodeId(e.target.value || null)}
+          onChange={(e) => { setSelectedFromNodeId(e.target.value || null); }}
           className="bg-black/60 border border-white/15 rounded-xl px-3 py-1.5 text-white text-xs outline-none focus:ring-1 focus:ring-[#ff8533]"
         >
           <option value="">Node A...</option>
@@ -753,7 +753,7 @@ export default function ClueBoard({
         {/* Node B */}
         <select
           value={selectedToNodeId || ''}
-          onChange={(e) => setSelectedToNodeId(e.target.value || null)}
+          onChange={(e) => { setSelectedToNodeId(e.target.value || null); }}
           className="bg-black/60 border border-white/15 rounded-xl px-3 py-1.5 text-white text-xs outline-none focus:ring-1 focus:ring-[#ff8533]"
         >
           <option value="">Node B...</option>
@@ -765,7 +765,7 @@ export default function ClueBoard({
         {/* Dynamic Case-Aligned Relationship Option Selector */}
         <select
           value={customRelationLabel}
-          onChange={(e) => setCustomRelationLabel(e.target.value)}
+          onChange={(e) => { setCustomRelationLabel(e.target.value); }}
           className="bg-black/60 border border-white/15 rounded-xl px-3 py-1.5 text-amber-300 text-xs font-bold outline-none focus:ring-1 focus:ring-[#ff8533] max-w-xs"
         >
           {relationshipOptions.map(opt => (
@@ -785,7 +785,7 @@ export default function ClueBoard({
             <button
               key={c.color}
               type="button"
-              onClick={() => setSelectedStringColor(c.color)}
+              onClick={() => { setSelectedStringColor(c.color); }}
               className={`h-5 w-5 rounded-full border-2 transition-transform cursor-pointer ${
                 selectedStringColor === c.color ? 'scale-125 border-white ring-2 ring-[#ff8533]' : 'border-transparent opacity-70'
               }`}
@@ -817,7 +817,7 @@ export default function ClueBoard({
             <Compass className="h-4 w-4 text-[#ff8533] shrink-0" />
             <span className="truncate">{aiDeductionPrompt}</span>
           </div>
-          <button onClick={() => setShowAiAdvisor(false)} className="text-[10px] text-slate-400 hover:text-white underline ml-2 cursor-pointer">
+          <button onClick={() => { setShowAiAdvisor(false); }} className="text-[10px] text-slate-400 hover:text-white underline ml-2 cursor-pointer">
             Dismiss
           </button>
         </div>
@@ -828,7 +828,7 @@ export default function ClueBoard({
         <div className="absolute top-20 right-4 bg-[#1c120a] border-2 border-amber-500/50 p-4 rounded-2xl shadow-2xl z-30 w-88 space-y-3 font-mono text-xs text-white max-h-96 overflow-y-auto">
           <div className="flex items-center justify-between font-serif font-bold text-amber-300 text-sm border-b border-[#3d2512] pb-2">
             <span className="flex items-center gap-2"><FilePlus className="h-4 w-4 text-amber-400" /> Discovered Case Evidence</span>
-            <button onClick={() => setShowEvidenceDrawer(false)} className="text-slate-400 hover:text-white">
+            <button onClick={() => { setShowEvidenceDrawer(false); }} className="text-slate-400 hover:text-white">
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -841,7 +841,7 @@ export default function ClueBoard({
                 </div>
                 <p className="text-[10px] text-slate-300 line-clamp-2">{ev.description}</p>
                 <button
-                  onClick={() => handleAddEvidenceToBoard(ev)}
+                  onClick={() => { handleAddEvidenceToBoard(ev); }}
                   className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-1 px-3 rounded-lg text-[10px] transition-colors cursor-pointer self-end flex items-center gap-1"
                 >
                   <Plus className="h-3 w-3" /> Pin Evidence to Wall
@@ -857,7 +857,7 @@ export default function ClueBoard({
         <div className="absolute top-20 left-1/2 -translate-x-1/2 bg-[#1c120a] border-2 border-[#ff8533] p-4 rounded-2xl shadow-2xl z-30 w-80 space-y-3 font-mono text-xs text-white">
           <div className="flex items-center justify-between font-serif font-bold text-amber-200 text-sm border-b border-[#3d2512] pb-2">
             <span>Add Investigator Sticky Note</span>
-            <button onClick={() => setIsAddingStickyNote(false)} className="text-slate-400 hover:text-white">
+            <button onClick={() => { setIsAddingStickyNote(false); }} className="text-slate-400 hover:text-white">
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -867,7 +867,7 @@ export default function ClueBoard({
             <input
               type="text"
               value={stickyNoteTitle}
-              onChange={(e) => setStickyNoteTitle(e.target.value)}
+              onChange={(e) => { setStickyNoteTitle(e.target.value); }}
               placeholder="e.g. Unverified Alibi"
               className="w-full bg-[#0d0703] border border-[#4d2f16] rounded-lg p-2 text-white outline-none focus:border-amber-400"
             />
@@ -877,7 +877,7 @@ export default function ClueBoard({
             <label className="block text-[10px] uppercase text-amber-400/80 mb-1">Note Observation</label>
             <textarea
               value={stickyNoteText}
-              onChange={(e) => setStickyNoteText(e.target.value)}
+              onChange={(e) => { setStickyNoteText(e.target.value); }}
               placeholder="e.g. Why did the wire transfer route through offshore servers?"
               className="w-full bg-[#0d0703] border border-[#4d2f16] rounded-lg p-2 text-white outline-none focus:border-amber-400"
               rows={3}
@@ -891,7 +891,7 @@ export default function ClueBoard({
                 <button
                   key={color}
                   type="button"
-                  onClick={() => setStickyNoteColor(color)}
+                  onClick={() => { setStickyNoteColor(color); }}
                   className={`h-6 w-6 rounded-full border-2 cursor-pointer ${
                     stickyNoteColor === color ? 'border-white ring-2 ring-amber-400 scale-110' : 'border-transparent'
                   } ${
