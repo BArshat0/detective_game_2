@@ -87,20 +87,20 @@ export default function MentorDrone({ caseData, discoveredEvidenceIds, notebookN
       {!isOpen && (
         <button
           onClick={() => { setIsOpen(true); }}
-          className="flex items-center gap-2 rounded-full bg-[#1e110a] border border-white/10 hover:border-[#ff8533] p-4 text-white shadow-xl hover:translate-y-[-2px] transition-all focus:outline-none cursor-pointer"
+          className="flex items-center gap-2 rounded-full bg-[#1e110a] border border-[#ff8533]/50 hover:border-[#ff8533] p-4 text-white shadow-2xl hover:translate-y-[-2px] transition-all focus:outline-none cursor-pointer group"
         >
           <Radio className="h-6 w-6 text-[#ff8533] animate-pulse" />
-          <span className="font-sans font-bold text-xs tracking-wider pr-1.5 hidden sm:inline-block text-[#d9d2c9]">ACADEMY ADVISOR</span>
+          <span className="font-sans font-bold text-xs tracking-wider pr-1.5 hidden sm:inline-block text-white">ACADEMY ADVISOR</span>
         </button>
       )}
 
       {/* Expandable Dialog Panel */}
       {isOpen && (
-        <div className={`w-[320px] sm:w-[360px] rounded-[24px] border border-white/20 glass-panel bg-slate-900/80 shadow-2xl flex flex-col transition-all duration-300 backdrop-blur-xl ${
+        <div className={`w-[320px] sm:w-[360px] rounded-[24px] border border-white/10 glass-panel bg-slate-900/90 shadow-2xl flex flex-col transition-all duration-300 ${
           isMinimized ? 'h-[52px]' : 'h-[440px]'
         }`}>
           {/* Header */}
-          <div className="flex justify-between items-center bg-white/[0.04] px-4 py-3.5 rounded-t-[24px] border-b border-white/10">
+          <div className="flex justify-between items-center bg-black/40 px-4 py-3.5 rounded-t-[24px] border-b border-white/10">
             <div className="flex items-center gap-2">
               <Radio className="h-4 w-4 text-[#ff8533] animate-pulse" />
               <span className="font-sans font-bold text-xs text-white tracking-wider">CASE ADVISOR</span>
@@ -110,13 +110,13 @@ export default function MentorDrone({ caseData, discoveredEvidenceIds, notebookN
             <div className="flex items-center gap-2">
               <button 
                 onClick={() => { setIsMinimized(!isMinimized); }}
-                className="text-[#9a9a9a] hover:text-white transition-colors focus:outline-none cursor-pointer"
+                className="text-slate-400 hover:text-white transition-colors focus:outline-none cursor-pointer"
               >
                 {isMinimized ? <Maximize2 className="h-3.5 w-3.5" /> : <Minimize2 className="h-3.5 w-3.5" />}
               </button>
               <button 
                 onClick={() => { setIsOpen(false); }}
-                className="text-[#9a9a9a] hover:text-white transition-colors focus:outline-none cursor-pointer"
+                className="text-slate-400 hover:text-white transition-colors focus:outline-none cursor-pointer"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -125,18 +125,18 @@ export default function MentorDrone({ caseData, discoveredEvidenceIds, notebookN
 
           {/* Active Chat Content */}
           {!isMinimized && (
-            <div className="flex-1 flex flex-col min-h-0 bg-transparent rounded-b-[24px]">
+            <div className="flex-1 flex flex-col min-h-0 bg-black/20 rounded-b-[24px]">
               {/* Message scroll thread */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
                 {messages.map((m, idx) => (
                   <div key={idx} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[85%] rounded-[24px] px-3.5 py-2.5 text-xs leading-relaxed border ${
+                    <div className={`max-w-[85%] rounded-[20px] px-3.5 py-2.5 text-xs leading-relaxed border ${
                       m.sender === 'user'
-                        ? 'bg-white/5 border-white/10 text-white font-bold'
-                        : 'bg-[#8052ff]/10 border-[#8052ff]/30 text-white'
+                        ? 'bg-[#ff8533] border-transparent text-[#1e110a] font-bold shadow-md'
+                        : 'bg-white/5 border-white/10 text-slate-200'
                     }`}>
-                      <div className="flex justify-between items-center text-[8px] opacity-60 mb-1.5 gap-4">
-                        <span>DETECTIVE</span>
+                      <div className="flex justify-between items-center text-[8px] opacity-70 mb-1.5 gap-4">
+                        <span>{m.sender === 'user' ? 'INVESTIGATOR' : 'ADVISOR'}</span>
                         <span>{m.timestamp}</span>
                       </div>
                       <p className="font-medium font-mono">{m.text}</p>
@@ -146,7 +146,7 @@ export default function MentorDrone({ caseData, discoveredEvidenceIds, notebookN
 
                 {isTyping && (
                   <div className="flex justify-start">
-                    <div className="bg-white/5 border border-white/10 rounded-full px-4 py-2 text-xs text-[#9a9a9a] flex items-center gap-2 animate-pulse">
+                    <div className="bg-white/5 border border-white/10 rounded-full px-4 py-2 text-xs text-slate-400 flex items-center gap-2 animate-pulse">
                       <Loader2 className="h-3.5 w-3.5 animate-spin text-[#ff8533]" />
                       <span>ANALYZING CASE HINTS...</span>
                     </div>
@@ -156,26 +156,26 @@ export default function MentorDrone({ caseData, discoveredEvidenceIds, notebookN
               </div>
 
               {/* Quick Case Hints */}
-              <div className="p-2 border-t border-white/10 bg-white/[0.01]">
+              <div className="p-2 border-t border-white/10 bg-black/40">
                 <div className="flex flex-wrap gap-1.5">
                   <button
                     onClick={() => handleSend("Give me a hint on what to investigate next in this case.")}
                     disabled={isTyping}
-                    className="text-[9px] font-bold text-[#bdbdbd] bg-black border border-white/10 hover:border-white hover:text-white rounded-full px-3 py-1 transition-all focus:outline-none cursor-pointer"
+                    className="text-[9px] font-bold text-slate-300 bg-white/5 border border-white/10 hover:border-[#ff8533] hover:text-white rounded-full px-3 py-1 transition-all focus:outline-none cursor-pointer"
                   >
                     💡 Hint
                   </button>
                   <button
                     onClick={() => handleSend("Explain what warning signs are in this case.")}
                     disabled={isTyping}
-                    className="text-[9px] font-bold text-[#bdbdbd] bg-black border border-white/10 hover:border-white hover:text-white rounded-full px-3 py-1 transition-all focus:outline-none cursor-pointer"
+                    className="text-[9px] font-bold text-slate-300 bg-white/5 border border-white/10 hover:border-[#ff8533] hover:text-white rounded-full px-3 py-1 transition-all focus:outline-none cursor-pointer"
                   >
                     ⚠️ Warning Signs
                   </button>
                   <button
                     onClick={() => handleSend("What psychological manipulation is the offender using here?")}
                     disabled={isTyping}
-                    className="text-[9px] font-bold text-[#bdbdbd] bg-black border border-white/10 hover:border-white hover:text-white rounded-full px-3 py-1 transition-all focus:outline-none cursor-pointer"
+                    className="text-[9px] font-bold text-slate-300 bg-white/5 border border-white/10 hover:border-[#ff8533] hover:text-white rounded-full px-3 py-1 transition-all focus:outline-none cursor-pointer"
                   >
                     🧠 Crime Psychology
                   </button>
@@ -183,7 +183,7 @@ export default function MentorDrone({ caseData, discoveredEvidenceIds, notebookN
               </div>
 
               {/* Input Control Box */}
-              <div className="p-3.5 border-t border-white/10 bg-transparent flex gap-2 rounded-b-[24px]">
+              <div className="p-3.5 border-t border-white/10 bg-black/60 flex gap-2 rounded-b-[24px]">
                 <input
                   type="text"
                   value={inputVal}
@@ -192,13 +192,13 @@ export default function MentorDrone({ caseData, discoveredEvidenceIds, notebookN
                     if (e.key === 'Enter') void handleSend();
                   }}
                   placeholder="Ask about warning signs..."
-                  className="flex-1 bg-black border border-white/10 focus:border-[#ff8533] rounded-full px-3.5 py-1.5 text-xs outline-none text-white font-mono"
+                  className="flex-1 bg-black/40 border border-white/15 focus:border-[#ff8533] rounded-full px-3.5 py-1.5 text-xs outline-none text-white placeholder:text-slate-500 font-mono"
                   disabled={isTyping}
                 />
                 <button
                   onClick={() => handleSend()}
                   disabled={isTyping || !inputVal.trim()}
-                  className="bg-[#ff8533] text-[#1e110a] hover:bg-[#ff9955] border-transparent disabled:bg-white/5 disabled:text-[#9a9a9a]/40 rounded-full px-4 flex items-center justify-center transition-all focus:outline-none cursor-pointer"
+                  className="bg-[#ff8533] text-[#1e110a] font-bold hover:bg-[#ff9955] disabled:opacity-40 rounded-full px-4 flex items-center justify-center transition-all focus:outline-none cursor-pointer shadow-md"
                 >
                   <Send className="h-3.5 w-3.5" />
                 </button>

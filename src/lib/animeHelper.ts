@@ -1,15 +1,15 @@
 import { animate, stagger } from 'animejs';
 
-export function anime(paramsOrTarget: any, maybeParams?: any) {
+export function anime(paramsOrTarget: unknown, maybeParams?: Record<string, unknown>) {
   try {
-    let targets: any;
-    let options: any;
+    let targets: unknown;
+    let options: Record<string, unknown>;
 
     if (maybeParams) {
       targets = paramsOrTarget;
       options = { ...maybeParams };
     } else if (typeof paramsOrTarget === 'object' && paramsOrTarget !== null) {
-      const { targets: t, ...rest } = paramsOrTarget;
+      const { targets: t, ...rest } = paramsOrTarget as { targets?: unknown; [key: string]: unknown };
       targets = t;
       options = rest;
     } else {
@@ -25,18 +25,19 @@ export function anime(paramsOrTarget: any, maybeParams?: any) {
       options.ease = e || 'outQuad';
     }
 
-    return animate(targets, options);
+    return animate(targets as Parameters<typeof animate>[0], options as Parameters<typeof animate>[1]);
   } catch (err) {
     console.warn('Anime execution error:', err);
   }
 }
 
 anime.stagger = stagger;
-anime.setDashoffset = (el: any) => {
-  if (typeof el?.getTotalLength === 'function') {
+anime.setDashoffset = (el: SVGGeometryElement | null) => {
+  if (el && typeof el.getTotalLength === 'function') {
     return el.getTotalLength();
   }
   return 1000;
 };
 
 export default anime;
+

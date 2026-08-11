@@ -15,6 +15,7 @@ export default function InvestigationLeads({
   completedLeadIds,
   onSelectLead
 }: InvestigationLeadsProps) {
+  const [visibleHintIds, setVisibleHintIds] = React.useState<Record<string, boolean>>({});
   const leads = caseData.leads || [];
 
   const completedCount = leads.filter(l => completedLeadIds.includes(l.id)).length;
@@ -123,10 +124,30 @@ export default function InvestigationLeads({
 
                     {/* Hint callout */}
                     {isUnlocked && !isCompleted && lead.hint && (
-                      <div className="mt-2.5 flex items-center gap-2 text-[11px] font-mono text-[#ffb829] bg-[#ffb829]/10 border border-[#ffb829]/20 rounded-xl px-3 py-1.5">
-                        <Lightbulb className="h-3.5 w-3.5 shrink-0 text-[#ffb829]" />
-                        <span>Tactical Hint: {lead.hint}</span>
-                      </div>
+                      visibleHintIds[lead.id] ? (
+                        <div className="mt-2.5 flex items-start justify-between gap-2 text-[11px] font-mono text-[#ffb829] bg-[#ffb829]/10 border border-[#ffb829]/30 rounded-xl p-2.5">
+                          <div className="flex items-start gap-2">
+                            <Lightbulb className="h-3.5 w-3.5 shrink-0 text-[#ffb829] mt-0.5" />
+                            <span>Tactical Hint: {lead.hint}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => { setVisibleHintIds(prev => ({ ...prev, [lead.id]: false })); }}
+                            className="text-[10px] font-bold text-[#ffb829]/80 hover:text-white underline shrink-0 cursor-pointer ml-2"
+                          >
+                            Hide
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => { setVisibleHintIds(prev => ({ ...prev, [lead.id]: true })); }}
+                          className="mt-2.5 inline-flex items-center gap-1.5 text-[11px] font-mono font-bold text-[#ffb829] hover:text-white bg-[#ffb829]/10 hover:bg-[#ffb829]/20 border border-[#ffb829]/30 rounded-xl px-3 py-1.5 transition-all cursor-pointer"
+                        >
+                          <Lightbulb className="h-3.5 w-3.5 shrink-0 text-[#ffb829]" />
+                          <span>SHOW HINT</span>
+                        </button>
+                      )
                     )}
                   </div>
                 </div>

@@ -6,6 +6,7 @@ import {
   FileText, Compass, Shield, Target, UserCheck
 } from 'lucide-react';
 import { Case } from '../types';
+import { mysteryAudio } from '../utils/mysteryAudio';
 
 interface CaseLibraryViewProps {
   allCases: Case[];
@@ -301,7 +302,10 @@ export default function CaseLibraryView({
             </div>
 
             <button
-              onClick={() => onSelectCase(activeCase.id)}
+              onClick={() => {
+                mysteryAudio.start();
+                onSelectCase(activeCase.id);
+              }}
               className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-mono font-black text-xs tracking-wider uppercase flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xl shadow-amber-400/20 hover:scale-105"
             >
               <span>INVESTIGATE THIS CASE</span>
@@ -385,6 +389,7 @@ export default function CaseLibraryView({
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
+                      mysteryAudio.start();
                       onSelectCase(c.id);
                     }}
                     className="text-amber-400 font-bold group-hover:text-amber-300 flex items-center gap-1.5 transition-all group-hover:translate-x-1"

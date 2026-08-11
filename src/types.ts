@@ -34,7 +34,7 @@ export interface Witness {
   role: string;
   avatar: string;
   description: string;
-  promptKnowledge: string; // Used by Gemini on the server
+  promptKnowledge: string; // Used by server AI model
   status: 'available' | 'locked' | 'unavailable';
   personalityTrait?: string;
   motive?: string;
@@ -56,6 +56,7 @@ export interface TimelineEvent {
   orderIndex: number; // The correct position in chronological order
   isInitiallyKnown?: boolean;
   linkedEvidenceId?: string;
+  linkedLeadId?: string;
 }
 
 export interface InvestigationLead {
@@ -234,6 +235,9 @@ export interface CaseState {
   wallNodes: WallNode[];
   wallConnections: WallConnection[];
   witnessChats: Record<string, { sender: 'user' | 'witness'; text: string; timestamp: string; evidencePresented?: string }[]>;
+  suspectClassifications?: Record<string, { classification: 'primary_suspect' | 'person_of_interest' | 'cleared'; reason: string }>;
+  keyEvidenceTags?: Record<string, { isKey: boolean; justification?: string }>;
+  userTheoryNote?: string;
   conferenceSubmission?: CaseConferenceSubmission;
   evaluationResult?: {
     score: number;

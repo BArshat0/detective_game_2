@@ -3,12 +3,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowRight, ArrowLeft,
   Volume2, VolumeX, FastForward,
-  Bookmark, CheckCircle, Sparkles, Feather, ShieldAlert, FileText, Compass, AlertTriangle,
+  Bookmark, CheckCircle, Feather, ShieldAlert, FileText, Compass, AlertTriangle,
   Search, MapPin, Mail, Newspaper, Pin, Eye, X, Info, CreditCard, Tag, Maximize2, Stamp
 } from 'lucide-react';
 import { Case, StoryScene } from '../types';
 import LoadingScreen from './LoadingScreen';
 import anime from '../lib/animeHelper';
+import MysteryAudioControl from './MysteryAudioControl';
+import { mysteryAudio } from '../utils/mysteryAudio';
+import { getSceneSketchArt } from '../utils/suspectSketches';
 
 interface StoryIntroViewProps {
   caseData: Case;
@@ -90,6 +93,28 @@ export default function StoryIntroView({ caseData, onCompleteStory, onSkipStory,
   const currentScene = scenes[currentSceneIndex];
   const isLastScene = currentSceneIndex === scenes.length - 1;
 
+  // Auto-start mystery background music on entering Story Intro View
+  useEffect(() => {
+    mysteryAudio.setMode('story');
+    mysteryAudio.start('story');
+
+    const handleFirstInteraction = () => {
+      mysteryAudio.setMode('story');
+      mysteryAudio.start('story');
+      window.removeEventListener('click', handleFirstInteraction);
+      window.removeEventListener('keydown', handleFirstInteraction);
+    };
+
+    window.addEventListener('click', handleFirstInteraction);
+    window.addEventListener('keydown', handleFirstInteraction);
+
+    return () => {
+      window.removeEventListener('click', handleFirstInteraction);
+      window.removeEventListener('keydown', handleFirstInteraction);
+      mysteryAudio.stop();
+    };
+  }, []);
+
   // Dust Motes Particle Animation
   useEffect(() => {
     const canvas = dustCanvasRef.current;
@@ -164,7 +189,7 @@ export default function StoryIntroView({ caseData, onCompleteStory, onSkipStory,
       }
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => { window.removeEventListener('keydown', handleKeyDown); };
   }, [currentSceneIndex, isLastScene, isFlipping, isLaunching]);
 
   useEffect(() => {
@@ -176,11 +201,11 @@ export default function StoryIntroView({ caseData, onCompleteStory, onSkipStory,
     if (isMuted) return;
     try {
       if (!audioCtxRef.current) {
-        audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+        audioCtxRef.current = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
       }
       const ctx = audioCtxRef.current;
       if (ctx.state === 'suspended') {
-        ctx.resume();
+        void ctx.resume();
       }
 
       const now = ctx.currentTime;
@@ -239,10 +264,10 @@ export default function StoryIntroView({ caseData, onCompleteStory, onSkipStory,
     if (isMuted) return;
     try {
       if (!audioCtxRef.current) {
-        audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+        audioCtxRef.current = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
       }
       const ctx = audioCtxRef.current;
-      if (ctx.state === 'suspended') ctx.resume();
+      if (ctx.state === 'suspended') void ctx.resume();
 
       const now = ctx.currentTime;
       const osc = ctx.createOscillator();
@@ -282,19 +307,11 @@ export default function StoryIntroView({ caseData, onCompleteStory, onSkipStory,
     setFlippingToIndex(nextIndex);
     setIsFlipping(true);
 
-    if (bookContainerRef.current) {
-      anime({
-        targets: bookContainerRef.current,
-        translateY: [0, -5, 0],
-        duration: 380,
-        easing: 'easeInOutQuad'
-      });
-    }
-
+    // Backup safety timeout in case animation callback is interrupted
     setTimeout(() => {
       setCurrentSceneIndex(nextIndex);
       setIsFlipping(false);
-    }, 550);
+    }, 580);
   };
 
   const handlePrev = () => {
@@ -307,19 +324,11 @@ export default function StoryIntroView({ caseData, onCompleteStory, onSkipStory,
     setFlippingToIndex(prevIndex);
     setIsFlipping(true);
 
-    if (bookContainerRef.current) {
-      anime({
-        targets: bookContainerRef.current,
-        translateY: [0, -5, 0],
-        duration: 550,
-        easing: 'easeInOutQuad'
-      });
-    }
-
+    // Backup safety timeout in case animation callback is interrupted
     setTimeout(() => {
       setCurrentSceneIndex(prevIndex);
       setIsFlipping(false);
-    }, 550);
+    }, 580);
   };
 
   const handleSaveSceneNote = () => {
@@ -345,10 +354,67 @@ export default function StoryIntroView({ caseData, onCompleteStory, onSkipStory,
   const getCuratedArtifacts = (sceneIdx: number, scene: StoryScene) => {
     const idx = sceneIdx >= 0 ? sceneIdx : 0;
 
+    if (caseData.id !== 'borderland-trap') {
+      const location = scene.locationName || caseData.location.name || 'CRIME SCENE LOCATION';
+      const dateTag = `${10 + idx * 2} OCT 2035 • 09:00 UTC`;
+      const sceneSummaryText = scene.narration || scene.dialogueText || scene.keyTakeaway || scene.title;
+      const cluesText = scene.keyTakeaway || sceneSummaryText;
+
+      return {
+        stampedDate: dateTag,
+        stampedLocation: location.toUpperCase(),
+        marginNote: scene.marginAnnotation || `INVESTIGATIVE NOTE: ${sceneSummaryText}`,
+        sketchCaption: `Scene Sketch: ${scene.title} at ${location}. Key forensic evidence logged.`,
+        mapLabel: `${caseData.title.substring(0, 18).toUpperCase()}`,
+        mapSector: `Sector Grid 0${idx + 1}`,
+        letterText: `Official Transcript from ${scene.title}: "${sceneSummaryText.substring(0, 120)}..."`,
+        letterSender: `Forensic Field Operative`,
+        newspaperTitle: `THE CYBER CHRONICLE`,
+        newspaperSnippet: `Investigation Update: Forensic evidence recovered at ${location} confirms breach parameters.`,
+        personalItemTitle: `EVIDENCE ITEM #${101 + idx}`,
+        personalItemDetail: `${scene.title} • ${location}`,
+        sketchArtifact: {
+          title: `${scene.title} Forensic Sketch`,
+          subtitle: `Scene Overview // Exhibit 0${idx + 1}-A`,
+          shortSummary: `Forensic composite drawing of ${scene.title} at ${location}.`,
+          detailedForensics: `Detailed Forensic Analysis: ${sceneSummaryText} Key findings: ${cluesText}`,
+          type: 'sketch'
+        },
+        mapArtifact: {
+          title: `${location} Tactical Blueprint`,
+          subtitle: `Structural Map // Exhibit 0${idx + 1}-B`,
+          shortSummary: `Tactical grid overlay for ${location}.`,
+          detailedForensics: `Spatial Mapping: Ingress and egress routes recorded. Sector grid 0${idx + 1} secured.`,
+          type: 'map'
+        },
+        letterArtifact: {
+          title: `Recovered Document Transcript`,
+          subtitle: `Evidence Log // Exhibit 0${idx + 1}-C`,
+          shortSummary: `Decoded intelligence document related to ${scene.title}.`,
+          detailedForensics: `Document Verification: ${sceneSummaryText}`,
+          type: 'letter'
+        },
+        newsArtifact: {
+          title: `Public Bulletin Press Clipping`,
+          subtitle: `Media Report // Exhibit 0${idx + 1}-D`,
+          shortSummary: `Press coverage regarding ${caseData.title}.`,
+          detailedForensics: `Media Analysis: Corroborates timeline for ${scene.title}.`,
+          type: 'newspaper'
+        },
+        itemArtifact: {
+          title: `Sealed Evidence Tag #${101 + idx}`,
+          subtitle: `Physical Evidence // Exhibit 0${idx + 1}-E`,
+          shortSummary: `Physical evidence item recovered from ${location}.`,
+          detailedForensics: `Chain of Custody: Handled by Cyber Forensics Officer. Hash verification passed.`,
+          type: 'item'
+        }
+      };
+    }
+
     if (idx === 0) {
       return {
         stampedDate: '12 OCT 2035 • 23:14 UTC',
-        stampedLocation: scene.locationName || caseData.location.name,
+        stampedLocation: scene.locationName ?? caseData.location.name,
         marginNote: 'MARGIN NOTE: High family medical debt created severe emotional vulnerability to unvetted offshore job offers.',
         sketchCaption: 'Subject Workstation: IDE open with React repositories. Clinic bill pile on left desk.',
         mapLabel: 'SINGAPORE SECTOR 02',
@@ -605,172 +671,103 @@ export default function StoryIntroView({ caseData, onCompleteStory, onSkipStory,
     };
   };
 
-  // Render Left Page with Curated Story Artifacts
+  // Render Left Page with Police Composite Scene Sketch Artwork
   const renderLeftPage = (scene: StoryScene, pageNum: number, sceneIdx?: number) => {
     const activeIdx = sceneIdx !== undefined ? sceneIdx : currentSceneIndex;
     const data = getCuratedArtifacts(activeIdx, scene);
+    const sceneSketchArt = getSceneSketchArt(caseData.id, activeIdx);
 
     return (
-      <div className="p-5 sm:p-7 md:p-8 border-b md:border-b-0 md:border-r border-[#bfa47e] flex flex-col justify-between relative bg-[#ebd8b7] text-[#2c1d11] shadow-[inset_-25px_0_35px_rgba(100,65,25,0.12)]">
+      <div className="p-6 sm:p-8 md:p-9 border-b md:border-b-0 md:border-r border-[#bfa47e] flex flex-col justify-between relative bg-[#ebd8b7] text-[#2c1d11] shadow-[inset_-25px_0_35px_rgba(100,65,25,0.12)] space-y-4">
         
         {/* 📅 1. Stamped Date & Location Banner */}
-        <div className="space-y-2 border-b-2 border-[#a88a62] pb-3 mb-2">
+        <div className="space-y-2 border-b-2 border-[#a88a62]/80 pb-2.5">
           <div className="flex items-center justify-between">
-            <span className="font-['Cinzel'] text-xs font-extrabold uppercase tracking-widest text-[#6e5033]">
+            <span className="font-['Cinzel'] text-xs font-black uppercase tracking-[0.2em] text-[#5c3e23]">
               EVIDENCE DOSSIER // PAGE 0{pageNum}
             </span>
-            <span className="font-['Caveat'] text-sm font-bold text-[#8c3220] -rotate-1">
+            <span className="font-['Caveat'] text-base sm:text-lg font-bold text-[#8c3220] -rotate-1 tracking-wide">
               {scene.arcTag}
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-2 bg-[#dfcaa8]/80 p-2 rounded-xs border border-[#b89870]">
-            <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center justify-between gap-2 bg-[#dfcaa8]/90 p-2 sm:p-2.5 rounded-md border border-[#b89870] shadow-xs">
+            <div className="flex items-center gap-2">
               <Stamp className="w-4 h-4 text-[#8c3220] shrink-0" />
               <span className="font-mono text-xs font-bold tracking-wider text-[#8c3220] uppercase">
                 {data.stampedDate}
               </span>
             </div>
-            <div className="flex items-center gap-1 text-[#5c3e23] font-mono text-xs font-bold">
-              <MapPin className="w-3.5 h-3.5 text-[#8c3220]" />
+            <div className="flex items-center gap-1.5 text-[#5c3e23] font-mono text-xs font-bold">
+              <MapPin className="w-3.5 h-3.5 text-[#8c3220] shrink-0" />
               <span>{data.stampedLocation}</span>
             </div>
           </div>
         </div>
 
-        {/* 🔍 2. Curated Artifacts Grid (Map, Letter, Newspaper, Personal Item) */}
+        {/* 🎨 2. Forensic Scene Sketch Section (Matching Witness Sketch Format) */}
         <div className="space-y-2 my-auto">
           <div className="flex items-center justify-between px-1">
-            <span className="font-sans font-bold text-xs uppercase text-[#6e5033] tracking-wider flex items-center gap-1.5">
-              <Search className="w-3.5 h-3.5 text-[#8c3220]" />
-              RECOVERED CASE ARTIFACTS
+            <span className="font-sans font-extrabold text-xs uppercase text-[#5c3e23] tracking-widest flex items-center gap-1.5">
+              <Search className="w-4 h-4 text-[#8c3220]" />
+              FORENSIC CASE SCENE RECONSTRUCTION
             </span>
-            <span className="font-mono text-[10px] text-[#8c3220] font-bold">
-              [TAP ANY TO INSPECT]
+            <span className="font-mono text-xs text-[#8c3220] font-bold tracking-wide">
+              [TAP TO ENLARGE SCENE]
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            
-            {/* 🗺️ Artifact 1: Hand-Drawn Map */}
-            <div 
-              onClick={() => setSelectedArtifact(data.mapArtifact)}
-              className="p-3 bg-[#e4d1b2] border-2 border-[#a68865] rounded-xs shadow-xs hover:border-[#8c3220] hover:bg-[#eadeca] transition-all cursor-pointer group relative flex flex-col justify-between h-[120px]"
-            >
-              <div className="absolute -top-1.5 right-3 w-8 h-3 bg-[#c2b093]/90 border border-[#9c896e] rotate-[-12deg] shadow-2xs pointer-events-none" />
-              <div className="flex items-center justify-between border-b border-[#c4a988] pb-1">
-                <span className="font-sans font-bold text-[10px] uppercase tracking-wider text-[#8c3220] flex items-center gap-1">
-                  <Compass className="w-3.5 h-3.5" />
-                  HAND-DRAWN MAP
+          {/* Forensic Photo / Composite Sketch Container */}
+          <div 
+            onClick={() => {
+              setSelectedArtifact(data.sketchArtifact);
+            }}
+            className="p-2.5 bg-[#17110c] border-2 border-[#a88254] rounded-lg shadow-md hover:border-[#8c3220] transition-all cursor-pointer group relative overflow-hidden flex flex-col items-center justify-center"
+          >
+            <div className="w-full aspect-[4/3] relative rounded overflow-hidden border border-amber-900/60 bg-black">
+              <img 
+                src={sceneSketchArt} 
+                alt={scene.title}
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+              
+              <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between pointer-events-none">
+                <span className="text-[9px] font-mono font-bold text-amber-200/90 bg-black/80 px-2 py-0.5 rounded uppercase border border-amber-500/30">
+                  CRIME SCENE RECONSTRUCTION // EXHIBIT {activeIdx + 1}
                 </span>
-                <Maximize2 className="w-3 h-3 text-[#8c3220] opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-transform" />
-              </div>
-              <div className="my-1">
-                <span className="font-mono text-xs font-bold text-[#22130a] block">
-                  {data.mapLabel}
+                <span className="p-1 rounded bg-amber-900/80 text-amber-100 opacity-80 group-hover:opacity-100 transition-opacity">
+                  <Maximize2 className="w-3.5 h-3.5" />
                 </span>
-                <span className="font-mono text-[10px] text-[#5e4128] block">
-                  {data.mapSector}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-[9px] font-sans font-bold text-[#8c3220] uppercase pt-1 border-t border-dashed border-[#c4a988]">
-                <span>LOCATION GRID</span>
-                <span className="group-hover:underline">INSPECT MAP &rarr;</span>
               </div>
             </div>
 
-            {/* ✉️ Artifact 2: Torn Handwritten Letter */}
-            <div 
-              onClick={() => setSelectedArtifact(data.letterArtifact)}
-              className="p-3 bg-[#f0e1c6] border-2 border-[#a68865] rounded-xs shadow-xs hover:border-[#8c3220] hover:bg-[#f6ebd8] transition-all cursor-pointer group relative flex flex-col justify-between h-[120px]"
-            >
-              <div className="absolute -top-1.5 left-3 w-8 h-3 bg-[#c2b093]/90 border border-[#9c896e] rotate-[8deg] shadow-2xs pointer-events-none" />
-              <div className="flex items-center justify-between border-b border-[#c4a988] pb-1">
-                <span className="font-sans font-bold text-[10px] uppercase tracking-wider text-[#8c3220] flex items-center gap-1">
-                  <Mail className="w-3.5 h-3.5" />
-                  TORN NOTE / LETTER
-                </span>
-                <Maximize2 className="w-3 h-3 text-[#8c3220] opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-transform" />
-              </div>
-              <p className="font-['Caveat'] text-xs text-[#2b190e] italic leading-tight line-clamp-3 my-0.5">
-                “{data.letterText}”
-              </p>
-              <div className="flex items-center justify-between text-[9px] font-sans font-bold text-[#8c3220] uppercase pt-1 border-t border-dashed border-[#c4a988]">
-                <span>CORRESPONDENCE</span>
-                <span className="group-hover:underline">READ NOTE &rarr;</span>
-              </div>
+            <div className="mt-2 text-center">
+              <span className="font-mono text-xs font-bold text-amber-200/90 uppercase tracking-wider block">
+                {data.sketchCaption}
+              </span>
             </div>
-
-            {/* 📰 Artifact 3: Newspaper Clipping */}
-            <div 
-              onClick={() => setSelectedArtifact(data.newsArtifact)}
-              className="p-3 bg-[#e2cead] border-2 border-[#a68865] rounded-xs shadow-xs hover:border-[#8c3220] hover:bg-[#ebdcc0] transition-all cursor-pointer group relative flex flex-col justify-between h-[120px]"
-            >
-              <div className="flex items-center justify-between border-b border-[#c4a988] pb-1">
-                <span className="font-sans font-bold text-[10px] uppercase tracking-wider text-[#8c3220] flex items-center gap-1">
-                  <Newspaper className="w-3.5 h-3.5" />
-                  PRESS CLIPPING
-                </span>
-                <Maximize2 className="w-3 h-3 text-[#8c3220] opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-transform" />
-              </div>
-              <div className="my-1">
-                <span className="font-serif font-black text-xs text-[#1a0f08] uppercase block leading-tight">
-                  {data.newspaperTitle}
-                </span>
-                <p className="font-serif text-[10px] text-[#4d3622] line-clamp-2 mt-0.5 leading-tight">
-                  {data.newspaperSnippet}
-                </p>
-              </div>
-              <div className="flex items-center justify-between text-[9px] font-sans font-bold text-[#8c3220] uppercase pt-1 border-t border-dashed border-[#c4a988]">
-                <span>GAZETTE ARCHIVE</span>
-                <span className="group-hover:underline">EXAMINE &rarr;</span>
-              </div>
-            </div>
-
-            {/* 📌 Artifact 4: Personal Item */}
-            <div 
-              onClick={() => setSelectedArtifact(data.itemArtifact)}
-              className="p-3 bg-[#e8d7ba] border-2 border-[#a68865] rounded-xs shadow-xs hover:border-[#8c3220] hover:bg-[#efe1c9] transition-all cursor-pointer group relative flex flex-col justify-between h-[120px]"
-            >
-              <div className="flex items-center justify-between border-b border-[#c4a988] pb-1">
-                <span className="font-sans font-bold text-[10px] uppercase tracking-wider text-[#8c3220] flex items-center gap-1">
-                  <CreditCard className="w-3.5 h-3.5" />
-                  PERSONAL ITEM
-                </span>
-                <Maximize2 className="w-3 h-3 text-[#8c3220] opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-transform" />
-              </div>
-              <div className="my-1">
-                <span className="font-mono text-xs font-bold text-[#201209] block">
-                  {data.personalItemTitle}
-                </span>
-                <span className="font-mono text-[10px] text-[#593d25] block truncate mt-0.5">
-                  {data.personalItemDetail}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-[9px] font-sans font-bold text-[#8c3220] uppercase pt-1 border-t border-dashed border-[#c4a988]">
-                <span>SEIZED PROPERTY</span>
-                <span className="group-hover:underline">INSPECT ITEM &rarr;</span>
-              </div>
-            </div>
-
           </div>
         </div>
 
         {/* ✍️ 3. Handwritten Red Ink Margin Annotation */}
-        <div className="bg-[#e2ceab]/90 border-l-4 border-[#8c3220] p-3 rounded-r-xs font-['Caveat'] text-sm text-[#5c1a0f] leading-snug flex items-start gap-2 shadow-xs my-2">
-          <Feather className="w-4 h-4 text-[#8c3220] shrink-0 mt-0.5" />
-          <div>
-            <span className="font-bold uppercase tracking-wider text-[10px] font-sans text-[#8c3220] block mb-0.5">
+        <div className="bg-[#e5d3b3] border-l-4 border-[#8c3220] p-3 sm:p-3.5 rounded-r-md shadow-xs space-y-1">
+          <div className="flex items-center gap-2">
+            <Feather className="w-4 h-4 text-[#8c3220] shrink-0" />
+            <span className="font-extrabold uppercase tracking-widest text-xs font-sans text-[#8c3220]">
               INVESTIGATOR'S MARGIN NOTE:
             </span>
-            “{data.marginNote}”
           </div>
+          <p className="font-['Caveat'] text-base sm:text-lg text-[#4a150b] leading-relaxed pl-6">
+            “{data.marginNote}”
+          </p>
         </div>
 
         {/* Footer */}
-        <div className="pt-2 border-t border-[#a88a62] flex items-center justify-between text-[10px] font-mono text-[#6e5033]">
+        <div className="pt-2 border-t border-[#a88a62] flex items-center justify-between text-xs font-mono text-[#6e5033] tracking-wide">
           <span>CONFIDENTIAL CASE FILE</span>
-          <span>VOL. IV &bull; EXHIBIT PACKET</span>
+          <span>VOL. IV &bull; SCENE SKETCH PACKET</span>
         </div>
       </div>
     );
@@ -902,14 +899,17 @@ export default function StoryIntroView({ caseData, onCompleteStory, onSkipStory,
         {/* Top Control Buttons */}
         <div className="flex items-center gap-2.5 font-mono text-xs">
           
-          {/* Audio Toggle */}
+          {/* Mystery Background Music Control */}
+          <MysteryAudioControl variant="story_intro" />
+
+          {/* Page FX Audio Toggle */}
           <button
             onClick={() => setIsMuted(!isMuted)}
-            className="px-3.5 py-1.5 border border-amber-500/30 bg-slate-900/60 hover:bg-slate-800/80 text-amber-200 transition-all cursor-pointer flex items-center gap-1.5 rounded-xl shadow-xs backdrop-blur-md"
-            title={isMuted ? 'Unmute Page Flip Sound' : 'Mute Sound'}
+            className="px-3 py-1.5 border border-amber-500/30 bg-slate-900/60 hover:bg-slate-800/80 text-amber-200 transition-all cursor-pointer flex items-center gap-1.5 rounded-xl shadow-xs backdrop-blur-md"
+            title={isMuted ? 'Unmute Page Flip Sound' : 'Mute Page Flip Sound'}
           >
-            {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4 text-amber-300" />}
-            <span className="hidden sm:inline font-sans text-[11px] font-bold">{isMuted ? 'MUTED' : 'PAGE SOUND ON'}</span>
+            {isMuted ? <VolumeX className="w-3.5 h-3.5 text-rose-400" /> : <Volume2 className="w-3.5 h-3.5 text-amber-300" />}
+            <span className="hidden md:inline font-sans text-[11px] font-bold">{isMuted ? 'MUTED' : 'PAGE FX ON'}</span>
           </button>
 
           {/* Skip Prologue Button */}
@@ -993,111 +993,129 @@ export default function StoryIntroView({ caseData, onCompleteStory, onSkipStory,
             )}
 
             {/* SMOOTH 3D FLIPPING PAGE LEAF ANIMATION OVERLAY */}
-            <AnimatePresence mode="wait">
-              {isFlipping && flipDirection === 'next' && (
-                <motion.div
-                  key={`flip-next-${flippingFromIndex}`}
-                  initial={{ rotateY: 0 }}
-                  animate={{ rotateY: -180 }}
-                  exit={{ rotateY: -180 }}
-                  transition={{ duration: 0.55, ease: [0.645, 0.045, 0.355, 1.000] }}
-                  style={{
-                    transformOrigin: 'left center',
+            {isFlipping && flipDirection === 'next' && (
+              <motion.div
+                key={`flip-next-${flippingFromIndex}`}
+                initial={{ rotateY: 0 }}
+                animate={{ rotateY: -180 }}
+                transition={{ duration: 0.52, ease: [0.645, 0.045, 0.355, 1.000] }}
+                onAnimationComplete={() => {
+                  setCurrentSceneIndex(flippingToIndex);
+                  setIsFlipping(false);
+                }}
+                style={{
+                  transformOrigin: 'left center',
+                  transformStyle: 'preserve-3d',
+                  willChange: 'transform'
+                }}
+                className="hidden md:block absolute top-0 bottom-0 right-0 w-1/2 z-40 bg-[#ebd8b7] border-l border-[#8f693e] shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-r-xs pointer-events-none"
+              >
+                {/* FRONT SIDE OF FLIPPING PAGE (Old Right Page) */}
+                <div 
+                  style={{ 
+                    backfaceVisibility: 'hidden', 
+                    WebkitBackfaceVisibility: 'hidden',
                     transformStyle: 'preserve-3d',
-                    willChange: 'transform'
+                    transformOrigin: '50% 50%'
                   }}
-                  className="hidden md:block absolute top-0 bottom-0 right-0 w-1/2 z-40 bg-[#ebd8b7] border-l border-[#8f693e] shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-r-xs overflow-hidden pointer-events-none"
+                  className="absolute inset-0 w-full h-full bg-[#ebd8b7] rounded-r-xs"
                 >
-                  {/* FRONT SIDE OF FLIPPING PAGE (Old Right Page) */}
-                  <div 
-                    style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
-                    className="absolute inset-0 w-full h-full bg-[#ebd8b7]"
-                  >
-                    {renderRightPage(scenes[flippingFromIndex], flippingFromIndex * 2 + 2, flippingFromIndex)}
-                    
-                    {/* Shadow Sweep across front turning leaf */}
-                    <motion.div 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: [0, 0.6, 0] }}
-                      transition={{ duration: 0.55 }}
-                      className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent pointer-events-none"
-                    />
-                  </div>
+                  {renderRightPage(scenes[flippingFromIndex], flippingFromIndex * 2 + 2, flippingFromIndex)}
+                  
+                  {/* Shadow Sweep across front turning leaf */}
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: [0, 0.6, 0] }}
+                    transition={{ duration: 0.52 }}
+                    className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent pointer-events-none"
+                  />
+                </div>
 
-                  {/* BACK SIDE OF FLIPPING PAGE (New Left Page facing left) */}
-                  <div 
-                    style={{ 
-                      backfaceVisibility: 'hidden',
-                      WebkitBackfaceVisibility: 'hidden',
-                      transform: 'rotateY(180deg)'
-                    }}
-                    className="absolute inset-0 w-full h-full bg-[#ebd8b7]"
-                  >
-                    {renderLeftPage(scenes[flippingToIndex], flippingToIndex * 2 + 1)}
-
-                    {/* Shadow Sweep across back turning leaf */}
-                    <motion.div 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: [0.6, 0.2, 0] }}
-                      transition={{ duration: 0.55 }}
-                      className="absolute inset-0 bg-gradient-to-l from-black/50 via-black/20 to-transparent pointer-events-none"
-                    />
-                  </div>
-                </motion.div>
-              )}
-
-              {isFlipping && flipDirection === 'prev' && (
-                <motion.div
-                  key={`flip-prev-${flippingFromIndex}`}
-                  initial={{ rotateY: 0 }}
-                  animate={{ rotateY: 180 }}
-                  exit={{ rotateY: 180 }}
-                  transition={{ duration: 0.55, ease: [0.645, 0.045, 0.355, 1.000] }}
-                  style={{
-                    transformOrigin: 'right center',
+                {/* BACK SIDE OF FLIPPING PAGE (New Left Page facing left) */}
+                <div 
+                  style={{ 
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden',
+                    transform: 'rotateY(180deg)',
                     transformStyle: 'preserve-3d',
-                    willChange: 'transform'
+                    transformOrigin: '50% 50%'
                   }}
-                  className="hidden md:block absolute top-0 bottom-0 left-0 w-1/2 z-40 bg-[#ebd8b7] border-r border-[#8f693e] shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-l-xs overflow-hidden pointer-events-none"
+                  className="absolute inset-0 w-full h-full bg-[#ebd8b7] rounded-l-xs"
                 >
-                  {/* FRONT SIDE OF FLIPPING PAGE (Old Left Page) */}
-                  <div 
-                    style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
-                    className="absolute inset-0 w-full h-full bg-[#ebd8b7]"
-                  >
-                    {renderLeftPage(scenes[flippingFromIndex], flippingFromIndex * 2 + 1)}
+                  {renderLeftPage(scenes[flippingToIndex], flippingToIndex * 2 + 1)}
 
-                    {/* Shadow Sweep */}
-                    <motion.div 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: [0, 0.6, 0] }}
-                      transition={{ duration: 0.55 }}
-                      className="absolute inset-0 bg-gradient-to-l from-black/50 via-black/20 to-transparent pointer-events-none"
-                    />
-                  </div>
+                  {/* Shadow Sweep across back turning leaf */}
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: [0.6, 0.2, 0] }}
+                    transition={{ duration: 0.52 }}
+                    className="absolute inset-0 bg-gradient-to-l from-black/50 via-black/20 to-transparent pointer-events-none"
+                  />
+                </div>
+              </motion.div>
+            )}
 
-                  {/* BACK SIDE OF FLIPPING PAGE (New Right Page facing right) */}
-                  <div 
-                    style={{ 
-                      backfaceVisibility: 'hidden',
-                      WebkitBackfaceVisibility: 'hidden',
-                      transform: 'rotateY(-180deg)'
-                    }}
-                    className="absolute inset-0 w-full h-full bg-[#ebd8b7]"
-                  >
-                    {renderRightPage(scenes[flippingToIndex], flippingToIndex * 2 + 2, flippingToIndex)}
+            {isFlipping && flipDirection === 'prev' && (
+              <motion.div
+                key={`flip-prev-${flippingFromIndex}`}
+                initial={{ rotateY: 0 }}
+                animate={{ rotateY: 180 }}
+                transition={{ duration: 0.52, ease: [0.645, 0.045, 0.355, 1.000] }}
+                onAnimationComplete={() => {
+                  setCurrentSceneIndex(flippingToIndex);
+                  setIsFlipping(false);
+                }}
+                style={{
+                  transformOrigin: 'right center',
+                  transformStyle: 'preserve-3d',
+                  willChange: 'transform'
+                }}
+                className="hidden md:block absolute top-0 bottom-0 left-0 w-1/2 z-40 bg-[#ebd8b7] border-r border-[#8f693e] shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-l-xs pointer-events-none"
+              >
+                {/* FRONT SIDE OF FLIPPING PAGE (Old Left Page) */}
+                <div 
+                  style={{ 
+                    backfaceVisibility: 'hidden', 
+                    WebkitBackfaceVisibility: 'hidden',
+                    transformStyle: 'preserve-3d',
+                    transformOrigin: '50% 50%'
+                  }}
+                  className="absolute inset-0 w-full h-full bg-[#ebd8b7] rounded-l-xs"
+                >
+                  {renderLeftPage(scenes[flippingFromIndex], flippingFromIndex * 2 + 1)}
 
-                    {/* Shadow Sweep */}
-                    <motion.div 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: [0.6, 0.2, 0] }}
-                      transition={{ duration: 0.55 }}
-                      className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent pointer-events-none"
-                    />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  {/* Shadow Sweep */}
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: [0, 0.6, 0] }}
+                    transition={{ duration: 0.52 }}
+                    className="absolute inset-0 bg-gradient-to-l from-black/50 via-black/20 to-transparent pointer-events-none"
+                  />
+                </div>
+
+                {/* BACK SIDE OF FLIPPING PAGE (New Right Page facing right) */}
+                <div 
+                  style={{ 
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden',
+                    transform: 'rotateY(-180deg)',
+                    transformStyle: 'preserve-3d',
+                    transformOrigin: '50% 50%'
+                  }}
+                  className="absolute inset-0 w-full h-full bg-[#ebd8b7] rounded-r-xs"
+                >
+                  {renderRightPage(scenes[flippingToIndex], flippingToIndex * 2 + 2, flippingToIndex)}
+
+                  {/* Shadow Sweep */}
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: [0.6, 0.2, 0] }}
+                    transition={{ duration: 0.52 }}
+                    className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent pointer-events-none"
+                  />
+                </div>
+              </motion.div>
+            )}
 
             {/* FORENSIC ARTIFACT MAGNIFIER INSPECTOR MODAL */}
             <AnimatePresence>
@@ -1127,6 +1145,17 @@ export default function StoryIntroView({ caseData, onCompleteStory, onSkipStory,
                         </span>
                       </div>
                     </div>
+
+                    {selectedArtifact.type === 'sketch' && (
+                      <div className="bg-black p-2 rounded border border-amber-900/60 overflow-hidden flex justify-center">
+                        <img 
+                          src={getSceneSketchArt(caseData.id, currentSceneIndex)} 
+                          alt={selectedArtifact.title}
+                          referrerPolicy="no-referrer"
+                          className="max-h-60 object-contain rounded" 
+                        />
+                      </div>
+                    )}
 
                     <div className="bg-[#2b1c11] p-3.5 rounded border border-[#6b4e31] space-y-2">
                       <span className="font-sans font-bold text-xs uppercase tracking-wider text-amber-400 block">

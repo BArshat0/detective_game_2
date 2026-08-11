@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import anime from '../lib/animeHelper';
 import { 
-  Network, Link2, Trash2, ShieldCheck, Zap, Plus, Pin, 
+  Network, Link2, Trash2, ShieldCheck, Compass, Plus, Pin, 
   ZoomIn, ZoomOut, Maximize2, User, FileText, MapPin, Phone, 
   Building2, CreditCard, Plane, Newspaper, Globe, HelpCircle, 
-  Clock, MessageSquare, AlertTriangle, Eye, Check, X, Move, Flame
+  Clock, MessageSquare, AlertTriangle, Eye, Check, X, Move, Flame,
+  FilePlus, CheckCircle2, Sparkles
 } from 'lucide-react';
-import { Case, WallNode, WallConnection } from '../types';
+import { Case, WallNode, WallConnection, Evidence } from '../types';
+import { getSuspectSketchArt } from '../utils/suspectSketches';
 
 interface ClueBoardProps {
   caseData: Case;
@@ -43,28 +45,88 @@ export default function ClueBoard({
 
   // Interactive Connection Mode
   const [stringSourceNodeId, setStringSourceNodeId] = useState<string | null>(null);
-  const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
 
   // Quick Link Toolbar Selects
   const [selectedFromNodeId, setSelectedFromNodeId] = useState<string | null>(null);
   const [selectedToNodeId, setSelectedToNodeId] = useState<string | null>(null);
-  const [customRelationLabel, setCustomRelationLabel] = useState('Fabricated Identity');
   const [selectedStringColor, setSelectedStringColor] = useState('#ef4444'); // Red default
 
-  // Custom Sticky Note Creator
+  // Custom Sticky Note Creator State
   const [isAddingStickyNote, setIsAddingStickyNote] = useState(false);
   const [stickyNoteTitle, setStickyNoteTitle] = useState('');
   const [stickyNoteText, setStickyNoteText] = useState('');
   const [stickyNoteColor, setStickyNoteColor] = useState<'yellow' | 'pink' | 'cyan' | 'amber' | 'emerald'>('yellow');
 
+  // Discovered Evidence Drawer Modal
+  const [showEvidenceDrawer, setShowEvidenceDrawer] = useState(false);
+
   // Theory Evaluation State
-  const [theoryResult, setTheoryResult] = useState<{ score: number; msg: string; status: 'verified' | 'incomplete' } | null>(null);
+  const [theoryResult, setTheoryResult] = useState<{ 
+    score: number; 
+    msg: string; 
+    status: 'verified' | 'incomplete' | 'invalid';
+    verifiedCount: number;
+    details: string[];
+  } | null>(null);
   
   // AI Deduction Prompt Assistant state
   const [showAiAdvisor, setShowAiAdvisor] = useState(true);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
+
+  // Dynamic Case-Aligned Relationship Options
+  const relationshipOptions = useMemo(() => {
+    const caseId = caseData.id || '';
+    if (caseId.includes('border') || caseData.topic.toLowerCase().includes('trafficking') || caseData.topic.toLowerCase().includes('job')) {
+      return [
+        { label: '✈️ Fake VIP Employment Offer', color: '#ef4444' },
+        { label: '🚨 Unlicensed Shell Syndicate', color: '#dc2626' },
+        { label: '📞 Scripted Extortion Telephony', color: '#3b82f6' },
+        { label: '💰 Crypto Advance Fee Demand', color: '#10b981' },
+        { label: '📄 Contradicts Contract Terms', color: '#f59e0b' },
+        { label: '🔗 Identity Alias / Fake Recruiter', color: '#8b5cf6' },
+        { label: '🌐 Offshore Fraud Domain', color: '#ec4899' }
+      ];
+    }
+    if (caseId.includes('voice') || caseData.topic.toLowerCase().includes('voice') || caseData.topic.toLowerCase().includes('cloning')) {
+      return [
+        { label: '🎙️ Synthetic Voice Model Clone', color: '#a855f7' },
+        { label: '📱 Out-of-Band Phone Extortion', color: '#ef4444' },
+        { label: '🎧 Scraped VLOG Frequencies', color: '#3b82f6' },
+        { label: '🚫 Contradicts Alibi / Location', color: '#f59e0b' },
+        { label: '💻 Unclaimed Audio Editor Terminal', color: '#10b981' },
+        { label: '👤 Impersonation Target', color: '#ec4899' }
+      ];
+    }
+    if (caseId.includes('scholar') || caseData.topic.toLowerCase().includes('investment') || caseData.topic.toLowerCase().includes('phishing')) {
+      return [
+        { label: '🌐 Phishing Portal Host', color: '#3b82f6' },
+        { label: '💳 20% Tax Clearance Fee Demand', color: '#ef4444' },
+        { label: '📈 Fraudulent Trading Portal', color: '#f59e0b' },
+        { label: '👤 Identity Harvesting Vector', color: '#8b5cf6' },
+        { label: '🚫 Disproves Legitimate Regulator Claim', color: '#dc2626' }
+      ];
+    }
+    // Default fallback case options
+    return [
+      { label: '❌ Contradicts Statement / Document', color: '#ef4444' },
+      { label: '🛡️ Supports Evidence Claim', color: '#10b981' },
+      { label: '🔗 Linked Identity / Alias', color: '#f59e0b' },
+      { label: '⚡ Initiated Transaction / Call', color: '#3b82f6' },
+      { label: '👁️ Witnessed By', color: '#8b5cf6' },
+      { label: '⏳ Happened Before', color: '#ec4899' }
+    ];
+  }, [caseData]);
+
+  const [customRelationLabel, setCustomRelationLabel] = useState<string>('');
+
+  // Set default label when case options load
+  useEffect(() => {
+    if (relationshipOptions.length > 0) {
+      setCustomRelationLabel(relationshipOptions[0].label);
+    }
+  }, [relationshipOptions]);
 
   // Fallback to initial case nodes if state is empty
   const currentNodes: WallNode[] = useMemo(() => {
@@ -74,7 +136,46 @@ export default function ClueBoard({
     return caseData.initialWallNodes || [];
   }, [wallNodesState, caseData.initialWallNodes]);
 
-  // Handle Canvas Drag / Pan
+  // Unplaced Discovered Evidences
+  const unplacedEvidences: Evidence[] = useMemo(() => {
+    const existingTitles = new Set(currentNodes.map(n => n.title.toLowerCase()));
+    return caseData.evidences.filter(ev => 
+      discoveredEvidenceIds.includes(ev.id) && !existingTitles.has(ev.name.toLowerCase())
+    );
+  }, [caseData.evidences, discoveredEvidenceIds, currentNodes]);
+
+  // Add Discovered Evidence Node to Board
+  const handleAddEvidenceToBoard = (evidence: Evidence) => {
+    const newNode: WallNode = {
+      id: `ev_node_${evidence.id}`,
+      title: evidence.name,
+      description: evidence.description.slice(0, 100) + '...',
+      type: evidence.type === 'system_file' || evidence.type === 'crypto_fragment' ? 'digital' : 'evidence',
+      x: 30 + Math.floor(Math.random() * 30),
+      y: 35 + Math.floor(Math.random() * 25),
+      rotation: Math.floor(Math.random() * 6) - 3
+    };
+
+    const updatedNodes = [...currentNodes, newNode];
+    onUpdateWall(updatedNodes, wallConnectionsState);
+
+    // Entrance animation
+    setTimeout(() => {
+      anime({
+        targets: `#wall-node-${newNode.id}`,
+        scale: [0.4, 1],
+        rotate: [-8, newNode.rotation || 0],
+        duration: 500,
+        easing: 'easeOutElastic(1, .6)'
+      });
+    }, 50);
+
+    window.dispatchEvent(new CustomEvent('mil-xp-earned', {
+      detail: { xp: 30, msg: `Pinned Evidence "${evidence.name}" to Wall` }
+    }));
+  };
+
+  // Canvas Panning / Dragging
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return;
     const target = e.target as HTMLElement;
@@ -86,7 +187,6 @@ export default function ClueBoard({
   };
 
   const handleCanvasMouseMove = (e: React.MouseEvent) => {
-    // Canvas Panning
     if (isPanning) {
       setPanOffset({
         x: e.clientX - dragStart.x,
@@ -95,7 +195,6 @@ export default function ClueBoard({
       return;
     }
 
-    // Node Dragging
     if (draggingNodeId && containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
       const mouseXInCanvas = (e.clientX - rect.left - panOffset.x) / zoomLevel;
@@ -104,7 +203,6 @@ export default function ClueBoard({
       const rawXpx = mouseXInCanvas - nodeDragOffset.x;
       const rawYpx = mouseYInCanvas - nodeDragOffset.y;
 
-      // Convert to canvas percentage (assuming 1000px by 700px virtual bounds)
       const percentX = Math.max(1, Math.min(88, Math.round((rawXpx / (rect.width || 1000)) * 100)));
       const percentY = Math.max(1, Math.min(88, Math.round((rawYpx / (rect.height || 700)) * 100)));
 
@@ -125,7 +223,6 @@ export default function ClueBoard({
       const node = currentNodes.find(n => n.id === releasedId);
       setDraggingNodeId(null);
 
-      // Spring bounce release animation
       if (node) {
         anime({
           targets: `#wall-node-${releasedId}`,
@@ -139,7 +236,6 @@ export default function ClueBoard({
     setIsPanning(false);
   };
 
-  // Touch handlers for mobile smooth drag
   const handleTouchStart = (e: React.TouchEvent, nodeId?: string) => {
     if (nodeId) {
       const node = currentNodes.find(n => n.id === nodeId);
@@ -186,7 +282,6 @@ export default function ClueBoard({
     }
   };
 
-  // Node Drag Start
   const handleNodeMouseDown = (e: React.MouseEvent, nodeId: string) => {
     e.stopPropagation();
     const target = e.target as HTMLElement;
@@ -210,7 +305,6 @@ export default function ClueBoard({
       });
     }
 
-    // Tactile drag lift effect
     anime({
       targets: `#wall-node-${nodeId}`,
       scale: 1.08,
@@ -220,7 +314,6 @@ export default function ClueBoard({
     });
   };
 
-  // Toggle Node Pin
   const handleTogglePinNode = (nodeId: string) => {
     const updated = currentNodes.map(n => {
       if (n.id === nodeId) {
@@ -231,19 +324,22 @@ export default function ClueBoard({
     onUpdateWall(updated, wallConnectionsState);
   };
 
-  // Delete Custom Node
+  // Delete Sticky Note or Wall Node
   const handleDeleteNode = (nodeId: string) => {
     const updatedNodes = currentNodes.filter(n => n.id !== nodeId);
     const updatedConns = wallConnectionsState.filter(c => c.fromId !== nodeId && c.toId !== nodeId);
     onUpdateWall(updatedNodes, updatedConns);
+
+    window.dispatchEvent(new CustomEvent('mil-xp-earned', {
+      detail: { xp: 10, msg: 'Removed Note from Investigation Wall' }
+    }));
   };
 
-  // String Connection Handlers
+  // Add Yarn String Connection
   const handleStartStringFromNode = (nodeId: string) => {
     if (stringSourceNodeId === nodeId) {
       setStringSourceNodeId(null);
     } else if (stringSourceNodeId) {
-      // Complete connection
       handleAddConnectionBetween(stringSourceNodeId, nodeId);
       setStringSourceNodeId(null);
     } else {
@@ -251,28 +347,54 @@ export default function ClueBoard({
     }
   };
 
+  // Real Case Deductive Connection Evaluation
+  const isConnectionValidDeduction = (fromId: string, toId: string) => {
+    const nodeA = currentNodes.find(n => n.id === fromId);
+    const nodeB = currentNodes.find(n => n.id === toId);
+    if (!nodeA || !nodeB) return false;
+
+    const titles = `${nodeA.title.toLowerCase()} ${nodeB.title.toLowerCase()}`;
+    const caseId = caseData.id || '';
+
+    if (caseId.includes('border') || caseData.topic.toLowerCase().includes('trafficking')) {
+      if ((titles.includes('sterling') || titles.includes('elena')) && (titles.includes('whois') || titles.includes('contract') || titles.includes('offer'))) return true;
+      if (titles.includes('kaelen') && titles.includes('contract')) return true;
+    } else if (caseId.includes('voice') || caseData.topic.toLowerCase().includes('voice')) {
+      if (titles.includes('julian') && (titles.includes('voicemail') || titles.includes('acoustic') || titles.includes('spectrogram'))) return true;
+      if (titles.includes('pendelton') && titles.includes('voicemail')) return true;
+    } else if (caseId.includes('scholar') || caseData.topic.toLowerCase().includes('investment')) {
+      if (titles.includes('julian') && (titles.includes('portal') || titles.includes('code'))) return true;
+      if (titles.includes('david') && (titles.includes('tax') || titles.includes('email'))) return true;
+    }
+
+    // Default valid deduction rule: Any suspect connected to an evidence or digital node
+    const hasSuspect = nodeA.type === 'suspect' || nodeB.type === 'suspect';
+    const hasEvidence = nodeA.type === 'evidence' || nodeB.type === 'evidence' || nodeA.type === 'digital' || nodeB.type === 'digital';
+    return hasSuspect && hasEvidence;
+  };
+
   const handleAddConnectionBetween = (fromId: string, toId: string) => {
     if (fromId === toId) return;
 
-    // Check existing
     const exists = wallConnectionsState.some(
       c => (c.fromId === fromId && c.toId === toId) || (c.fromId === toId && c.toId === fromId)
     );
     if (exists) return;
 
+    const isValid = isConnectionValidDeduction(fromId, toId);
+
     const newConn: WallConnection = {
       id: `conn_${Date.now()}`,
       fromId,
       toId,
-      relationshipLabel: customRelationLabel,
-      color: selectedStringColor,
-      isVerified: true
+      relationshipLabel: customRelationLabel || 'Linked Evidence',
+      color: isValid ? '#10b981' : selectedStringColor,
+      isVerified: isValid
     };
 
     const updatedConns = [...wallConnectionsState, newConn];
     onUpdateWall(currentNodes, updatedConns);
 
-    // Anime.js trigger string drawing animation
     setTimeout(() => {
       anime({
         targets: `#string-line-${newConn.id}`,
@@ -283,7 +405,10 @@ export default function ClueBoard({
     }, 50);
 
     window.dispatchEvent(new CustomEvent('mil-xp-earned', {
-      detail: { xp: 40, msg: 'Evidence Relationship String Created' }
+      detail: { 
+        xp: isValid ? 60 : 20, 
+        msg: isValid ? 'Validated Case Deduction Link Established!' : 'Clue String Connection Placed' 
+      }
     }));
   };
 
@@ -298,8 +423,8 @@ export default function ClueBoard({
 
     const newNode: WallNode = {
       id: `custom_note_${Date.now()}`,
-      title: stickyNoteTitle.trim() || 'Detective Observation',
-      description: stickyNoteText.trim() || 'Crucial clue noted during interrogation.',
+      title: stickyNoteTitle.trim() || 'Investigator Observation',
+      description: stickyNoteText.trim() || 'Crucial lead noted during case review.',
       type: 'motive',
       x: 35 + Math.floor(Math.random() * 20),
       y: 30 + Math.floor(Math.random() * 20),
@@ -315,7 +440,6 @@ export default function ClueBoard({
     setStickyNoteText('');
     setIsAddingStickyNote(false);
 
-    // Anime.js entrance animation
     setTimeout(() => {
       anime({
         targets: `#wall-node-${newNode.id}`,
@@ -327,29 +451,63 @@ export default function ClueBoard({
     }, 50);
   };
 
-  // Evaluate Theory
+  // Evaluate Case Theory (Real Logic)
   const handleEvaluateTheory = () => {
-    const verifiedConnectionsCount = wallConnectionsState.length;
-    if (verifiedConnectionsCount >= 2) {
+    const totalConnections = wallConnectionsState.length;
+    if (totalConnections === 0) {
+      setTheoryResult({
+        score: 0,
+        msg: 'Empty Investigation Board: Pin evidence and attach yarn strings between suspects, credentials, and digital traces.',
+        status: 'incomplete',
+        verifiedCount: 0,
+        details: ['No clue connections placed on board yet.']
+      });
+      return;
+    }
+
+    let verifiedCount = 0;
+    const detailsList: string[] = [];
+
+    wallConnectionsState.forEach(conn => {
+      const nodeA = currentNodes.find(n => n.id === conn.fromId);
+      const nodeB = currentNodes.find(n => n.id === conn.toId);
+      if (!nodeA || !nodeB) return;
+
+      const isValid = isConnectionValidDeduction(conn.fromId, conn.toId);
+      if (isValid) {
+        verifiedCount++;
+        detailsList.push(`✅ Valid Link: "${nodeA.title}" ➔ "${nodeB.title}" (${conn.relationshipLabel})`);
+      } else {
+        detailsList.push(`⚠️ Weak Link: "${nodeA.title}" ➔ "${nodeB.title}" requires corroborating digital proof.`);
+      }
+    });
+
+    const score = Math.round((verifiedCount / Math.max(2, totalConnections)) * 100);
+
+    if (verifiedCount >= 2 && score >= 50) {
       if (onCompleteClueBoard) onCompleteClueBoard();
       setTheoryResult({
-        score: 95,
-        msg: 'Solid Case Theory! Your Investigation Wall connections establish clear evidence links between the prime suspect, fake identity credentials, and financial traces.',
-        status: 'verified'
+        score: Math.min(100, Math.max(75, score)),
+        msg: `Solid Deductive Case Theory! You have established ${verifiedCount} verified evidence links exposing the prime suspect's infrastructure and modus operandi.`,
+        status: 'verified',
+        verifiedCount,
+        details: detailsList
       });
       window.dispatchEvent(new CustomEvent('mil-xp-earned', {
-        detail: { xp: 100, msg: 'Investigation Wall Theory Validated!' }
+        detail: { xp: 120, msg: 'Investigation Wall Theory Validated by Chief Detective!' }
       }));
     } else {
       setTheoryResult({
-        score: 40,
-        msg: 'Incomplete Theory: Add at least 2 connections between suspects, evidence, and motives on the wall before presenting to Chief Detective.',
-        status: 'incomplete'
+        score: Math.max(25, score),
+        msg: `Incomplete Theory (${verifiedCount} verified links): Ensure main suspects are linked directly to specific contracts, phone logs, or WHOIS records on the board.`,
+        status: 'incomplete',
+        verifiedCount,
+        details: detailsList
       });
     }
   };
 
-  // Icon Map for Node Archetypes
+  // Node Icon Mapping
   const getNodeArchetypeIcon = (type: string) => {
     switch (type.toLowerCase()) {
       case 'suspect':
@@ -369,47 +527,27 @@ export default function ClueBoard({
     }
   };
 
-  // Node Background Color Styles
-  const getNodeCardStyle = (node: WallNode) => {
-    if (node.isCustomNote) {
-      switch (node.noteColor) {
-        case 'pink': return 'bg-[#fce7f3] text-pink-950 border-pink-400';
-        case 'cyan': return 'bg-[#e0f2fe] text-sky-950 border-sky-400';
-        case 'amber': return 'bg-[#fef3c7] text-amber-950 border-amber-400';
-        case 'emerald': return 'bg-[#d1fae5] text-emerald-950 border-emerald-400';
-        default: return 'bg-[#fef08a] text-yellow-950 border-yellow-400';
-      }
-    }
-
-    switch (node.type.toLowerCase()) {
-      case 'suspect': return 'bg-[#181113] text-rose-100 border-rose-500/40 shadow-rose-950/40';
-      case 'evidence': return 'bg-[#1a1712] text-amber-100 border-amber-500/40 shadow-amber-950/40';
-      case 'digital': return 'bg-[#0f172a] text-cyan-100 border-cyan-500/40 shadow-cyan-950/40';
-      case 'location': return 'bg-[#062016] text-emerald-100 border-emerald-500/40 shadow-emerald-950/40';
-      case 'financial': return 'bg-[#0b2114] text-emerald-200 border-emerald-400/40 shadow-emerald-950/40';
-      default: return 'bg-[#141824] text-slate-100 border-slate-700/60 shadow-black/50';
-    }
-  };
-
-  // Render specific card variant based on node archetype or custom note properties
+  // Render specific card variant based on node archetype
   const renderCardContent = (node: WallNode, isSelected: boolean) => {
     const type = node.type.toLowerCase();
 
-    // 1. POLAROID VARIANT (For suspect / people or nodes with images/avatars)
+    // 1. POLAROID VARIANT WITH POLICE PENCIL SKETCH (For suspect / people or nodes with images/avatars)
     if (type === 'suspect' || type === 'people' || node.avatarOrIcon) {
+      const sketchArt = getSuspectSketchArt(node.title, node.avatarOrIcon);
       return (
-        <div className="bg-[#fcfbf9] text-neutral-900 rounded-xs p-2.5 pt-3.5 pb-4 shadow-[4px_10px_22px_rgba(0,0,0,0.45)] border border-neutral-300 relative group flex flex-col items-center">
+        <div className="bg-[#fcfbf9] text-neutral-900 rounded-xs p-2.5 pt-3.5 pb-3 shadow-[4px_10px_22px_rgba(0,0,0,0.45)] border border-neutral-300 relative group flex flex-col items-center">
           {/* Photo Area */}
           <div className="w-full aspect-[4/3] bg-[#1a1715] rounded-2xs overflow-hidden border border-neutral-300 relative flex items-center justify-center mb-2 shadow-inner">
-            {node.avatarOrIcon && (node.avatarOrIcon.startsWith('http') || node.avatarOrIcon.startsWith('data:')) ? (
-              <img src={node.avatarOrIcon} alt={node.title} className="w-full h-full object-cover grayscale contrast-125 hover:grayscale-0 transition-all duration-300" />
-            ) : (
-              <div className="flex flex-col items-center justify-center p-2 text-center">
-                <User className="w-10 h-10 text-neutral-500 mb-1" />
-                <span className="text-[9px] font-mono font-bold text-neutral-400 uppercase tracking-widest">[SUSPECT PHOTO]</span>
-              </div>
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+            <img 
+              src={sketchArt} 
+              alt={node.title} 
+              referrerPolicy="no-referrer"
+              className="w-full h-full object-cover transition-all duration-300" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute bottom-1 right-1 text-[8px] font-mono font-bold text-amber-200/90 bg-black/80 px-1.5 py-0.5 rounded uppercase border border-amber-500/30">
+              POLICE SKETCH
+            </div>
           </div>
           {/* Handwritten Caption */}
           <div className="w-full text-center px-1">
@@ -430,7 +568,6 @@ export default function ClueBoard({
     if (type === 'evidence' || type === 'document' || type === 'digital' || type === 'news') {
       return (
         <div className="bg-[#faf8f2] text-[#1f1a14] rounded-xs p-3.5 pl-6 shadow-[4px_10px_22px_rgba(0,0,0,0.4)] border border-neutral-300 relative overflow-hidden bg-[repeating-linear-gradient(transparent,transparent_19px,#cbd5e1_20px)]">
-          {/* Notebook Binder Punch Holes */}
           <div className="absolute left-2 top-0 bottom-0 flex flex-col justify-around pointer-events-none">
             <div className="w-2 h-2 rounded-full bg-[#3d2b1a]/30 border border-[#23170d]/50" />
             <div className="w-2 h-2 rounded-full bg-[#3d2b1a]/30 border border-[#23170d]/50" />
@@ -455,7 +592,6 @@ export default function ClueBoard({
     if (type === 'financial' || type === 'organisation' || type === 'location' || type === 'travel') {
       return (
         <div className="bg-gradient-to-br from-[#dfb980] via-[#d7a96a] to-[#c29148] text-[#241508] rounded-xs p-3.5 shadow-[4px_10px_22px_rgba(0,0,0,0.45)] border border-[#a87a38] relative">
-          {/* Kraft Envelope Flap Detail */}
           <div className="absolute top-0 inset-x-0 h-2.5 bg-[#b8853e]/40 border-b border-[#8c5e20]/40 pointer-events-none" />
           
           <div className="flex items-center justify-between text-[9px] font-mono font-bold text-[#422910] uppercase tracking-wider mb-1 pt-1">
@@ -472,7 +608,7 @@ export default function ClueBoard({
       );
     }
 
-    // 4. YELLOW / COLORED STICKY NOTE VARIANT (Default / Custom notes / Motive)
+    // 4. COLORED STICKY NOTE VARIANT
     const noteColor = node.noteColor || 'yellow';
     let bgColorClasses = 'bg-gradient-to-br from-[#fffca8] via-[#fef08a] to-[#fde047] text-[#1c170a]';
     let cornerFoldColor = '#ebd16e';
@@ -493,9 +629,7 @@ export default function ClueBoard({
 
     return (
       <div className={`${bgColorClasses} rounded-xs p-3.5 shadow-[4px_10px_22px_rgba(0,0,0,0.38)] relative overflow-hidden group`}>
-        {/* Curled Bottom Corner Effect */}
         <div className="absolute bottom-0 right-0 w-0 h-0 border-t-[14px] border-t-transparent border-r-[14px] pointer-events-none shadow-xs" style={{ borderRightColor: cornerFoldColor }} />
-        <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-black/20 blur-[2px] transform rotate-45 pointer-events-none" />
 
         <div className="flex items-center justify-between text-[9px] font-mono font-bold opacity-80 uppercase tracking-wider mb-1">
           <span className="flex items-center gap-1">{getNodeArchetypeIcon(node.type)} {node.type}</span>
@@ -510,97 +644,95 @@ export default function ClueBoard({
     );
   };
 
-  // Generate dynamic AI Deduction Prompts based on board content
   const aiDeductionPrompt = useMemo(() => {
     if (wallConnectionsState.length === 0) {
-      return "Chief Detective Note: The investigation wall is currently clean. Select any two nodes (e.g. suspect & domain WHOIS) and click '+ LINK NODES' or use the red pin thread to establish a relationship.";
+      return "Chief Detective Note: Select any two nodes and click '+ LINK NODES' or use the red pushpins to draw string connections.";
     }
-    const suspectNodes = currentNodes.filter(n => n.type === 'suspect');
-    const evidenceNodes = currentNodes.filter(n => n.type === 'evidence' || n.type === 'digital');
-    
-    if (suspectNodes.length > 0 && evidenceNodes.length > 0) {
-      return `Investigator Analysis: You have connected ${wallConnectionsState.length} clues on the board. Look closely at how the suspects link to digital evidence. Does the timeline match their alibi?`;
-    }
-    return `Case Board Active: ${wallConnectionsState.length} verified connections formed. Evaluate your theory to test your conclusions.`;
-  }, [wallConnectionsState, currentNodes]);
+    return `Case Board Active: ${wallConnectionsState.length} clue connections established. Click 'EVALUATE THEORY' to test your conclusions against the case file.`;
+  }, [wallConnectionsState]);
 
   return (
     <div 
       id="clue-board-container" 
-      className="flex flex-col h-full rounded-[22px] border-[10px] border-[#4a2e15] bg-[#9e713d] text-amber-50 shadow-[0_20px_50px_rgba(0,0,0,0.85)] overflow-hidden relative"
-      style={{
-        backgroundImage: `radial-gradient(circle at center, rgba(185, 135, 80, 0.96), rgba(105, 68, 35, 0.98)), url("https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=1200&q=80")`,
-        backgroundSize: 'cover'
-      }}
+      className="flex flex-col h-full rounded-[22px] border border-white/10 glass-panel bg-[#1a120b] text-white shadow-2xl overflow-hidden relative"
     >
-      {/* Top Header & Action Controls (Pine Wood Header Bar) */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-3.5 px-5 border-b-2 border-[#59391a] bg-[#361f0d]/90 text-[#f5e6d3] backdrop-blur-md z-20 shadow-md">
+      {/* Top Header & Action Controls Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-4 p-3.5 px-5 border-b border-white/10 bg-[#120a06]/90 text-white z-20 shadow-lg backdrop-blur-md">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-[#523318]/80 border border-[#855829]/60 flex items-center justify-center text-[#ffd875] shadow-xs">
+          <div className="h-10 w-10 rounded-xl bg-[#ff8533]/20 border border-[#ff8533]/40 flex items-center justify-center text-[#ff8533] shadow-inner">
             <Network className="h-5 w-5 animate-pulse" />
           </div>
           <div>
-            <h3 className="text-base font-serif font-black text-[#fff3e0] uppercase tracking-wide flex items-center gap-2">
-              Detective Deduction Board
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-rose-950/80 text-rose-300 border border-rose-600/50 font-bold">
-                CORK CANVAS
+            <h3 className="text-base font-serif font-black text-white uppercase tracking-wide flex items-center gap-2">
+              Investigation Wall Board
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#ffb829]/15 text-[#ffb829] border border-[#ffb829]/30 font-bold">
+                EVIDENCE CANVAS
               </span>
             </h3>
-            <p className="text-xs text-[#f2dabf]/80 font-mono mt-0.5">
-              Connect suspects, evidence, phone logs, and financial trails with crimson yarn threads.
+            <p className="text-xs text-[#d9d2c9] font-mono mt-0.5">
+              Connect suspects, police sketches, credentials, and digital artifacts.
             </p>
           </div>
         </div>
 
-        {/* Header Right Buttons */}
+        {/* Header Action Buttons */}
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Zoom Controls */}
-          <div className="flex items-center bg-[#29170a]/90 border border-[#694220]/60 rounded-xl p-1 text-xs font-mono">
+          <div className="flex items-center bg-black/40 border border-white/10 rounded-xl p-1 text-xs font-mono">
             <button
               onClick={() => setZoomLevel(prev => Math.max(0.6, prev - 0.1))}
-              className="p-1.5 text-amber-200/70 hover:text-white cursor-pointer"
+              className="p-1.5 text-slate-400 hover:text-white cursor-pointer"
               title="Zoom Out"
             >
               <ZoomOut className="h-3.5 w-3.5" />
             </button>
-            <span className="px-2 text-[10px] text-[#ffd875] font-bold">{Math.round(zoomLevel * 100)}%</span>
+            <span className="px-2 text-[10px] text-[#ffb829] font-bold">{Math.round(zoomLevel * 100)}%</span>
             <button
               onClick={() => setZoomLevel(prev => Math.min(1.4, prev + 0.1))}
-              className="p-1.5 text-amber-200/70 hover:text-white cursor-pointer"
+              className="p-1.5 text-slate-400 hover:text-white cursor-pointer"
               title="Zoom In"
             >
               <ZoomIn className="h-3.5 w-3.5" />
             </button>
             <button
               onClick={() => { setZoomLevel(1); setPanOffset({ x: 0, y: 0 }); }}
-              className="p-1.5 text-amber-200/70 hover:text-amber-400 cursor-pointer ml-1"
-              title="Reset View"
+              className="p-1.5 text-slate-400 hover:text-[#ff8533] cursor-pointer ml-1"
+              title="Reset Canvas View"
             >
               <Maximize2 className="h-3.5 w-3.5" />
             </button>
           </div>
 
+          {unplacedEvidences.length > 0 && (
+            <button
+              onClick={() => setShowEvidenceDrawer(!showEvidenceDrawer)}
+              className="flex items-center gap-1.5 text-xs font-mono font-bold text-amber-200 bg-amber-500/15 border border-amber-500/30 px-3.5 py-1.5 rounded-xl hover:bg-amber-500/25 transition-colors cursor-pointer shadow-md"
+            >
+              <FilePlus className="h-3.5 w-3.5 text-amber-400" />
+              <span>+ DISCOVERED EVIDENCE ({unplacedEvidences.length})</span>
+            </button>
+          )}
+
           <button
             onClick={() => setIsAddingStickyNote(!isAddingStickyNote)}
-            className="flex items-center gap-1.5 text-xs font-mono font-bold text-[#f2e2ce] bg-[#59391a]/80 border border-[#8c5a2b]/70 px-3.5 py-1.5 rounded-xl hover:bg-[#6e4620] transition-colors cursor-pointer shadow-xs"
+            className="flex items-center gap-1.5 text-xs font-mono font-bold text-white bg-white/5 border border-white/10 px-3.5 py-1.5 rounded-xl hover:bg-white/10 transition-colors cursor-pointer shadow-md"
           >
-            <Plus className="h-3.5 w-3.5 text-[#ffd875]" />
+            <Plus className="h-3.5 w-3.5 text-[#ff8533]" />
             <span>+ STICKY NOTE</span>
           </button>
 
           <button
             onClick={handleEvaluateTheory}
-            className="bg-gradient-to-r from-[#9e6328] to-[#c98332] hover:brightness-110 text-slate-950 font-sans font-extrabold py-1.5 px-4 text-xs flex items-center gap-2 rounded-xl cursor-pointer shadow-md transition-all"
+            className="bg-[#ff8533] hover:bg-[#ff9955] text-[#1e110a] font-sans font-extrabold py-1.5 px-4 text-xs flex items-center gap-2 rounded-xl cursor-pointer shadow-lg transition-all"
           >
-            <Zap className="h-4 w-4" />
+            <ShieldCheck className="h-4 w-4" />
             <span>EVALUATE THEORY</span>
           </button>
         </div>
       </div>
 
-      {/* Connection Toolbar Drawer */}
-      <div className="bg-[#241407]/90 border-b border-[#523318]/60 px-4 py-2.5 flex flex-wrap items-center gap-3 text-xs font-mono z-20 shadow-xs">
-        <span className="text-[#ffa866] font-bold uppercase tracking-wider flex items-center gap-1">
+      {/* Case-Aligned Quick Link Toolbar Drawer */}
+      <div className="bg-[#180e08]/90 border-b border-white/10 px-4 py-2.5 flex flex-wrap items-center gap-3 text-xs font-mono z-20 shadow-md text-white backdrop-blur-md">
+        <span className="text-[#ff8533] font-bold uppercase tracking-wider flex items-center gap-1">
           <Link2 className="h-4 w-4" /> Link Clues:
         </span>
 
@@ -608,7 +740,7 @@ export default function ClueBoard({
         <select
           value={selectedFromNodeId || ''}
           onChange={(e) => setSelectedFromNodeId(e.target.value || null)}
-          className="bg-[#140b04] border border-[#59391a] rounded-xl px-3 py-1 text-white text-xs outline-none focus:ring-1 focus:ring-amber-500"
+          className="bg-black/60 border border-white/15 rounded-xl px-3 py-1.5 text-white text-xs outline-none focus:ring-1 focus:ring-[#ff8533]"
         >
           <option value="">Node A...</option>
           {currentNodes.map(n => (
@@ -616,13 +748,13 @@ export default function ClueBoard({
           ))}
         </select>
 
-        <span className="text-amber-400 font-bold">➔</span>
+        <span className="text-[#ffb829] font-bold">➔</span>
 
         {/* Node B */}
         <select
           value={selectedToNodeId || ''}
           onChange={(e) => setSelectedToNodeId(e.target.value || null)}
-          className="bg-[#140b04] border border-[#59391a] rounded-xl px-3 py-1 text-white text-xs outline-none focus:ring-1 focus:ring-amber-500"
+          className="bg-black/60 border border-white/15 rounded-xl px-3 py-1.5 text-white text-xs outline-none focus:ring-1 focus:ring-[#ff8533]"
         >
           <option value="">Node B...</option>
           {currentNodes.map(n => (
@@ -630,36 +762,32 @@ export default function ClueBoard({
           ))}
         </select>
 
-        {/* Relationship Label */}
+        {/* Dynamic Case-Aligned Relationship Option Selector */}
         <select
           value={customRelationLabel}
           onChange={(e) => setCustomRelationLabel(e.target.value)}
-          className="bg-[#140b04] border border-[#59391a] rounded-xl px-3 py-1 text-white text-xs outline-none focus:ring-1 focus:ring-amber-500"
+          className="bg-black/60 border border-white/15 rounded-xl px-3 py-1.5 text-amber-300 text-xs font-bold outline-none focus:ring-1 focus:ring-[#ff8533] max-w-xs"
         >
-          <option value="Fabricated Identity">Fabricated Identity</option>
-          <option value="Financial Beneficiary">Financial Beneficiary</option>
-          <option value="Contradicts Testimony">Contradicts Testimony</option>
-          <option value="Coerced / Extorted">Coerced / Extorted</option>
-          <option value="Voice Clone Source">Voice Clone Source</option>
-          <option value="Phishing Host">Phishing Host</option>
-          <option value="Registered Domain">Registered Domain</option>
+          {relationshipOptions.map(opt => (
+            <option key={opt.label} value={opt.label}>{opt.label}</option>
+          ))}
         </select>
 
         {/* Thread Color */}
         <div className="flex items-center gap-1.5 ml-1">
           {[
-            { color: '#dc2626', label: 'Crimson Red (Suspicion)' },
-            { color: '#2563eb', label: 'Blue (Communication)' },
-            { color: '#16a34a', label: 'Green (Financial)' },
-            { color: '#ca8a04', label: 'Yellow (Evidence)' },
-            { color: '#9333ea', label: 'Purple (Digital)' }
+            { color: '#ef4444', label: 'Crimson Red (Suspicion)' },
+            { color: '#3b82f6', label: 'Blue (Communication)' },
+            { color: '#10b981', label: 'Green (Verified Deduction)' },
+            { color: '#f59e0b', label: 'Yellow (Evidence)' },
+            { color: '#a855f7', label: 'Purple (Digital)' }
           ].map(c => (
             <button
               key={c.color}
               type="button"
               onClick={() => setSelectedStringColor(c.color)}
               className={`h-5 w-5 rounded-full border-2 transition-transform cursor-pointer ${
-                selectedStringColor === c.color ? 'scale-125 border-white ring-2 ring-amber-400' : 'border-transparent opacity-70'
+                selectedStringColor === c.color ? 'scale-125 border-white ring-2 ring-[#ff8533]' : 'border-transparent opacity-70'
               }`}
               style={{ backgroundColor: c.color }}
               title={c.label}
@@ -676,7 +804,7 @@ export default function ClueBoard({
             }
           }}
           disabled={!selectedFromNodeId || !selectedToNodeId || selectedFromNodeId === selectedToNodeId}
-          className="bg-[#d98a38] hover:bg-[#e89b48] disabled:opacity-30 text-slate-950 font-bold px-3 py-1 rounded-xl transition-all cursor-pointer ml-auto"
+          className="bg-[#ff8533] hover:bg-[#ff9955] disabled:opacity-30 text-[#1e110a] font-extrabold px-4 py-1.5 rounded-xl transition-all cursor-pointer ml-auto shadow-md"
         >
           + LINK NODES
         </button>
@@ -684,20 +812,49 @@ export default function ClueBoard({
 
       {/* Detective Advisor Prompt Bar */}
       {showAiAdvisor && (
-        <div className="bg-[#1c0d03]/90 border-b border-[#523318]/50 px-4 py-2 flex items-center justify-between text-xs font-mono text-amber-200 z-20">
+        <div className="bg-[#ffb829]/10 border-b border-[#ffb829]/20 px-4 py-2 flex items-center justify-between text-xs font-mono text-[#ffb829] z-20">
           <div className="flex items-center gap-2 min-w-0">
-            <Zap className="h-4 w-4 text-[#ffd875] shrink-0" />
+            <Compass className="h-4 w-4 text-[#ff8533] shrink-0" />
             <span className="truncate">{aiDeductionPrompt}</span>
           </div>
-          <button onClick={() => setShowAiAdvisor(false)} className="text-[10px] text-amber-400/70 hover:text-amber-200 underline ml-2">
+          <button onClick={() => setShowAiAdvisor(false)} className="text-[10px] text-slate-400 hover:text-white underline ml-2 cursor-pointer">
             Dismiss
           </button>
         </div>
       )}
 
+      {/* Discovered Evidence Drawer Modal */}
+      {showEvidenceDrawer && unplacedEvidences.length > 0 && (
+        <div className="absolute top-20 right-4 bg-[#1c120a] border-2 border-amber-500/50 p-4 rounded-2xl shadow-2xl z-30 w-88 space-y-3 font-mono text-xs text-white max-h-96 overflow-y-auto">
+          <div className="flex items-center justify-between font-serif font-bold text-amber-300 text-sm border-b border-[#3d2512] pb-2">
+            <span className="flex items-center gap-2"><FilePlus className="h-4 w-4 text-amber-400" /> Discovered Case Evidence</span>
+            <button onClick={() => setShowEvidenceDrawer(false)} className="text-slate-400 hover:text-white">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="space-y-2">
+            {unplacedEvidences.map(ev => (
+              <div key={ev.id} className="bg-black/60 border border-amber-500/30 p-2.5 rounded-xl flex flex-col gap-1.5">
+                <div className="flex items-center justify-between font-bold text-amber-200">
+                  <span className="truncate">{ev.name}</span>
+                  <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">{ev.type}</span>
+                </div>
+                <p className="text-[10px] text-slate-300 line-clamp-2">{ev.description}</p>
+                <button
+                  onClick={() => handleAddEvidenceToBoard(ev)}
+                  className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-1 px-3 rounded-lg text-[10px] transition-colors cursor-pointer self-end flex items-center gap-1"
+                >
+                  <Plus className="h-3 w-3" /> Pin Evidence to Wall
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Sticky Note Creation Modal */}
       {isAddingStickyNote && (
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 bg-[#1c1108] border-2 border-[#d98a38] p-4 rounded-2xl shadow-2xl z-30 w-80 space-y-3 font-mono text-xs">
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 bg-[#1c120a] border-2 border-[#ff8533] p-4 rounded-2xl shadow-2xl z-30 w-80 space-y-3 font-mono text-xs text-white">
           <div className="flex items-center justify-between font-serif font-bold text-amber-200 text-sm border-b border-[#3d2512] pb-2">
             <span>Add Investigator Sticky Note</span>
             <button onClick={() => setIsAddingStickyNote(false)} className="text-slate-400 hover:text-white">
@@ -761,20 +918,27 @@ export default function ClueBoard({
       {theoryResult && (
         <div className={`m-4 p-4 rounded-2xl border text-xs font-mono shadow-2xl z-20 animate-fade-in ${
           theoryResult.status === 'verified'
-            ? 'bg-emerald-950/90 border-emerald-500/60 text-emerald-200'
-            : 'bg-amber-950/90 border-amber-500/60 text-amber-200'
+            ? 'bg-emerald-950/95 border-emerald-500/60 text-emerald-200'
+            : 'bg-amber-950/95 border-amber-500/60 text-amber-200'
         }`}>
-          <div className="flex items-center justify-between font-bold uppercase mb-1">
+          <div className="flex items-center justify-between font-bold uppercase mb-2">
             <span className="flex items-center gap-1.5">
-              <ShieldCheck className="h-4 w-4" /> Investigation Theory Evaluation: {theoryResult.score}/100
+              <ShieldCheck className="h-4 w-4" /> Case Theory Score: {theoryResult.score}/100 ({theoryResult.verifiedCount} Verified Links)
             </span>
             <button onClick={() => setTheoryResult(null)} className="text-[10px] underline cursor-pointer">Close</button>
           </div>
-          <p className="leading-relaxed">{theoryResult.msg}</p>
+          <p className="leading-relaxed mb-2">{theoryResult.msg}</p>
+          {theoryResult.details.length > 0 && (
+            <div className="space-y-1 border-t border-white/10 pt-2 text-[11px]">
+              {theoryResult.details.map((detail, idx) => (
+                <div key={idx} className="opacity-90">{detail}</div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
-      {/* Main Corkboard Interactive Canvas */}
+      {/* Main Interactive Corkboard Canvas */}
       <div 
         ref={containerRef}
         className="flex-1 relative overflow-hidden select-none cursor-grab active:cursor-grabbing min-h-[500px]"
@@ -792,14 +956,13 @@ export default function ClueBoard({
             transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`
           }}
         >
-          {/* SVG Overlay Layer for Crimson Yarn Red Strings */}
+          {/* SVG Overlay Layer for Crimson / Color Yarn Strings */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none z-10">
             {wallConnectionsState.map(conn => {
               const fromNode = currentNodes.find(n => n.id === conn.fromId);
               const toNode = currentNodes.find(n => n.id === conn.toId);
               if (!fromNode || !toNode) return null;
 
-              // Anchor directly to top center pushpin of each note card
               const containerW = containerRef.current?.clientWidth || 1000;
               const containerH = containerRef.current?.clientHeight || 700;
 
@@ -808,7 +971,6 @@ export default function ClueBoard({
               const x2 = (toNode.x / 100) * containerW + 115;
               const y2 = (toNode.y / 100) * containerH + 10;
 
-              // Cubic Bezier curve for natural yarn string slack
               const cx = (x1 + x2) / 2;
               const cy = (y1 + y2) / 2 + 18;
 
@@ -838,19 +1000,20 @@ export default function ClueBoard({
                   />
                   {/* String Label Tag */}
                   <foreignObject
-                    x={cx - 55}
+                    x={cx - 65}
                     y={cy - 12}
-                    width="110"
-                    height="26"
+                    width="130"
+                    height="28"
                     className="overflow-visible"
                   >
                     <div 
                       onClick={() => handleRemoveConnection(conn.id)}
-                      className="bg-black/95 border text-[9px] font-mono px-2.5 py-0.5 rounded-full text-white text-center font-bold shadow-lg truncate cursor-pointer hover:scale-110 transition-transform pointer-events-auto"
+                      className="bg-black/95 border text-[9px] font-mono px-2 py-0.5 rounded-full text-white text-center font-bold shadow-lg truncate cursor-pointer hover:scale-110 transition-transform pointer-events-auto flex items-center justify-center gap-1"
                       style={{ borderColor: strokeColor, color: strokeColor }}
                       title="Click to remove string link"
                     >
-                      {conn.relationshipLabel}
+                      {conn.isVerified && <CheckCircle2 className="h-3 w-3 text-emerald-400 shrink-0" />}
+                      <span className="truncate">{conn.relationshipLabel}</span>
                     </div>
                   </foreignObject>
                 </g>
@@ -869,7 +1032,7 @@ export default function ClueBoard({
                 id={`wall-node-${node.id}`}
                 onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
                 onTouchStart={(e) => handleTouchStart(e, node.id)}
-                className={`wall-node-card absolute w-60 transition-all duration-150 cursor-grab active:cursor-grabbing z-10 ${
+                className={`wall-node-card absolute w-60 transition-all duration-150 cursor-grab active:cursor-grabbing z-10 group ${
                   isSelected ? 'ring-4 ring-rose-500 rounded-sm z-30 scale-105' : ''
                 }`}
                 style={{
@@ -878,51 +1041,56 @@ export default function ClueBoard({
                   transform: `rotate(${rot}deg)`
                 }}
               >
-                {/* 3D Black Pushpin Anchor Button */}
+                {/* 3D Metallic Pushpin Anchor Button */}
                 <button
                   type="button"
                   onClick={() => handleStartStringFromNode(node.id)}
                   className={`absolute -top-3 left-1/2 -translate-x-1/2 group relative h-7 w-7 rounded-full flex items-center justify-center cursor-pointer transition-transform hover:scale-125 z-20 ${
                     isSelected ? 'scale-125 ring-4 ring-rose-500/80 animate-pulse' : ''
                   }`}
-                  title="Click to attach crimson string"
+                  title="Click to attach yarn string"
                 >
-                  {/* Pushpin Shadow */}
                   <div className="absolute top-3 left-2 w-5 h-2 bg-black/50 rounded-full blur-[2px] transform rotate-12 pointer-events-none" />
-                  
-                  {/* Metallic 3D Pushpin */}
                   <div className="relative w-5 h-5 rounded-full bg-gradient-to-br from-neutral-700 via-neutral-900 to-black shadow-md border border-neutral-600/60 flex items-center justify-center">
                     <div className="absolute top-1 left-1.5 w-1.5 h-1.5 rounded-full bg-white/70 blur-[0.5px]" />
                     <div className="w-2 h-2 rounded-full bg-neutral-950 border border-neutral-700" />
                   </div>
                 </button>
 
-                {/* Pin / Delete Quick Actions Overlay */}
-                <div className="absolute top-2 right-2 flex items-center gap-1 z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 backdrop-blur-xs p-1 rounded-md">
+                {/* Top Action Overlay - Pin & Direct Trash / Remove Button */}
+                <div className="absolute top-2 right-2 flex items-center gap-1 z-20 bg-black/80 backdrop-blur-xs p-1 rounded-md border border-white/10 shadow-lg">
                   <button
                     onClick={() => handleTogglePinNode(node.id)}
                     className={`p-1 rounded hover:bg-black/40 cursor-pointer ${node.isPinned ? 'text-amber-400 font-bold' : 'text-slate-300'}`}
                     title={node.isPinned ? 'Unpin Position' : 'Pin Position'}
                   >
-                    <Pin className="h-3 w-3" />
+                    <Pin className="h-3.5 w-3.5" />
                   </button>
-                  {node.isCustomNote && (
-                    <button
-                      onClick={() => handleDeleteNode(node.id)}
-                      className="p-1 text-rose-400 hover:text-rose-300 cursor-pointer"
-                      title="Delete Note"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </button>
-                  )}
+
+                  {/* Prominent Trash / Remove Button */}
+                  <button
+                    onClick={() => handleDeleteNode(node.id)}
+                    className="p-1 text-rose-400 hover:text-rose-200 hover:bg-rose-950/50 rounded cursor-pointer transition-colors"
+                    title="Remove Note from Board"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
                 </div>
 
-                {/* Card Main Body */}
+                {/* Card Content Body */}
                 {renderCardContent(node, isSelected)}
 
-                {/* String Link Attachment Footer */}
+                {/* Footer Controls & Remove Action */}
                 <div className="mt-1 px-1 flex items-center justify-between text-[9px] font-mono">
-                  <span className="text-[#3b2513] font-bold opacity-75">#{node.id.slice(0, 8)}</span>
+                  <button
+                    onClick={() => handleDeleteNode(node.id)}
+                    className="text-[#3b2513] hover:text-rose-700 font-bold underline flex items-center gap-1 cursor-pointer opacity-80 hover:opacity-100"
+                    title="Remove this sticky note or node"
+                  >
+                    <Trash2 className="h-2.5 w-2.5 text-rose-700" />
+                    <span>Remove</span>
+                  </button>
+
                   <button
                     onClick={() => handleStartStringFromNode(node.id)}
                     className="text-[#3b2513] hover:text-[#781818] font-bold underline flex items-center gap-1 cursor-pointer"

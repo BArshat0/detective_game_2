@@ -526,7 +526,7 @@ function handleGeminiError(error: unknown, res: Response, contextMsg: string) {
   if (err && (err.message === "GEMINI_NOT_CONFIGURED" || err.message?.includes("API_KEY"))) {
     return res.status(530).json({
       error: "GEMINI_NOT_CONFIGURED",
-      message: "The Gemini AI Core is not configured yet. Please enter the GEMINI_API_KEY in the Secrets panel on Google AI Studio.",
+      message: "The AI Core is not configured yet. Please enter the GEMINI_API_KEY in the Secrets panel.",
     });
   }
   return res.status(500).json({
@@ -611,12 +611,12 @@ async function checkSupabaseStatus(): Promise<ServiceStatus> {
   return status;
 }
 
-// Check Gemini Configuration Status
+// Check AI Core Configuration Status
 async function checkGeminiStatus(): Promise<ServiceStatus> {
   const status: ServiceStatus = {
     configured: false,
     status: "unconfigured",
-    message: "Gemini AI Core is not set up."
+    message: "AI Core is not set up."
   };
 
   try {
@@ -625,13 +625,13 @@ async function checkGeminiStatus(): Promise<ServiceStatus> {
       if (key.length < 10) {
         status.configured = false;
         status.status = "error";
-        status.message = "The GEMINI_API_KEY appears invalid. Please configure a valid key in Secrets.";
+        status.message = "The API Key appears invalid. Please configure a valid key in Secrets.";
       } else {
         try {
           getGemini();
           status.configured = true;
           status.status = "connected";
-          status.message = "Gemini AI Core connected. Case Evaluation, Witness Interrogation, and AI Game Architect are active.";
+          status.message = "AI Core connected. Case Evaluation, Witness Interrogation, and Intelligence Architect are active.";
         } catch (gemErr: unknown) {
           markServiceError(status, "AI Core initialization error", gemErr);
         }
@@ -639,7 +639,7 @@ async function checkGeminiStatus(): Promise<ServiceStatus> {
     } else {
       status.configured = false;
       status.status = "offline";
-      status.message = "GEMINI_API_KEY is not configured. Witness chat and case evaluations will fall back to local offline backup simulation.";
+      status.message = "API Key is not configured. Witness chat and case evaluations will fall back to local offline backup simulation.";
     }
   } catch (err: unknown) {
     markServiceError(status, "AI Core configuration error", err);
@@ -664,11 +664,12 @@ app.get("/api/system-status", async (req, res) => {
       { configured: false, status: "timeout", message: "Supabase connection attempt timed out." }
     );
     const gemini = await checkGeminiStatus();
-    res.json({ supabase, gemini });
+    res.json({ supabase, gemini, ai: gemini });
   } catch (err: unknown) {
     res.status(500).json({
       supabase: { configured: false, status: "error", message: "System status check error" },
-      gemini: { configured: false, status: "error", message: "System status check error" }
+      gemini: { configured: false, status: "error", message: "System status check error" },
+      ai: { configured: false, status: "error", message: "System status check error" }
     });
   }
 });

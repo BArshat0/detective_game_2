@@ -4,14 +4,14 @@ import { ShieldCheck, Lock, Mail, User, Loader2, Play } from 'lucide-react';
 interface LoginSignupProps {
   onAuthSuccess: (token: string, userEmail: string, userName: string) => void;
   supabaseConfigured: boolean;
-  geminiConfigured: boolean;
+  aiConfigured: boolean;
   systemStatus?: {
     supabase: { configured: boolean; status: string; message: string };
-    gemini: { configured: boolean; status: string; message: string };
+    ai?: { configured: boolean; status: string; message: string };
   } | null;
 }
 
-export default function LoginSignup({ onAuthSuccess, supabaseConfigured, geminiConfigured, systemStatus }: LoginSignupProps) {
+export default function LoginSignup({ onAuthSuccess, supabaseConfigured, aiConfigured, systemStatus }: LoginSignupProps) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -98,14 +98,14 @@ export default function LoginSignup({ onAuthSuccess, supabaseConfigured, geminiC
   };
 
   return (
-    <div id="login-signup-viewport" className="w-full max-w-md mx-auto glass-panel bg-slate-900/70 border border-white/20 rounded-[32px] text-white p-6 md:p-8 shadow-2xl backdrop-blur-xl animate-fade-in">
+    <div id="login-signup-viewport" className="w-full max-w-md mx-auto bg-slate-900/80 border border-white/10 glass-panel rounded-[32px] text-white p-6 md:p-8 shadow-2xl animate-fade-in">
       
       {/* Void Header */}
       <div className="text-center mb-6">
-        <div className="inline-flex items-center justify-center w-12 h-12 bg-white p-1 rounded-full border border-[#ff8533]/30 mb-3 overflow-hidden shadow-md">
+        <div className="inline-flex items-center justify-center w-12 h-12 bg-[#ff8533]/10 p-1 rounded-full border border-[#ff8533]/30 mb-3 overflow-hidden shadow-inner">
           <img 
             src="/src/assets/images/detective_squirrel_1784269041754.jpg" 
-            alt="Detective Fox Mascot Logo" 
+            alt="Detective Mascot Logo" 
             className="w-full h-full object-cover scale-110"
             referrerPolicy="no-referrer"
           />
@@ -113,20 +113,20 @@ export default function LoginSignup({ onAuthSuccess, supabaseConfigured, geminiC
         <h2 className="font-serif text-2xl font-bold text-white tracking-tight">
           Academy Login
         </h2>
-        <p className="text-xs text-slate-300 font-mono mt-1 uppercase tracking-wider">
+        <p className="text-xs text-slate-400 font-mono mt-1 uppercase tracking-wider">
           {isSignUp ? 'Create investigator profile' : 'Sign in to access different cases'}
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="grid grid-cols-2 p-1 bg-slate-950/60 rounded-full border border-white/10 mb-6">
+      <div className="grid grid-cols-2 p-1 bg-black/40 rounded-full border border-white/10 mb-6">
         <button
           type="button"
           onClick={() => { setIsSignUp(false); setErrorMessage(null); }}
           className={`py-2 rounded-full text-xs font-bold tracking-wider uppercase transition-all duration-200 cursor-pointer focus:outline-none ${
             !isSignUp 
-              ? 'bg-[#ff8533] text-slate-950 shadow-md shadow-[#ff8533]/30' 
-              : 'text-slate-300 hover:text-white'
+              ? 'bg-[#ff8533] text-[#1e110a] shadow-md' 
+              : 'text-slate-400 hover:text-white'
           }`}
         >
           Sign In
@@ -136,8 +136,8 @@ export default function LoginSignup({ onAuthSuccess, supabaseConfigured, geminiC
           onClick={() => { setIsSignUp(true); setErrorMessage(null); }}
           className={`py-2 rounded-full text-xs font-bold tracking-wider uppercase transition-all duration-200 cursor-pointer focus:outline-none ${
             isSignUp 
-              ? 'bg-[#ff8533] text-slate-950 shadow-md shadow-[#ff8533]/30' 
-              : 'text-slate-300 hover:text-white'
+              ? 'bg-[#ff8533] text-[#1e110a] shadow-md' 
+              : 'text-slate-400 hover:text-white'
           }`}
         >
           Sign Up
@@ -146,15 +146,15 @@ export default function LoginSignup({ onAuthSuccess, supabaseConfigured, geminiC
 
       {/* Error & Success Banner */}
       {errorMessage && (
-        <div role="alert" aria-live="assertive" className="mb-6 p-4 rounded-[24px] border border-red-500/30 bg-red-950/20 text-red-400 text-xs leading-relaxed font-sans">
-          <div className="font-semibold text-red-400">
+        <div role="alert" aria-live="assertive" className="mb-6 p-4 rounded-[24px] border border-red-500/30 bg-red-950/40 text-red-300 text-xs leading-relaxed font-sans">
+          <div className="font-semibold text-red-200">
             {errorMessage}
           </div>
         </div>
       )}
 
       {successMessage && (
-        <div role="status" aria-live="polite" className="mb-6 p-4 rounded-[24px] border border-[#5c7f5c]/40 bg-[#5c7f5c]/10 text-[#5c7f5c] text-xs font-mono uppercase tracking-wider">
+        <div role="status" aria-live="polite" className="mb-6 p-4 rounded-[24px] border border-emerald-500/30 bg-emerald-950/40 text-emerald-300 text-xs font-mono uppercase tracking-wider">
           {successMessage}
         </div>
       )}
@@ -163,18 +163,18 @@ export default function LoginSignup({ onAuthSuccess, supabaseConfigured, geminiC
       <form onSubmit={handleAuth} className="space-y-4">
         {isSignUp && (
           <div>
-            <label className="block text-[11px] font-mono font-bold text-[#a89485] uppercase tracking-wider mb-1.5">
+            <label className="block text-[11px] font-mono font-bold text-slate-300 uppercase tracking-wider mb-1.5">
               Investigator Name
             </label>
             <div className="relative">
-              <User className="absolute left-3.5 top-3.5 h-4 w-4 text-[#a89485]" />
+              <User className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-500" />
               <input
                 type="text"
                 required
                 placeholder="e.g. Detective Vance"
                 value={name}
                 onChange={(e) => { setName(e.target.value); }}
-                className="w-full pl-10 pr-4 py-3 bg-[#1e110a] hover:bg-[#2a170a] focus:bg-[#120a06] border border-white/10 focus:border-[#ff8533] rounded-[24px] text-xs font-mono transition-all outline-none text-[#fcfaf5] focus:ring-1 focus:ring-[#ff8533]/30"
+                className="w-full pl-10 pr-4 py-3 bg-black/40 hover:bg-black/60 focus:bg-black/80 border border-white/10 focus:border-[#ff8533] rounded-[24px] text-xs font-mono transition-all outline-none text-white focus:ring-1 focus:ring-[#ff8533]/30"
                 disabled={isLoading}
               />
             </div>
@@ -182,36 +182,36 @@ export default function LoginSignup({ onAuthSuccess, supabaseConfigured, geminiC
         )}
 
         <div>
-          <label className="block text-[11px] font-mono font-bold text-[#a89485] uppercase tracking-wider mb-1.5">
+          <label className="block text-[11px] font-mono font-bold text-slate-300 uppercase tracking-wider mb-1.5">
             Email Address
           </label>
           <div className="relative">
-            <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-[#a89485]" />
+            <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-500" />
             <input
               type="email"
               required
               placeholder="e.g. agent@academy.org"
               value={email}
               onChange={(e) => { setEmail(e.target.value); }}
-              className="w-full pl-10 pr-4 py-3 bg-[#1e110a] hover:bg-[#2a170a] focus:bg-[#120a06] border border-white/10 focus:border-[#ff8533] rounded-[24px] text-xs font-mono transition-all outline-none text-[#fcfaf5] focus:ring-1 focus:ring-[#ff8533]/30"
+              className="w-full pl-10 pr-4 py-3 bg-black/40 hover:bg-black/60 focus:bg-black/80 border border-white/10 focus:border-[#ff8533] rounded-[24px] text-xs font-mono transition-all outline-none text-white focus:ring-1 focus:ring-[#ff8533]/30"
               disabled={isLoading}
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-[11px] font-mono font-bold text-[#a89485] uppercase tracking-wider mb-1.5">
+          <label className="block text-[11px] font-mono font-bold text-slate-300 uppercase tracking-wider mb-1.5">
             Password
           </label>
           <div className="relative">
-            <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-[#a89485]" />
+            <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-500" />
             <input
               type="password"
               required
               placeholder="••••••••••••"
               value={password}
               onChange={(e) => { setPassword(e.target.value); }}
-              className="w-full pl-10 pr-4 py-3 bg-[#1e110a] hover:bg-[#2a170a] focus:bg-[#120a06] border border-white/10 focus:border-[#ff8533] rounded-[24px] text-xs font-mono transition-all outline-none text-[#fcfaf5] focus:ring-1 focus:ring-[#ff8533]/30"
+              className="w-full pl-10 pr-4 py-3 bg-black/40 hover:bg-black/60 focus:bg-black/80 border border-white/10 focus:border-[#ff8533] rounded-[24px] text-xs font-mono transition-all outline-none text-white focus:ring-1 focus:ring-[#ff8533]/30"
               disabled={isLoading}
             />
           </div>
@@ -220,7 +220,7 @@ export default function LoginSignup({ onAuthSuccess, supabaseConfigured, geminiC
         <button
           type="submit"
           disabled={isLoading}
-          className="btn-primary w-full py-3 mt-3 flex items-center justify-center gap-1.5 cursor-pointer text-[#1e110a]"
+          className="btn-primary w-full py-3 mt-3 flex items-center justify-center gap-1.5 cursor-pointer text-[#1e110a] font-bold"
         >
           {isLoading ? (
             <>

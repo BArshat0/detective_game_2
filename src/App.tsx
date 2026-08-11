@@ -23,6 +23,7 @@ import DigitalSafetyReport from './components/DigitalSafetyReport';
 import InvestigationHeader from './components/InvestigationHeader';
 import DetectiveCaseReportForm from './components/DetectiveCaseReportForm';
 import NotificationToast, { NotificationState } from './components/NotificationToast';
+import { mysteryAudio } from './utils/mysteryAudio';
 
 // Shared types and handcrafted cases
 import { Case, UserProfile, CaseState, InvestigationLead, WallNode, WallConnection } from './types';
@@ -67,10 +68,10 @@ export default function App() {
     return token && token !== 'null' && token !== 'undefined' && token !== '' ? token : null;
   });
   const [supabaseConfigured, setSupabaseConfigured] = useState<boolean>(true);
-  const [geminiConfigured, setGeminiConfigured] = useState<boolean>(true);
+  const [aiConfigured, setAiConfigured] = useState<boolean>(true);
   const [systemStatus, setSystemStatus] = useState<{
     supabase: { configured: boolean; status: string; message: string };
-    gemini: { configured: boolean; status: string; message: string };
+    ai?: { configured: boolean; status: string; message: string };
   } | null>(null);
   const [supabaseError, setSupabaseError] = useState<string | null>(null);
   const [supabaseTableMissing, setSupabaseTableMissing] = useState<boolean>(false);
@@ -124,10 +125,12 @@ export default function App() {
 
   // Active quiz submissions
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittedReport, setSubmittedReport] = useState<Record<string, unknown> | null>(null);
   const [evaluationResult, setEvaluationResult] = useState<{ score?: number; grade?: string; verdict?: string; analysis?: string; unlockedBadges?: string[] } | null>(null);
 
   // Load and merge cases list
-  const allCases = [...HANDCRAFTED_CASES, ...userProfile.customCases];
+  const customCasesList = Array.isArray(userProfile?.customCases) ? userProfile.customCases : [];
+  const allCases = [...HANDCRAFTED_CASES, ...customCasesList];
   const activeCase = allCases.find(c => c.id === activeCaseId);
 
   // Preserve the user's exact location so a reload returns to the same screen.
@@ -139,6 +142,16 @@ export default function App() {
     if (selectedEvidenceId) localStorage.setItem('detective_selected_evidence', selectedEvidenceId);
     else localStorage.removeItem('detective_selected_evidence');
   }, [currentView, activeCaseId, activeTab, selectedEvidenceId]);
+
+  // Route-Aware Audio Lifecycle: Background music is restricted ONLY to Story Introduction
+  useEffect(() => {
+    if (currentView === 'story_intro') {
+      mysteryAudio.setMode('story');
+      mysteryAudio.start('story');
+    } else {
+      mysteryAudio.stop();
+    }
+  }, [currentView]);
 
   useEffect(() => {
     if (!notification) return;
@@ -166,6 +179,12 @@ export default function App() {
         setIsProfileLoaded(true);
         return;
       }
+      if (!profileRes.ok) {
+        console.warn("Profile fetch returned status:", profileRes.status);
+        setIsProfileLoaded(true);
+        return;
+      }
+
       const profileData = await profileRes.json();
       if (profileData.error === "SUPABASE_TABLES_MISSING") {
         setSupabaseTableMissing(true);
@@ -174,16 +193,36 @@ export default function App() {
       }
 
       // 2. Custom Cases
-      const customCasesRes = await fetch('/api/user/custom-cases', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const customCasesData = await customCasesRes.json();
+      let customCasesData: Case[] = [];
+      try {
+        const customCasesRes = await fetch('/api/user/custom-cases', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (customCasesRes.ok) {
+          const parsed = await customCasesRes.json();
+          if (Array.isArray(parsed)) {
+            customCasesData = parsed;
+          }
+        }
+      } catch (err) {
+        console.warn("Failed fetching custom cases:", err);
+      }
 
       // 3. Cases State
-      const casesStateRes = await fetch('/api/user/cases-state', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const casesStateData = await casesStateRes.json();
+      let casesStateData: Record<string, CaseState> = {};
+      try {
+        const casesStateRes = await fetch('/api/user/cases-state', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (casesStateRes.ok) {
+          const parsed = await casesStateRes.json();
+          if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && !('error' in parsed)) {
+            casesStateData = parsed;
+          }
+        }
+      } catch (err) {
+        console.warn("Failed fetching cases state:", err);
+      }
 
       const storedLocalName = localStorage.getItem('detective_user_name');
       let resolvedName = profileData.name;
@@ -199,10 +238,10 @@ export default function App() {
         name: resolvedName,
         email: profileData.email || '',
         casesSolved: profileData.cases_solved || 0,
-        solvedCaseIds: profileData.solved_case_ids || [],
+        solvedCaseIds: Array.isArray(profileData.solved_case_ids) ? profileData.solved_case_ids : [],
         activeCaseId: null,
-        achievements: profileData.achievements && profileData.achievements.length > 0 ? profileData.achievements : DEFAULT_ACHIEVEMENTS,
-        customCases: customCasesData || []
+        achievements: Array.isArray(profileData.achievements) && profileData.achievements.length > 0 ? profileData.achievements : DEFAULT_ACHIEVEMENTS,
+        customCases: customCasesData
       };
 
       setUserProfile(updatedProfile);
@@ -216,13 +255,12 @@ export default function App() {
         localStorage.setItem('mil_xp', profileData.xp.toString());
       }
 
-      setCasesState(casesStateData || {});
+      setCasesState(casesStateData);
       setSupabaseConfigured(true);
       setIsProfileLoaded(true);
     } catch (err: unknown) {
-      console.error("Error loading user data:", err);
-      setSupabaseError("Failed to load database. Check database tables.");
-      notify({ kind: 'warning', title: 'Using local session data', message: 'Cloud progress could not be restored. Your current work will remain available in this browser.' });
+      console.warn("User data sync operating in offline mode:", err);
+      setSupabaseError("Operating in local session mode.");
       setIsProfileLoaded(true);
     }
   };
@@ -332,13 +370,19 @@ export default function App() {
     const checkSystemStatus = async () => {
       try {
         const res = await fetch('/api/system-status');
+        if (!res.ok) {
+          throw new Error(`Server status returned ${res.status}`);
+        }
         const data = await res.json();
         setSystemStatus(data);
-        setSupabaseConfigured(data.supabase.configured);
-        setGeminiConfigured(data.gemini.configured);
-    } catch (err) {
-      console.error("Failed to fetch system status:", err);
-      notify({ kind: 'warning', title: 'Offline mode active', message: 'System services could not be checked. You can continue locally while we retry.' });
+        setSupabaseConfigured(Boolean(data?.supabase?.configured));
+        setAiConfigured(data?.ai?.configured ?? true);
+      } catch (err) {
+        console.warn("Operating in offline system mode:", err);
+        setSystemStatus({
+          supabase: { configured: false, status: "offline", message: "Operating in local offline session mode." },
+          ai: { configured: false, status: "offline", message: "AI capabilities using local backup heuristics." }
+        });
       }
     };
     void checkSystemStatus();
@@ -639,6 +683,66 @@ export default function App() {
     }
   };
 
+  const handleClassifySuspect = (witnessId: string, classification: 'primary_suspect' | 'person_of_interest' | 'cleared', reason: string) => {
+    if (!activeCaseId) return;
+    setCasesState(prev => {
+      const existing = prev[activeCaseId] || {
+        caseId: activeCaseId,
+        discoveredEvidenceIds: [],
+        discoveredClueIds: [],
+        unlockedWitnessIds: [],
+        unlockedLeadIds: [],
+        completedLeadIds: [],
+        notebookNotes: [],
+        timelinePlacements: {},
+        wallNodes: [],
+        wallConnections: [],
+        witnessChats: {},
+        isCompleted: false
+      };
+      const updated = {
+        ...(existing.suspectClassifications || {}),
+        [witnessId]: { classification, reason }
+      };
+      return safeSet(prev, activeCaseId, { ...existing, suspectClassifications: updated } as CaseState);
+    });
+    notify({
+      kind: 'info',
+      title: 'Investigative Status Updated',
+      message: `Suspect classification saved for dossier report.`
+    });
+  };
+
+  const handleToggleKeyEvidence = (evidenceId: string, isKey: boolean, justification?: string) => {
+    if (!activeCaseId) return;
+    setCasesState(prev => {
+      const existing = prev[activeCaseId] || {
+        caseId: activeCaseId,
+        discoveredEvidenceIds: [],
+        discoveredClueIds: [],
+        unlockedWitnessIds: [],
+        unlockedLeadIds: [],
+        completedLeadIds: [],
+        notebookNotes: [],
+        timelinePlacements: {},
+        wallNodes: [],
+        wallConnections: [],
+        witnessChats: {},
+        isCompleted: false
+      };
+      const updated = {
+        ...(existing.keyEvidenceTags || {}),
+        [evidenceId]: { isKey, justification: justification || '' }
+      };
+      return safeSet(prev, activeCaseId, { ...existing, keyEvidenceTags: updated } as CaseState);
+    });
+    notify({
+      kind: 'info',
+      title: isKey ? 'Tagged as Key Evidence' : 'Untagged Evidence',
+      message: isKey ? 'Evidence marked for prominent placement in Detective Report.' : 'Tag removed.'
+    });
+  };
+
   // Called when witness is interviewed (sending message)
   const handleInterviewWitness = (witnessId: string) => {
     if (!activeCaseId || !activeCase) return;
@@ -870,9 +974,10 @@ export default function App() {
   };
 
   // submit case evaluation
-  const handleSubmitCase = async (report: any) => {
+  const handleSubmitCase = async (report: Record<string, unknown>) => {
     if (!activeCaseId || !activeCase) return;
 
+    setSubmittedReport(report);
     setIsSubmitting(true);
 
     try {
@@ -1098,7 +1203,7 @@ export default function App() {
                   <LoginSignup 
                     onAuthSuccess={handleAuthSuccess} 
                     supabaseConfigured={supabaseConfigured}
-                    geminiConfigured={geminiConfigured}
+                    aiConfigured={aiConfigured}
                     systemStatus={systemStatus}
                   />
                 </div>
@@ -1273,6 +1378,8 @@ export default function App() {
                           setActiveEvidenceId={setSelectedEvidenceId}
                           onCopyToNotebook={handleLogToNotebook}
                           onCompleteLeadByEvidence={handleCompleteLeadByEvidence}
+                          keyEvidenceTags={currentCaseState.keyEvidenceTags}
+                          onToggleKeyEvidence={handleToggleKeyEvidence}
                         />
                       )}
 
@@ -1286,6 +1393,8 @@ export default function App() {
                           onAddMessage={handleAddWitnessMessage}
                           onConfrontWitnessWithEvidence={handleConfrontWitnessWithEvidence}
                           onInterviewWitness={handleInterviewWitness}
+                          suspectClassifications={currentCaseState.suspectClassifications}
+                          onClassifySuspect={handleClassifySuspect}
                         />
                       )}
 
@@ -1308,6 +1417,9 @@ export default function App() {
                           caseData={activeCase}
                           discoveredEvidenceIds={currentCaseState.discoveredEvidenceIds}
                           discoveredClueIds={currentCaseState.discoveredClueIds}
+                          unlockedLeadIds={currentCaseState.unlockedLeadIds}
+                          completedLeadIds={currentCaseState.completedLeadIds}
+                          unlockedWitnessIds={currentCaseState.unlockedWitnessIds}
                           placements={currentCaseState.timelinePlacements}
                           onCompleteTimeline={handleCompleteTimeline}
                           onUpdatePlacements={(placements) => {
@@ -1330,11 +1442,38 @@ export default function App() {
                         evaluationResult ? (
                           <DigitalSafetyReport
                             caseData={activeCase}
+                            caseState={currentCaseState}
                             evaluationResult={evaluationResult}
+                            submittedReport={submittedReport}
                             investigatorName={userProfile.name || 'Senior Cyber Detective'}
                             onConclude={() => {
                               setCurrentView('library');
                               setActiveCaseId(null);
+                            }}
+                            onReviewInvestigation={() => {
+                              setActiveTab('evidence');
+                            }}
+                            onReplayCase={() => {
+                              if (!activeCase?.id) return;
+                              setCasesState(prev => {
+                                return safeSet(prev, activeCase.id, {
+                                  caseId: activeCase.id,
+                                  discoveredEvidenceIds: [activeCase.evidences[0]?.id || 'ev_1'],
+                                  unlockedWitnessIds: [activeCase.witnesses[0]?.id || 'wit_1'],
+                                  unlockedLeadIds: [activeCase.leads[0]?.id || 'lead_1'],
+                                  completedLeadIds: [],
+                                  discoveredClueIds: [],
+                                  witnessChats: {},
+                                  timelinePlacements: {},
+                                  notebookNotes: [],
+                                  wallNodes: activeCase.initialWallNodes || [],
+                                  wallConnections: [],
+                                  isCompleted: false
+                                });
+                              });
+                              setEvaluationResult(null);
+                              setSubmittedReport(null);
+                              setActiveTab('leads');
                             }}
                           />
                         ) : (
@@ -1342,7 +1481,9 @@ export default function App() {
                             caseData={activeCase}
                             discoveredEvidenceIds={currentCaseState.discoveredEvidenceIds}
                             unlockedWitnessIds={currentCaseState.unlockedWitnessIds}
-                            onSubmitReport={report => handleSubmitCase(report as any)}
+                            caseState={currentCaseState}
+                            onNavigateToTab={setActiveTab}
+                            onSubmitReport={report => handleSubmitCase(report)}
                           />
                         )
                       )}

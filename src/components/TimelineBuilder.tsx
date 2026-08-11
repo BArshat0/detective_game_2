@@ -6,7 +6,7 @@ import {
   Maximize2, Lock, Trash2, MessageSquare, AlertTriangle,
   Ticket, Mail, Newspaper, FileText,
   Edit3, Link2, RotateCcw, Layers, HelpCircle as QuestionIcon,
-  Plus
+  Plus, Lightbulb
 } from 'lucide-react';
 import { Case, TimelineEvent } from '../types';
 import { safeGet, safeSet } from '../lib/safeLookup';
@@ -15,6 +15,9 @@ interface TimelineBuilderProps {
   caseData: Case;
   discoveredEvidenceIds?: string[];
   discoveredClueIds?: string[];
+  unlockedLeadIds?: string[];
+  completedLeadIds?: string[];
+  unlockedWitnessIds?: string[];
   placements: Record<string, number>; // eventId -> index in sequence (0-indexed)
   onUpdatePlacements: (newPlacements: Record<string, number>) => void;
   onCompleteTimeline?: () => void;
@@ -26,6 +29,9 @@ export default function TimelineBuilder({
   caseData,
   discoveredEvidenceIds = [],
   discoveredClueIds = [],
+  unlockedLeadIds = [],
+  completedLeadIds = [],
+  unlockedWitnessIds = [],
   placements, 
   onUpdatePlacements, 
   onCompleteTimeline 
@@ -43,6 +49,7 @@ export default function TimelineBuilder({
   const [rotations, setRotations] = useState<Record<string, number>>({});
   const [uncertainEvents, setUncertainEvents] = useState<Record<string, boolean>>({});
   const [highlightedEvents, setHighlightedEvents] = useState<Record<string, boolean>>({});
+  const [visibleTimelineHintIds, setVisibleTimelineHintIds] = useState<Record<string, boolean>>({});
 
   // Drag and Drop state
   const [draggedEventId, setDraggedEventId] = useState<string | null>(null);
@@ -67,24 +74,55 @@ export default function TimelineBuilder({
   // Determine which events are "unlocked" / "known" vs "unknown / missing information"
   const knownEventsSet = useMemo(() => {
     const known = new Set<string>();
-    const discoveredSet = new Set([...discoveredEvidenceIds, ...discoveredClueIds]);
+    const discoveredSet = new Set([...(discoveredEvidenceIds || []), ...(discoveredClueIds || [])]);
+    const completedLeadsSet = new Set(completedLeadIds || []);
+    const unlockedLeadsSet = new Set(unlockedLeadIds || []);
+    const unlockedWitnessesSet = new Set(unlockedWitnessIds || []);
 
-    allTimelineEvents.forEach(ev => {
-      if (
-        ev.isInitiallyKnown || 
-        (ev.linkedEvidenceId && discoveredSet.has(ev.linkedEvidenceId)) ||
-        placements[ev.id] !== undefined
-      ) {
+    const totalDiscovered = discoveredSet.size;
+    const totalCompletedLeads = completedLeadsSet.size;
+    const totalUnlockedLeads = unlockedLeadsSet.size;
+    const totalUnlockedWitnesses = unlockedWitnessesSet.size;
+
+    allTimelineEvents.forEach((ev, idx) => {
+      // Direct explicit unlocks
+      if (ev.isInitiallyKnown) {
         known.add(ev.id);
+        return;
+      }
+      if (placements[ev.id] !== undefined) {
+        known.add(ev.id);
+        return;
+      }
+      if (ev.linkedEvidenceId && discoveredSet.has(ev.linkedEvidenceId)) {
+        known.add(ev.id);
+        return;
+      }
+      if (ev.linkedLeadId && (completedLeadsSet.has(ev.linkedLeadId) || unlockedLeadsSet.has(ev.linkedLeadId))) {
+        known.add(ev.id);
+        return;
+      }
+
+      // Dynamic investigation progress unlocking
+      if (idx <= 1) {
+        known.add(ev.id);
+      } else if (idx === 2) {
+        if (totalCompletedLeads >= 1 || totalDiscovered >= 2 || totalUnlockedWitnesses >= 1 || totalUnlockedLeads >= 2) {
+          known.add(ev.id);
+        }
+      } else if (idx === 3) {
+        if (totalCompletedLeads >= 1 || totalDiscovered >= 3 || (totalCompletedLeads + totalDiscovered) >= 3 || totalUnlockedWitnesses >= 1) {
+          known.add(ev.id);
+        }
+      } else {
+        if (totalCompletedLeads >= (idx - 2) || totalDiscovered >= idx) {
+          known.add(ev.id);
+        }
       }
     });
 
-    if (known.size < 3 && allTimelineEvents.length > 0) {
-      allTimelineEvents.slice(0, Math.min(3, allTimelineEvents.length)).forEach(ev => known.add(ev.id));
-    }
-
     return known;
-  }, [allTimelineEvents, discoveredEvidenceIds, discoveredClueIds, placements]);
+  }, [allTimelineEvents, discoveredEvidenceIds, discoveredClueIds, unlockedLeadIds, completedLeadIds, unlockedWitnessIds, placements]);
 
   // Sanitize placements to avoid corrupted keys or gap indices
   const { activePlacements, containsStaleKeys } = useMemo(() => {
@@ -360,9 +398,22 @@ export default function TimelineBuilder({
   };
 
   const getTimeTag = (ev: TimelineEvent) => {
-    if (!ev.time) return 'TIMESTAMP: UNKNOWN';
-    if (ev.time.startsWith('TIMESTAMP:')) return ev.time;
-    return `TIMESTAMP: ${ev.time}`;
+    if (!ev.time || ev.time.includes('UNKNOWN')) {
+      return '⏳ RELATIVE TIME: [ UNKNOWN / MISSING LOG - Discover via Evidence ]';
+    }
+    
+    // Map raw times or preserve relative descriptors
+    let relative = ev.time;
+    if (ev.time.includes('08:15') || ev.time.includes('Morning')) relative = '🌅 Early Morning (Before Initial Contact)';
+    else if (ev.time.includes('02:15') || ev.time.includes('Afternoon')) relative = '☀️ Midday (Unsolicited Recruitment Offer)';
+    else if (ev.time.includes('Night') || ev.time.includes('23:')) relative = '🌙 Late Evening (Urgent Travel Instructions)';
+    else if (ev.time.includes('36 Hours') || ev.time.includes('Later')) relative = '⌛ 36 Hours Post-Arrival (Coerced Voice Call)';
+    
+    const sourceTag = ev.linkedEvidenceId 
+      ? ' [🔒 CONFIRMED DIGITAL LOG]' 
+      : ' [⚠️ UNVERIFIED WITNESS CLAIM]';
+
+    return `RELATIVE TIME: ${relative}${sourceTag}`;
   };
 
   const getEvidenceLinkDescription = (ev1: TimelineEvent, ev2: TimelineEvent) => {
@@ -593,13 +644,6 @@ export default function TimelineBuilder({
                             </span>
                           </div>
 
-                          {/* Polaroid Image if applicable */}
-                          {imgUrl && styleType === 'polaroid' && (
-                            <div className="h-32 w-full bg-slate-900 rounded-xl overflow-hidden my-1 border border-slate-300 shadow-inner">
-                              <img src={imgUrl} alt="Evidence snapshot" className="w-full h-full object-cover" />
-                            </div>
-                          )}
-
                           {/* Event Description Text - Crisp Sans-Serif, High Legibility */}
                           <p className="text-sm font-sans font-semibold text-slate-900 leading-snug tracking-normal">
                             {ev.description}
@@ -621,27 +665,69 @@ export default function TimelineBuilder({
 
                   {/* Locked Unknown Events Section */}
                   {unknownEvents.length > 0 && (
-                    <div className="pt-4 border-t border-amber-900/50">
-                      <h5 className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-wider mb-2 flex items-center gap-1">
-                        <Lock className="h-3.5 w-3.5 text-amber-500" /> Locked / Missing Information ({unknownEvents.length})
-                      </h5>
+                    <div className="pt-4 border-t border-amber-900/50 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <h5 className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+                          <Lock className="h-3.5 w-3.5 text-amber-500" /> Locked / Missing Information ({unknownEvents.length})
+                        </h5>
+                        <span className="text-[9px] font-mono text-amber-400/80">
+                          Complete leads or inspect evidence to unlock
+                        </span>
+                      </div>
+
                       <div className="space-y-2.5">
-                        {unknownEvents.map((ev, uIdx) => (
-                          <div 
-                            key={ev.id || uIdx}
-                            className="bg-[#2a1d12] border-2 border-dashed border-amber-700/50 rounded-xl p-3 text-amber-300/70"
-                          >
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-[9px] font-mono font-bold bg-amber-900/40 text-amber-300 px-2 py-0.5 rounded uppercase border border-amber-700/40 flex items-center gap-1">
-                                <QuestionIcon className="h-3 w-3 text-amber-400 animate-spin-slow" /> UNKNOWN INCIDENT #{uIdx + 1}
-                              </span>
-                              <span className="text-[9px] font-mono text-amber-500 font-bold">LOCKED</span>
+                        {unknownEvents.map((ev, uIdx) => {
+                          const isHintVisible = visibleTimelineHintIds[ev.id || `unk_${uIdx}`];
+                          return (
+                            <div 
+                              key={ev.id || uIdx}
+                              className="bg-[#2a1d12] border-2 border-dashed border-amber-700/50 rounded-xl p-3 text-amber-300/70 space-y-2"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-[9px] font-mono font-bold bg-amber-900/40 text-amber-300 px-2 py-0.5 rounded uppercase border border-amber-700/40 flex items-center gap-1">
+                                  <QuestionIcon className="h-3 w-3 text-amber-400 animate-spin-slow" /> UNKNOWN INCIDENT #{uIdx + 1}
+                                </span>
+                                <span className="text-[9px] font-mono text-amber-400 font-bold bg-amber-950/80 px-2 py-0.5 rounded border border-amber-700/50">LOCKED</span>
+                              </div>
+
+                              <p className="text-xs font-mono italic text-amber-200/80">
+                                "Missing incident details. Uncover related evidence or interview witnesses to unlock this moment."
+                              </p>
+
+                              {/* Interactive Hint Callout */}
+                              {isHintVisible ? (
+                                <div className="p-2.5 bg-amber-950/90 border border-amber-500/40 rounded-lg text-[11px] font-mono text-amber-200 space-y-1">
+                                  <div className="flex items-center justify-between font-bold text-amber-400">
+                                    <span className="flex items-center gap-1">
+                                      <Lightbulb className="h-3.5 w-3.5 text-amber-400" /> How to Unlock:
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => setVisibleTimelineHintIds(prev => ({ ...prev, [ev.id || `unk_${uIdx}`]: false }))}
+                                      className="text-[10px] text-amber-400/80 hover:text-white underline cursor-pointer"
+                                    >
+                                      Hide
+                                    </button>
+                                  </div>
+                                  <p className="text-[10px] leading-relaxed text-amber-200/90">
+                                    {ev.linkedLeadId 
+                                      ? `Complete active lead #${ev.linkedLeadId.replace('lead_', '')} in the Leads tab to unlock this timeline log.` 
+                                      : `Complete at least 1 investigation lead in the Leads tab, inspect inspectable points on evidence, or interrogate witnesses to automatically unlock this timestamp.`}
+                                  </p>
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => setVisibleTimelineHintIds(prev => ({ ...prev, [ev.id || `unk_${uIdx}`]: true }))}
+                                  className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold text-amber-400 hover:text-white bg-amber-900/40 hover:bg-amber-900/70 border border-amber-600/40 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                                >
+                                  <Lightbulb className="h-3 w-3 text-amber-400" />
+                                  <span>SHOW UNLOCK HINT</span>
+                                </button>
+                              )}
                             </div>
-                            <p className="text-xs font-mono italic text-amber-200/80">
-                              "Missing incident details. Uncover related evidence or interview witnesses to unlock this moment."
-                            </p>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -809,12 +895,6 @@ export default function TimelineBuilder({
 
                                 {/* Main Description - Clear Sans-Serif Typography */}
                                 <div className="space-y-2">
-                                  {imgUrl && styleType === 'polaroid' && (
-                                    <div className="h-36 w-full max-w-sm bg-slate-900 rounded-xl overflow-hidden border border-slate-300 my-2 shadow-inner">
-                                      <img src={imgUrl} alt="Polaroid detail" className="w-full h-full object-cover" />
-                                    </div>
-                                  )}
-
                                   <p className="text-sm sm:text-base font-sans font-semibold text-slate-900 leading-relaxed tracking-normal">
                                     {ev.description}
                                   </p>
