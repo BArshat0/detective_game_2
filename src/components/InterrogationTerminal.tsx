@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { User, Send, ShieldAlert, MessageSquare, Loader2, FileText, Check, AlertTriangle, Key, HelpCircle } from 'lucide-react';
+import { User, Send, ShieldAlert, MessageSquare, Loader2, Check, Key, HelpCircle } from 'lucide-react';
 import { Case, Witness } from '../types';
 import { safeGet, safeSet } from '../lib/safeLookup';
 import { getSuspectSketchArt } from '../utils/suspectSketches';
+import { apiService } from '../services/apiService';
 
 interface InterrogationTerminalProps {
   caseData: Case;
@@ -103,25 +104,20 @@ export default function InterrogationTerminal({
     }
 
     try {
-      const response = await fetch('/api/witness-chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          witnessId: selectedWitnessId,
-          caseId: caseData.id,
-          chatHistory: activeChat,
-          userQuestion: messageText,
-          witnessName: activeWitness.name,
-          witnessRole: activeWitness.role,
-          witnessKnowledge: activeWitness.promptKnowledge,
-          evidencePresented: presentedEvidence ? {
-            name: presentedEvidence.name,
-            excerpt: presentedEvidence.content.slice(0, 700)
-          } : null
-        })
+      const data = await apiService.sendWitnessMessage({
+        witnessId: selectedWitnessId,
+        caseId: caseData.id,
+        chatHistory: activeChat,
+        userQuestion: messageText,
+        witnessName: activeWitness.name,
+        witnessRole: activeWitness.role,
+        witnessKnowledge: activeWitness.promptKnowledge,
+        evidencePresented: presentedEvidence ? {
+          name: presentedEvidence.name,
+          excerpt: presentedEvidence.content.slice(0, 700)
+        } : null
       });
 
-      const data = await response.json();
       if (data.text) {
         onAddMessage(selectedWitnessId, 'witness', data.text);
       } else {

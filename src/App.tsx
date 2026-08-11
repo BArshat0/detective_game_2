@@ -23,6 +23,7 @@ import DigitalSafetyReport from './components/DigitalSafetyReport';
 import InvestigationHeader from './components/InvestigationHeader';
 import DetectiveCaseReportForm from './components/DetectiveCaseReportForm';
 import NotificationToast, { NotificationState } from './components/NotificationToast';
+import { apiService } from './services/apiService';
 import { mysteryAudio } from './utils/mysteryAudio';
 
 // Shared types and handcrafted cases
@@ -166,9 +167,7 @@ export default function App() {
     setSupabaseTableMissing(false);
     try {
       // 1. Profile
-      const profileRes = await fetch('/api/user/profile', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const profileRes = await apiService.getUserProfile(token);
       if (profileRes.status === 401) {
         handleLogout();
         setIsProfileLoaded(true);
@@ -195,9 +194,7 @@ export default function App() {
       // 2. Custom Cases
       let customCasesData: Case[] = [];
       try {
-        const customCasesRes = await fetch('/api/user/custom-cases', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const customCasesRes = await apiService.getCustomCases(token);
         if (customCasesRes.ok) {
           const parsed = await customCasesRes.json();
           if (Array.isArray(parsed)) {
@@ -211,9 +208,7 @@ export default function App() {
       // 3. Cases State
       let casesStateData: Record<string, CaseState> = {};
       try {
-        const casesStateRes = await fetch('/api/user/cases-state', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const casesStateRes = await apiService.getCasesState(token);
         if (casesStateRes.ok) {
           const parsed = await casesStateRes.json();
           if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && !('error' in parsed)) {
@@ -267,19 +262,12 @@ export default function App() {
 
   const syncProfileToSupabase = async (token: string, profile: UserProfile) => {
     try {
-      await fetch('/api/user/profile', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          name: profile.name,
-          cases_solved: profile.casesSolved,
-          solved_case_ids: profile.solvedCaseIds,
-          achievements: profile.achievements,
-          xp: xp
-        })
+      await apiService.updateUserProfile(token, {
+        name: profile.name,
+        cases_solved: profile.casesSolved,
+        solved_case_ids: profile.solvedCaseIds,
+        achievements: profile.achievements,
+        xp: xp
       });
     } catch (err) {
       console.error("Failed to sync profile:", err);
@@ -288,17 +276,7 @@ export default function App() {
 
   const syncCaseStateToSupabase = async (token: string, caseId: string, state: CaseState) => {
     try {
-      await fetch('/api/user/cases-state', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          caseId,
-          stateData: state
-        })
-      });
+      await apiService.updateCaseState(token, caseId, state);
     } catch (err) {
       console.error("Failed to sync case state:", err);
     }
@@ -306,16 +284,7 @@ export default function App() {
 
   const syncCustomCaseToSupabase = async (token: string, newCase: Case) => {
     try {
-      await fetch('/api/user/custom-cases', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          caseData: newCase
-        })
-      });
+      await apiService.updateCustomCase(token, newCase);
     } catch (err) {
       console.error("Failed to sync custom case:", err);
     }
@@ -369,14 +338,10 @@ export default function App() {
   useEffect(() => {
     const checkSystemStatus = async () => {
       try {
-        const res = await fetch('/api/system-status');
-        if (!res.ok) {
-          throw new Error(`Server status returned ${res.status}`);
-        }
-        const data = await res.json();
-        setSystemStatus(data);
+        const data = await apiService.getSystemStatus();
+        setSystemStatus(data as unknown as { supabase: { configured: boolean; status: string; message: string }; ai?: { configured: boolean; status: string; message: string } });
         setSupabaseConfigured(Boolean(data?.supabase?.configured));
-        setAiConfigured(data?.ai?.configured ?? true);
+        setAiConfigured(data?.gemini?.configured ?? data?.ai?.configured ?? true);
       } catch (err) {
         console.warn("Operating in offline system mode:", err);
         setSystemStatus({
@@ -982,26 +947,19 @@ export default function App() {
 
     try {
       // Send for AI Evaluation to Judge AI on the server
-      const response = await fetch('/api/judge-case', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          caseTitle: activeCase.title,
-          topic: activeCase.topic,
-          warningSigns: activeCase.warningSigns,
-          manipulationTechniques: activeCase.manipulationTechniques,
-          answers: report,
-          timeline: {
-            placements: currentCaseState.timelinePlacements,
-            events: activeCase.timeline
-          },
-          notebookNotes: currentCaseState.notebookNotes.join('\n')
-        })
+      const evaluation = await apiService.judgeCase({
+        caseTitle: activeCase.title,
+        topic: activeCase.topic,
+        warningSigns: activeCase.warningSigns,
+        manipulationTechniques: activeCase.manipulationTechniques,
+        answers: report,
+        timeline: {
+          placements: currentCaseState.timelinePlacements,
+          events: activeCase.timeline
+        },
+        notebookNotes: currentCaseState.notebookNotes.join('\n')
       });
 
-      if (!response.ok) throw new Error('The investigation review service returned an error.');
-
-      const evaluation = await response.json();
       setEvaluationResult(evaluation);
 
       // Update case states as completed & solve counter

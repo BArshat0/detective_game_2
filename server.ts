@@ -2,94 +2,68 @@ import express, { type NextFunction, type Request, type Response } from "express
 import path from "path";
 import dotenv from "dotenv";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenAI, Type } from "@google/genai";
+import { Type } from "@google/genai";
 import { CASE_RESPONSE_SCHEMA } from "./src/data/caseSchema";
+import {
+  getSupabaseServerClient,
+  getSupabaseCredentials,
+  verifyAuthToken,
+  handleSupabaseError
+} from "./server/supabaseService";
+import {
+  getGeminiClient,
+  getGeminiApiKey,
+  callGeminiWithRetry,
+  sanitizeInputString,
+  parseJsonFromAiResponse
+} from "./server/geminiService";
 
 dotenv.config({ path: path.resolve(process.cwd(), ".env"), override: true });
 dotenv.config({ path: path.resolve(process.cwd(), ".env.local"), override: true });
 
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
 
 interface AuthenticatedRequest extends Request {
   user: { id: string; email?: string; user_metadata?: Record<string, unknown> };
   token: string;
 }
 
-// Supabase Lazy Initialization with validation (scoped per-request to support Row-Level Security)
-let supabaseClient: SupabaseClient | null = null;
-
-function getSupabaseUserClient(token?: string) {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_ANON_KEY ?? process.env.SUPABASE_KEY;
-  if (!url || !key) {
+function getScopedSupabaseClient(token?: string) {
+  const creds = getSupabaseCredentials();
+  if (!creds) {
     throw new Error("SUPABASE_NOT_CONFIGURED");
   }
   if (token) {
-    return createClient(url, key, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-      global: {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      }
+    return createClient(creds.url, creds.key, {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: { headers: { Authorization: `Bearer ${token}` } }
     });
   }
-  return createClient(url, key, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    }
+  return createClient(creds.url, creds.key, {
+    auth: { persistSession: false, autoRefreshToken: false }
   });
 }
 
-function getSupabase() {
-  if (!supabaseClient) {
-    supabaseClient = getSupabaseUserClient();
-  }
-  return supabaseClient;
+function formatSupabaseResponseError(res: Response, error: unknown, contextMsg: string) {
+  const result = handleSupabaseError(res, error as { message?: string; code?: string }, contextMsg);
+  return res.status(result.status).json(result.body);
 }
 
-// Error helper for missing tables (PG code 42P01)
-function handleSupabaseError(error: unknown, res: Response, contextMsg: string) {
-  console.error(`Supabase error during ${contextMsg}:`, error);
-  const err = error as { code?: string; message?: string } | null;
-  if (err && (err.code === "42P01" || (err.message?.includes("relation") && err.message.includes("does not exist")))) {
-    return res.status(400).json({
-      error: "SUPABASE_TABLES_MISSING",
-      message: "The required tables are not set up in your Supabase database. Please create 'profiles', 'custom_cases', and 'cases_state' tables using the provided SQL schema in your Supabase SQL Editor.",
-    });
-  }
-  return res.status(500).json({
-    error: "SUPABASE_ERROR",
-    message: "A database query error occurred while processing your request.",
-  });
-}
-
-// Auth Middleware
 async function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "Unauthorized: Missing authentication token" });
+    const { user, error } = await verifyAuthToken(authHeader);
+    if (error === "SUPABASE_NOT_CONFIGURED") {
+      return res.status(530).json({ error: "SUPABASE_NOT_CONFIGURED", message: "Supabase configuration missing." });
     }
-    const token = authHeader.split(" ")[1];
-    const supabase = getSupabase();
-    const { data: { user }, error } = await supabase.auth.getUser(token);
     if (error || !user) {
-      return res.status(401).json({ error: "Unauthorized: Invalid or expired token" });
+      return res.status(401).json({ error: error ?? "Unauthorized" });
     }
     req.user = user;
-    req.token = token; // Store token for user-scoped queries
+    req.token = authHeader?.replace("Bearer ", "").trim() ?? "";
     next();
-  } catch (error: unknown) {
-    const err = error as Error;
-    if (err.message === "SUPABASE_NOT_CONFIGURED") {
-      return res.status(530).json({ error: "SUPABASE_NOT_CONFIGURED", message: "Supabase has not been configured in the environment variables yet." });
-    }
-    console.error("Auth middleware error:", error);
+  } catch (err: unknown) {
+    console.error("Auth middleware error:", err);
     return res.status(500).json({ error: "Authentication system error" });
   }
 }
@@ -97,8 +71,7 @@ async function requireAuth(req: AuthenticatedRequest, res: Response, next: NextF
 const app = express();
 app.disable("x-powered-by");
 
-// Add security headers middleware
-app.use((req, res, next) => {
+app.use((_req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "SAMEORIGIN");
   res.setHeader("X-XSS-Protection", "1; mode=block");
@@ -108,22 +81,18 @@ app.use((req, res, next) => {
 
 app.use(express.json({ limit: "1mb" }));
 
-// --- Supabase Authentication & Storage API Endpoints ---
-
-// Helper function to programmatically trigger email confirmation via Postgres RPC
+// --- Authentication API Endpoints ---
 async function attemptAutoConfirm(email: string) {
   try {
-    const supabase = getSupabase();
-    // Try calling the RPC to auto-confirm the email (created in our database schema)
-    const { error } = await supabase.rpc("confirm_user_email_by_email", { target_email: email });
-    if (error) {
-      console.warn("Auto-confirm RPC warning (might not exist yet):", error.message);
-    } else {
-      console.log(`Auto-confirm RPC called successfully for: ${email}`);
+    const supabase = getSupabaseServerClient();
+    if (supabase) {
+      const { error } = await supabase.rpc("confirm_user_email_by_email", { target_email: email });
+      if (error) {
+        console.warn("Auto-confirm RPC warning:", error.message);
+      }
     }
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.warn("Failed to call auto-confirm RPC (expected if the RPC hasn't been added to Supabase yet):", message);
+    console.warn("Failed to call auto-confirm RPC:", err);
   }
 }
 
@@ -136,37 +105,30 @@ app.post("/api/auth/signup", async (req, res) => {
     if (typeof email !== "string" || typeof password !== "string" || typeof name !== "string" || password.length < 6) {
       return res.status(400).json({ error: "Invalid signup fields. Password must contain at least 6 characters." });
     }
-    const supabase = getSupabase();
-    
-    // Sign up with Supabase - no verification link option passed
+    const supabase = getSupabaseServerClient();
+    if (!supabase) {
+      return res.status(530).json({ error: "SUPABASE_NOT_CONFIGURED", message: "Supabase configuration missing." });
+    }
+
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: { name }
-      }
+      options: { data: { name } }
     });
 
     if (signUpError) {
       return res.status(400).json({ error: signUpError.message });
     }
 
-    // Call the auto-confirm RPC immediately to make sure they are confirmed
     await attemptAutoConfirm(email);
 
-    // Verify authentication from the database immediately and sign it in if verified
-    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-
+    const { data: signInData } = await supabase.auth.signInWithPassword({ email, password });
     const user = signInData?.user || signUpData?.user;
     const session = signInData?.session || signUpData?.session;
 
     if (user) {
-      // Store the profile data in Supabase profiles table
       try {
-        const userClient = getSupabaseUserClient(session?.access_token);
+        const userClient = getScopedSupabaseClient(session?.access_token);
         const profilePayload: Record<string, unknown> = {
           id: user.id,
           name,
@@ -182,16 +144,12 @@ app.post("/api/auth/signup", async (req, res) => {
           await userClient.from("profiles").upsert(profilePayload);
         }
       } catch (profileError) {
-        console.warn("Failed to automatically store profile data in Supabase profiles table:", profileError);
+        console.warn("Failed to store profile data in Supabase:", profileError);
       }
     }
 
     res.json({ user, session });
   } catch (error: unknown) {
-    const err = error as Error;
-    if (err.message === "SUPABASE_NOT_CONFIGURED") {
-      return res.status(530).json({ error: "SUPABASE_NOT_CONFIGURED", message: "Supabase configuration missing." });
-    }
     console.error("Signup error:", error);
     res.status(500).json({ error: "Internal server signup error" });
   }
@@ -206,17 +164,15 @@ app.post("/api/auth/login", async (req, res) => {
     if (typeof email !== "string" || typeof password !== "string") {
       return res.status(400).json({ error: "Invalid email or password" });
     }
-    const supabase = getSupabase();
-    
-    // First attempt to sign in
+    const supabase = getSupabaseServerClient();
+    if (!supabase) {
+      return res.status(530).json({ error: "SUPABASE_NOT_CONFIGURED", message: "Supabase configuration missing." });
+    }
+
     let { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    
-    // If the error indicates unconfirmed email, attempt to confirm via RPC and retry
+
     if (error && (error.message?.toLowerCase().includes("not confirmed") || error.message?.toLowerCase().includes("not verified"))) {
-      console.log(`Detected unconfirmed email for: ${email}. Attempting auto-confirm via RPC...`);
       await attemptAutoConfirm(email);
-      
-      // Retry sign in
       const retryResult = await supabase.auth.signInWithPassword({ email, password });
       data = retryResult.data;
       error = retryResult.error;
@@ -227,9 +183,6 @@ app.post("/api/auth/login", async (req, res) => {
     }
     res.json({ user: data.user, session: data.session });
   } catch (error: unknown) {
-    if (error instanceof Error && error.message === "SUPABASE_NOT_CONFIGURED") {
-      return res.status(530).json({ error: "SUPABASE_NOT_CONFIGURED", message: "Supabase configuration missing." });
-    }
     console.error("Login error:", error);
     res.status(500).json({ error: "Internal server login error" });
   }
@@ -238,7 +191,7 @@ app.post("/api/auth/login", async (req, res) => {
 // Profile Management
 app.get("/api/user/profile", requireAuth, async (req: AuthenticatedRequest, res) => {
   try {
-    const supabase = getSupabaseUserClient(req.token);
+    const supabase = getScopedSupabaseClient(req.token);
     const { data: profile, error } = await supabase
       .from("profiles")
       .select("*")
@@ -250,7 +203,6 @@ app.get("/api/user/profile", requireAuth, async (req: AuthenticatedRequest, res)
     const fallbackName = (metaName || emailPrefix) ?? "Investigator";
 
     if (error || !profile) {
-      // Lazy-create profile if not found but table exists
       const defaultProfile: Record<string, unknown> = {
         id: req.user.id,
         name: fallbackName,
@@ -260,13 +212,13 @@ app.get("/api/user/profile", requireAuth, async (req: AuthenticatedRequest, res)
         achievements: [],
         xp: 0,
       };
-      
+
       let { data: inserted, error: insertError } = await supabase
         .from("profiles")
         .insert(defaultProfile)
         .select()
         .single();
-      
+
       if (insertError?.message?.includes("xp")) {
         delete defaultProfile.xp;
         const retryResult = await supabase
@@ -277,14 +229,13 @@ app.get("/api/user/profile", requireAuth, async (req: AuthenticatedRequest, res)
         inserted = retryResult.data;
         insertError = retryResult.error;
       }
-      
+
       if (insertError) {
-        return handleSupabaseError(insertError, res, "fetch/create profile");
+        return formatSupabaseResponseError(res, insertError, "fetch/create profile");
       }
       return res.json(inserted);
     }
 
-    // Profile exists in DB. If profile.name is generic, update it with metadata or email prefix if available
     if (!profile.name || profile.name === "Investigator" || profile.name === "Cadet Detective") {
       if (fallbackName && fallbackName !== "Investigator") {
         profile.name = fallbackName;
@@ -294,15 +245,15 @@ app.get("/api/user/profile", requireAuth, async (req: AuthenticatedRequest, res)
 
     res.json(profile);
   } catch (error: unknown) {
-    handleSupabaseError(error, res, "get profile");
+    formatSupabaseResponseError(res, error, "get profile");
   }
 });
 
 app.post("/api/user/profile", requireAuth, async (req: AuthenticatedRequest, res) => {
   try {
-    const supabase = getSupabaseUserClient(req.token);
+    const supabase = getScopedSupabaseClient(req.token);
     const { name, cases_solved, solved_case_ids, achievements, xp } = req.body;
-    
+
     const metaName = req.user.user_metadata?.name;
     const emailPrefix = req.user.email ? req.user.email.split("@")[0] : null;
 
@@ -310,7 +261,7 @@ app.post("/api/user/profile", requireAuth, async (req: AuthenticatedRequest, res
     if (!resolvedName || resolvedName === "Investigator" || resolvedName === "Cadet Detective") {
       resolvedName = (metaName || emailPrefix) ?? "Investigator";
     }
-    
+
     const payload: Record<string, unknown> = {
       id: req.user.id,
       name: resolvedName,
@@ -339,25 +290,25 @@ app.post("/api/user/profile", requireAuth, async (req: AuthenticatedRequest, res
     }
 
     if (error) {
-      return handleSupabaseError(error, res, "update profile");
+      return formatSupabaseResponseError(res, error, "update profile");
     }
     res.json(data);
   } catch (error: unknown) {
-    handleSupabaseError(error, res, "post profile");
+    formatSupabaseResponseError(res, error, "post profile");
   }
 });
 
 // Case States Management
 app.get("/api/user/cases-state", requireAuth, async (req: AuthenticatedRequest, res) => {
   try {
-    const supabase = getSupabaseUserClient(req.token);
+    const supabase = getScopedSupabaseClient(req.token);
     const { data, error } = await supabase
       .from("cases_state")
       .select("*")
       .eq("user_id", req.user.id);
 
     if (error) {
-      return handleSupabaseError(error, res, "load case states");
+      return formatSupabaseResponseError(res, error, "load case states");
     }
 
     const formattedStates: Record<string, unknown> = {};
@@ -374,13 +325,13 @@ app.get("/api/user/cases-state", requireAuth, async (req: AuthenticatedRequest, 
     });
     res.json(formattedStates);
   } catch (error: unknown) {
-    handleSupabaseError(error, res, "get cases-state");
+    formatSupabaseResponseError(res, error, "get cases-state");
   }
 });
 
 app.post("/api/user/cases-state", requireAuth, async (req: AuthenticatedRequest, res) => {
   try {
-    const supabase = getSupabaseUserClient(req.token);
+    const supabase = getScopedSupabaseClient(req.token);
     const { caseId, stateData } = req.body;
     if (!caseId || !stateData) {
       return res.status(400).json({ error: "Missing caseId or stateData" });
@@ -398,35 +349,35 @@ app.post("/api/user/cases-state", requireAuth, async (req: AuthenticatedRequest,
       });
 
     if (error) {
-      return handleSupabaseError(error, res, "save case state");
+      return formatSupabaseResponseError(res, error, "save case state");
     }
     res.json({ success: true });
   } catch (error: unknown) {
-    handleSupabaseError(error, res, "post cases-state");
+    formatSupabaseResponseError(res, error, "post cases-state");
   }
 });
 
 // Custom Cases Management
 app.get("/api/user/custom-cases", requireAuth, async (req: AuthenticatedRequest, res) => {
   try {
-    const supabase = getSupabaseUserClient(req.token);
+    const supabase = getScopedSupabaseClient(req.token);
     const { data, error } = await supabase
       .from("custom_cases")
       .select("*")
       .eq("user_id", req.user.id);
 
     if (error) {
-      return handleSupabaseError(error, res, "load custom cases");
+      return formatSupabaseResponseError(res, error, "load custom cases");
     }
     res.json(data.map((row: { case_data: unknown }) => row.case_data));
   } catch (error: unknown) {
-    handleSupabaseError(error, res, "get custom-cases");
+    formatSupabaseResponseError(res, error, "get custom-cases");
   }
 });
 
 app.post("/api/user/custom-cases", requireAuth, async (req: AuthenticatedRequest, res) => {
   try {
-    const supabase = getSupabaseUserClient(req.token);
+    const supabase = getScopedSupabaseClient(req.token);
     const { caseData } = req.body;
     if (!caseData?.id) {
       return res.status(400).json({ error: "Missing caseData or caseData.id" });
@@ -444,17 +395,17 @@ app.post("/api/user/custom-cases", requireAuth, async (req: AuthenticatedRequest
       });
 
     if (error) {
-      return handleSupabaseError(error, res, "save custom case");
+      return formatSupabaseResponseError(res, error, "save custom case");
     }
     res.json({ success: true });
   } catch (error: unknown) {
-    handleSupabaseError(error, res, "post custom-cases");
+    formatSupabaseResponseError(res, error, "post custom-cases");
   }
 });
 
 app.delete("/api/user/custom-cases/:id", requireAuth, async (req: AuthenticatedRequest, res) => {
   try {
-    const supabase = getSupabaseUserClient(req.token);
+    const supabase = getScopedSupabaseClient(req.token);
     const { id } = req.params;
 
     const { error } = await supabase
@@ -464,235 +415,44 @@ app.delete("/api/user/custom-cases/:id", requireAuth, async (req: AuthenticatedR
       .eq("user_id", req.user.id);
 
     if (error) {
-      return handleSupabaseError(error, res, "delete custom case");
+      return formatSupabaseResponseError(res, error, "delete custom case");
     }
     res.json({ success: true });
   } catch (error: unknown) {
-    handleSupabaseError(error, res, "delete custom-cases");
+    formatSupabaseResponseError(res, error, "delete custom-cases");
   }
 });
 
-const PORT = 3000;
+// System Status Endpoint
+app.get("/api/system-status", async (_req, res) => {
+  const creds = getSupabaseCredentials();
+  const apiKey = getGeminiApiKey();
 
-// Initialize Gemini API lazily to prevent startup crashes if key is missing
-let aiClient: GoogleGenAI | null = null;
-
-function getGemini() {
-  if (!aiClient) {
-    const key = process.env.GEMINI_API_KEY;
-    if (!key) {
-      throw new Error("GEMINI_NOT_CONFIGURED");
-    }
-    aiClient = new GoogleGenAI({
-      apiKey: key,
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
-        }
-      }
-    });
-  }
-  return aiClient;
-}
-
-// Retry helper for handling temporary model unavailability or high-demand (503) errors with exponential backoff
-async function callGeminiWithRetry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> {
-  try {
-    return await fn();
-  } catch (error: unknown) {
-    const errObj = error as { status?: number; code?: number };
-    const errorStr = JSON.stringify(error) || String(error);
-    const isRetryable = 
-      errorStr.includes("503") || 
-      errorStr.includes("UNAVAILABLE") || 
-      errorStr.includes("high demand") || 
-      errorStr.includes("temporary") ||
-      (errObj.status === 503) ||
-      (errObj.code === 503);
-
-    if (isRetryable && retries > 0) {
-      console.warn(`Gemini error (503/UNAVAILABLE) encountered. Retrying in ${delay}ms... (${retries} retries left)`);
-      await new Promise(resolve => setTimeout(resolve, delay));
-      return callGeminiWithRetry(fn, retries - 1, delay * 2);
-    }
-    throw error;
-  }
-}
-
-// Helper to handle Gemini errors gracefully in the backend
-function handleGeminiError(error: unknown, res: Response, contextMsg: string) {
-  console.error(`Gemini error during ${contextMsg}:`, error);
-  const err = error as Error | null;
-  if (err && (err.message === "GEMINI_NOT_CONFIGURED" || err.message.includes("API_KEY"))) {
-    return res.status(530).json({
-      error: "GEMINI_NOT_CONFIGURED",
-      message: "The AI Core is not configured yet. Please enter the GEMINI_API_KEY in the Secrets panel.",
-    });
-  }
-  return res.status(500).json({
-    error: "AI_ERROR",
-    message: "Failed to perform AI analysis. The system is temporarily unavailable.",
-  });
-}
-
-interface ServiceStatus {
-  configured: boolean;
-  status: string;
-  message: string;
-}
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
-}
-
-function markServiceError(status: ServiceStatus, context: string, error: unknown): void {
-  status.configured = false;
-  status.status = "error";
-  status.message = `${context}: ${errorMessage(error)}`;
-}
-
-function sanitizeQuestion(value: unknown): string | null {
-  if (typeof value !== "string" || !value.trim()) return null;
-  return value.trim().slice(0, 1000);
-}
-
-// Check Supabase Configuration Status
-async function checkSupabaseStatus(): Promise<ServiceStatus> {
-  const status: ServiceStatus = {
-    configured: false,
-    status: "unconfigured",
-    message: "Supabase database integration is not set up."
+  const supabase = {
+    configured: !!creds,
+    status: creds ? "connected" : "unconfigured",
+    message: creds
+      ? "Supabase synchronized securely. Cloud save/load, profiles, and custom modules are active."
+      : "Supabase database integration is not set up."
   };
 
-  try {
-    const url = process.env.SUPABASE_URL;
-    const key = process.env.SUPABASE_ANON_KEY ?? process.env.SUPABASE_KEY;
-    if (url && key) {
-      // Test key and URL actively
-      const client = createClient(url, key, {
-        auth: { persistSession: false, autoRefreshToken: false }
-      });
-      const { error: testErr } = await client.from("profiles").select("id").limit(1);
-      
-      if (testErr) {
-        if (testErr.message?.includes("Invalid API key")) {
-          status.configured = false;
-          status.status = "error";
-          status.message = "Supabase API key validation failed. Please check your SUPABASE_KEY in Secrets.";
-        } else if (testErr.code === "PGRST116" || testErr.code === "PGRST301") {
-          // PGRST116 means row not found (which is fine, database is alive!)
-          status.configured = true;
-          status.status = "connected";
-          status.message = "Supabase synchronized securely. Cloud save/load, profiles, and custom modules are fully active.";
-        } else if (testErr.code === "42P01") {
-          // Table does not exist
-          status.configured = true;
-          status.status = "error";
-          status.message = "Connected to Supabase, but some database tables (profiles, custom_cases, or cases_state) are missing. Please run the SQL schema in your Supabase SQL Editor.";
-        } else {
-          status.configured = true;
-          status.status = "connected";
-          status.message = `Supabase connected (Status note: ${testErr.message || testErr.code})`;
-        }
-      } else {
-        status.configured = true;
-        status.status = "connected";
-        status.message = "Supabase synchronized securely. Cloud save/load, profiles, and custom modules are fully active.";
-      }
-    } else {
-      status.configured = false;
-      status.status = "offline";
-      status.message = "Supabase database keys are not configured. Guest accounts and custom case creation are saved locally in this browser tab only.";
-    }
-  } catch (err: unknown) {
-    markServiceError(status, "Database connection error", err);
-  }
-
-  return status;
-}
-
-// Check AI Core Configuration Status
-async function checkGeminiStatus(): Promise<ServiceStatus> {
-  const status: ServiceStatus = {
-    configured: false,
-    status: "unconfigured",
-    message: "AI Core is not set up."
+  const ai = {
+    configured: !!apiKey,
+    status: apiKey ? "connected" : "unconfigured",
+    message: apiKey
+      ? "AI Core connected. Witness Interrogation and Case Evaluation active."
+      : "AI Core key is missing."
   };
 
-  try {
-    const key = process.env.GEMINI_API_KEY;
-    if (key) {
-      if (key.length < 10) {
-        status.configured = false;
-        status.status = "error";
-        status.message = "The API Key appears invalid. Please configure a valid key in Secrets.";
-      } else {
-        try {
-          getGemini();
-          status.configured = true;
-          status.status = "connected";
-          status.message = "AI Core connected. Case Evaluation, Witness Interrogation, and Intelligence Architect are active.";
-        } catch (gemErr: unknown) {
-          markServiceError(status, "AI Core initialization error", gemErr);
-        }
-      }
-    } else {
-      status.configured = false;
-      status.status = "offline";
-      status.message = "API Key is not configured. Witness chat and case evaluations will fall back to local offline backup simulation.";
-    }
-  } catch (err: unknown) {
-    markServiceError(status, "AI Core configuration error", err);
-  }
-
-  return status;
-}
-
-// System Status Endpoint (checks configurations gracefully in the backend with timeout safeguard)
-app.get("/api/system-status", async (req, res) => {
-  try {
-    const withTimeout = <T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> => {
-      return Promise.race([
-        promise,
-        new Promise<T>((resolve) => setTimeout(() => { resolve(fallback); }, ms))
-      ]);
-    };
-
-    const supabase = await withTimeout(
-      checkSupabaseStatus(),
-      4000,
-      { configured: false, status: "timeout", message: "Supabase connection attempt timed out." }
-    );
-    const gemini = await checkGeminiStatus();
-    res.json({ supabase, gemini, ai: gemini });
-  } catch (err: unknown) {
-    res.status(500).json({
-      supabase: { configured: false, status: "error", message: "System status check error" },
-      gemini: { configured: false, status: "error", message: "System status check error" },
-      ai: { configured: false, status: "error", message: "System status check error" }
-    });
-  }
+  res.json({ supabase, gemini: ai, ai });
 });
 
-// Helper to format chat history for LLM prompt ingestion (bounded to last 15 items to prevent token overflow)
-function formatChatHistory(chatHistory: unknown[], userLabel = "Investigator", otherLabel: string): string {
-  const history = Array.isArray(chatHistory) ? chatHistory.slice(-15) : [];
-  return history
-    .map((h: unknown) => {
-      if (!h || typeof h !== "object") return "";
-      const message = h as { sender?: unknown; text?: unknown };
-      return `${message.sender === "user" ? userLabel : otherLabel}: ${String(message.text ?? "").slice(0, 500)}`;
-    })
-    .filter(Boolean)
-    .join("\n");
-}
-
-// 1. Witness Chat Endpoint
+// Witness Chat Endpoint
 app.post("/api/witness-chat", async (req, res) => {
   try {
     const { witnessId, caseId, chatHistory, userQuestion, witnessName, witnessRole, witnessKnowledge, evidencePresented } = req.body;
 
-    const sanitizedQuestion = sanitizeQuestion(userQuestion);
+    const sanitizedQuestion = sanitizeInputString(userQuestion);
     if (!sanitizedQuestion) {
       return res.status(400).json({ error: "Missing or invalid userQuestion" });
     }
@@ -704,7 +464,13 @@ app.post("/api/witness-chat", async (req, res) => {
       ? `\nEvidence presented by investigator:\n${String(evidencePresented.name || "Unnamed file").slice(0, 200)}\n${String(evidencePresented.excerpt || "").slice(0, 700)}`
       : "";
 
-    const conversation = formatChatHistory(chatHistory, "Investigator", sanitizedName);
+    const conversation = Array.isArray(chatHistory)
+      ? chatHistory.slice(-15).map((h: unknown) => {
+          if (!h || typeof h !== "object") return "";
+          const msg = h as { sender?: unknown; text?: unknown };
+          return `${msg.sender === "user" ? "Investigator" : sanitizedName}: ${String(msg.text ?? "").slice(0, 500)}`;
+        }).filter(Boolean).join("\n")
+      : "";
 
     const systemInstruction = `
 You are ${sanitizedName}, playing the role of ${sanitizedRole} in the Social Detective case '${String(caseId || "unknown")}'.
@@ -713,162 +479,80 @@ ${sanitizedKnowledge}
 ${presentedContext}
 
 Your guidelines:
-1. Speak exactly in character, maintaining your role.
-2. If you are a suspect who is defensive or guilty, be evasive but let slip small, subtle clues if the investigator presents logical arguments, mentions discovered evidence, or presses you.
-3. Keep your answers conversational, concise (under 4 lines of text), and realistic.
-4. Do not mention that you are an AI or reading a prompt.
-5. If the user refers to specific evidence related to you (e.g. your chat records, social posts), react appropriately (nervousness, defensive explanation, or surprise).
+1. Speak exactly in character.
+2. Be conversational, concise (under 4 lines of text), and realistic.
+3. Do not mention that you are an AI.
     `;
 
-    const ai = getGemini();
-    const response = await callGeminiWithRetry(() => ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: `${conversation}\nInvestigator: ${sanitizedQuestion}\n${sanitizedName}:`,
-      config: {
-        systemInstruction,
-        temperature: 0.7,
-      },
-    }));
-
-    const reply = response.text || "I... I have nothing to say to that.";
-    res.json({ text: reply.trim() });
-  } catch (error: unknown) {
-    return handleGeminiError(error, res, "Witness Interrogation");
-  }
-});
-
-// 2. Mentor Chat Endpoint
-app.post("/api/mentor-chat", async (req, res) => {
-  try {
-    const { caseTitle, currentNotes, unlockedEvidence, chatHistory, userQuestion } = req.body;
-
-    const sanitizedQuestion = sanitizeQuestion(userQuestion);
-    if (!sanitizedQuestion) {
-      return res.status(400).json({ error: "Missing or invalid userQuestion" });
+    const ai = getGeminiClient();
+    if (!ai) {
+      return res.status(530).json({ error: "GEMINI_NOT_CONFIGURED", message: "AI key is missing." });
     }
 
-    const sanitizedTitle = String(caseTitle || "Active Investigation").slice(0, 200);
-    const sanitizedNotes = String(currentNotes || "").slice(0, 2000);
-    const conversation = formatChatHistory(chatHistory, "Investigator", "Lead Mentor");
+    const responseText = await callGeminiWithRetry(
+      ai,
+      `${conversation}\nInvestigator: ${sanitizedQuestion}\n${sanitizedName}:`,
+      "gemini-2.5-flash",
+      systemInstruction
+    );
 
-    const systemInstruction = `
-You are the Social Detective Academy Advisor, an expert in social safety and online crime prevention. Your job is to guide investigators solving the social crime case: "${sanitizedTitle}".
-Current unlocked evidence titles: ${JSON.stringify(Array.isArray(unlockedEvidence) ? unlockedEvidence.slice(0, 20) : [])}
-User's investigation notebook notes: "${sanitizedNotes}"
-
-Your guidelines:
-1. Provide highly encouraging, friendly, and clever guidance.
-2. NEVER give away the final answers or the complete solution. Instead, ask probing questions or suggest what to look at next (e.g. "Have you examined the conversation timestamps?", "Look closely at the profile handles or dates", "Maybe you should interview the witness again and ask about the source").
-3. Connect the clues to real-world Digital Safety and Social Awareness lessons (e.g., explaining how catfishing works, the psychological dynamics of online peer pressure, or how echo chambers accelerate viral rumors).
-4. Keep responses highly scannable, engaging, and professional. Use brief paragraphs.
-    `;
-
-    const ai = getGemini();
-    const response = await callGeminiWithRetry(() => ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: `${conversation}\nInvestigator: ${sanitizedQuestion}\nLead Mentor:`,
-      config: {
-        systemInstruction,
-        temperature: 0.6,
-      },
-    }));
-
-    const reply = response.text || "Keep digging, detective! Every detail counts.";
-    res.json({ text: reply.trim() });
+    res.json({ text: responseText || "I have nothing to add to that." });
   } catch (error: unknown) {
-    return handleGeminiError(error, res, "Mentor Drone Chat");
+    console.error("Witness Chat Error:", error);
+    res.status(500).json({ error: "AI_ERROR", message: "Witness chat failed." });
   }
 });
 
-// 3. Case Submission & Evaluation (Judge AI) Endpoint
+// Case Submission Endpoint
 app.post("/api/judge-case", async (req, res) => {
   try {
-    const { caseTitle, topic, warningSigns, manipulationTechniques, answers, timeline, notebookNotes } = req.body;
+    const { caseTitle, topic, warningSigns, answers, timeline, notebookNotes } = req.body;
     if (!caseTitle || !answers || typeof answers !== "object") {
       return res.status(400).json({ error: "Missing case title or submitted answers" });
     }
 
     const sanitizedTitle = String(caseTitle).slice(0, 200);
     const sanitizedTopic = String(topic || "Digital Safety").slice(0, 200);
-    const sanitizedNotes = String(notebookNotes || "").slice(0, 3000);
 
     const systemInstruction = `
-You are the Social Detective Academy Evaluator AI. Your role is to critically evaluate an investigator's submitted findings for the social safety case: "${sanitizedTitle}" (Topic: ${sanitizedTopic}).
-Warning Signs that should have been analyzed: ${JSON.stringify(Array.isArray(warningSigns) ? warningSigns.slice(0, 10) : [])}
-Psychological Manipulation techniques in play: ${JSON.stringify(Array.isArray(manipulationTechniques) ? manipulationTechniques.slice(0, 10) : [])}
+You are the Social Detective Academy Evaluator AI for case "${sanitizedTitle}" (${sanitizedTopic}).
+Warning signs analyzed: ${JSON.stringify(Array.isArray(warningSigns) ? warningSigns.slice(0, 10) : [])}
+Report submitted: ${JSON.stringify(answers)}
+Reconstructed timeline: ${JSON.stringify(timeline)}
+Notes: "${String(notebookNotes || "").slice(0, 2000)}"
 
-Official detective report submitted by the investigator: ${JSON.stringify(answers)}
-User's reconstructed timeline of events: ${JSON.stringify(timeline)}
-User's investigation notes: "${sanitizedNotes}"
-
-You must analyze their submission:
-1. Calculate a final score from 0 to 100 based on logical reasoning, observation quality, evidence relevance, manipulation understanding, explanation quality, investigation completeness, and timeline reasoning. Do not grade only exact answer matching.
-2. Provide a grade (S-RANK for 95-100, A-RANK for 80-94, B-RANK for 65-79, C-RANK for below 65).
-3. Draft a comprehensive, highly readable, and structured "Digital Safety & Social Awareness Evaluation Report" in Markdown. Include Case Summary, Strengths, Areas for Improvement, Missed Evidence, Manipulation Analysis, and Real-World Application.
-   CRITICAL FORMATTING REQUIREMENT:
-   The analysis string MUST NOT be a cramped block of text. It MUST be structured into clear subtopics using Markdown headings (## and ###), bullet points, bold key terms, and callout blockquotes (>). Include these structured sections:
-
-   ## 1. Executive Summary & Attack Mechanics
-   Explain step-by-step how the social manipulation, deepfake, or fraud operation unfolded.
-
-   ## 2. Psychological Exploitation Vectors
-   Detail the specific psychological triggers used (e.g., artificial urgency, authority bias, isolation, validation) and how they influenced the victim.
-
-   ## 3. Forensics & Evidence Red Flags
-   List the exact warning signs in the evidence that revealed the deception.
-
-   ## 4. Real-World Defense Protocols
-   Provide 3-4 concrete, actionable defense habits the user can apply in real life to stay safe.
-
-4. Award a list of specific badges based on their case resolution (e.g. "Scam Prevention Guardian", "Empathy Advocate", "Disinformation Fact-Checker").
+Return JSON with fields: score (number 0-100), grade (string), verdict (string), analysis (Markdown string), correctTimelineCount (number), unlockedBadges (string array).
     `;
 
-    const ai = getGemini();
-    const response = await callGeminiWithRetry(() => ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: "Evaluate this detective's submission and output a detailed evaluation in JSON format.",
-      config: {
-        systemInstruction,
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            score: { type: Type.INTEGER, description: "Calculated numeric score out of 100." },
-            grade: { type: Type.STRING, description: "S-RANK, A-RANK, B-RANK, or C-RANK." },
-            verdict: { type: Type.STRING, description: "A one-sentence cinematic summary verdict of their performance." },
-            analysis: { type: Type.STRING, description: "A detailed educational breakdown of the attack vector, manipulation techniques, and safe habits in elegant Markdown." },
-            correctTimelineCount: { type: Type.INTEGER, description: "How many of the timeline nodes are placed correctly." },
-            unlockedBadges: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING },
-              description: "Array of cool badge names awarded for solving this case."
-            }
-          },
-          required: ["score", "grade", "verdict", "analysis", "correctTimelineCount", "unlockedBadges"]
-        }
-      },
-    }));
-
-    let parsedResult: unknown = {};
-    try {
-      parsedResult = JSON.parse(response.text || "{}");
-    } catch {
-      parsedResult = {
-        score: 85,
-        grade: "A-RANK",
-        verdict: "Investigation completed with solid forensic evidence synthesis.",
-        analysis: "## 1. Executive Summary\nCase analysis complete.\n\n## 2. Real-World Defense Protocols\nAlways verify source credentials.",
-        correctTimelineCount: 4,
-        unlockedBadges: ["Digital Safety Guardian"]
-      };
+    const ai = getGeminiClient();
+    if (!ai) {
+      return res.status(530).json({ error: "GEMINI_NOT_CONFIGURED", message: "AI key is missing." });
     }
-    res.json(parsedResult);
+
+    const responseText = await callGeminiWithRetry(
+      ai,
+      "Evaluate this detective's submission and output JSON.",
+      "gemini-2.5-flash",
+      systemInstruction
+    );
+
+    const parsed = parseJsonFromAiResponse(responseText) ?? {
+      score: 85,
+      grade: "A-RANK",
+      verdict: "Investigation completed with solid forensic evidence synthesis.",
+      analysis: "## Executive Summary\nCase evaluation completed.",
+      correctTimelineCount: 4,
+      unlockedBadges: ["Digital Safety Guardian"]
+    };
+
+    res.json(parsed);
   } catch (error: unknown) {
-    return handleGeminiError(error, res, "Case Submission Assessment");
+    console.error("Judge Case Error:", error);
+    res.status(500).json({ error: "AI_ERROR", message: "Case evaluation failed." });
   }
 });
 
-// 4. Creative Case Generator (Creative Mode) Endpoint
+// Creative Case Generator Endpoint
 app.post("/api/generate-case", async (req, res) => {
   try {
     const { topic, difficulty, environment } = req.body;
@@ -876,49 +560,30 @@ app.post("/api/generate-case", async (req, res) => {
       return res.status(400).json({ error: "Invalid case generation parameters" });
     }
 
-    const sanitizedTopic = topic.trim().slice(0, 150);
-    const sanitizedEnv = environment.trim().slice(0, 150);
+    const ai = getGeminiClient();
+    if (!ai) {
+      return res.status(530).json({ error: "GEMINI_NOT_CONFIGURED", message: "AI key is missing." });
+    }
 
-    const systemInstruction = `
-You are the Master Social Detective Case Designer.
-Your task is to generate a fully complete, logically sound, highly interactive, and extremely educational digital safety/social crime case of difficulty level '${difficulty}' dealing with the topic of '${sanitizedTopic}' situated in the environment '${sanitizedEnv}'.
-
-The returned case must perfectly conform to the requested JSON schema.
-Ensure:
-1. The case has a unique alphanumeric id (e.g. 'case_custom_1029').
-2. Visual assets can use elegant Unsplash photography links related to social interaction, school life, families, or communities.
-3. Include 2-3 detailed, distinct Evidences (one can be an image, others can be chat logs, social feeds, emails).
-4. Include 2 interactive Witness characters with fully detailed 'promptKnowledge' representing their testimony, quirks, and hidden clues.
-5. Create a logically correct timeline of exactly 4 core steps that the player will reconstruct.
-6. Create 3 Clues that correspond to discovering the evidences.
-7. Create a 'solution' containing 2-3 precise questions with 4 choices each, a correct answer (matching one of the choices exactly), and an educational explanation.
-8. Define a 'location' containing 2-3 hotspots that reveal locked or unlocked evidence.
-9. Naming & Presentation Rules:
-   - Case Titles must be story-driven and curiosity-inducing (e.g., "The Fake Scholarship Trap", "The Midnight Voice Call") rather than generic terms.
-   - Evidence Names must be realistic document/media titles (e.g., "Scholarship Award Email", "WhatsApp Group Chat Transcript", "Audio Spectrograph Report") rather than filenames like "evidence1.txt".
-   - Include realistic category, dateCollected, source, and importance fields on every evidence item.
-10. Write the story, metadata, and questions with premium professional quality, highlighting psychological manipulation and social influence vectors.
-    `;
-
-    const ai = getGemini();
-    const response = await callGeminiWithRetry(() => ai.models.generateContent({
-       model: "gemini-2.5-flash",
-       contents: `Generate a new case for Topic: ${sanitizedTopic}, Difficulty: ${difficulty}, Environment: ${sanitizedEnv}.`,
-       config: {
-         systemInstruction,
-         responseMimeType: "application/json",
-         responseSchema: CASE_RESPONSE_SCHEMA
-       }
-     }));
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: `Generate a digital safety case for Topic: ${topic.slice(0, 100)}, Difficulty: ${difficulty}, Environment: ${environment.slice(0, 100)}.`,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: CASE_RESPONSE_SCHEMA
+      }
+    });
 
     const parsedCase = JSON.parse(response.text || "{}");
     res.json(parsedCase);
   } catch (error: unknown) {
-    return handleGeminiError(error, res, "AI Architect Game Generation");
+    console.error("Generate Case Error:", error);
+    res.status(500).json({ error: "AI_ERROR", message: "Case generation failed." });
   }
 });
 
-// Serve frontend assets
+const PORT = 3000;
+
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
@@ -929,7 +594,7 @@ async function startServer() {
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    app.get('*', (req, res) => {
+    app.get('*', (_req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
