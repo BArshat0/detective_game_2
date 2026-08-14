@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Radio, X, Send, Loader2, Minimize2, Maximize2 } from 'lucide-react';
 import { Case } from '../types';
+import { apiService } from '../services/apiService';
 
 interface MentorDroneProps {
   caseData: Case;
@@ -41,21 +42,16 @@ export default function MentorDrone({ caseData, discoveredEvidenceIds, notebookN
     setIsTyping(true);
 
     try {
-      const response = await fetch('/api/mentor-chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          caseTitle: caseData.title,
-          currentNotes: notebookNotes.join('\n'),
-          unlockedEvidence: caseData.evidences
-            .filter(e => discoveredEvidenceIds.includes(e.id))
-            .map(e => e.name),
-          chatHistory: newMsgs.slice(-10),
-          userQuestion: textToSend
-        })
+      const data = await apiService.sendMentorMessage({
+        caseTitle: caseData.title,
+        currentNotes: notebookNotes.join('\n'),
+        unlockedEvidence: caseData.evidences
+          .filter(e => discoveredEvidenceIds.includes(e.id))
+          .map(e => e.name),
+        chatHistory: newMsgs.slice(-10),
+        userQuestion: textToSend
       });
 
-      const data = await response.json();
       if (data.text) {
         setMessages(m => [...m, {
           sender: 'mentor',

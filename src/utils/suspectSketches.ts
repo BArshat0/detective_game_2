@@ -529,7 +529,396 @@ export const SUSPECT_SKETCHES = {
     </g>
   </svg>`,
 
-  // 7. NOIR DETECTIVE TRAIN - Default High Quality Trenchcoat Silhouette
+  // 7. SOPHIA LIN - Freelance Artist & Victim
+  sophia_lin: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 600" width="100%" height="100%">
+    <defs>
+      <linearGradient id="bg_grad_sophia" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#1c1822"/>
+        <stop offset="50%" stop-color="#120e18"/>
+        <stop offset="100%" stop-color="#08060a"/>
+      </linearGradient>
+      <radialGradient id="vignette_sophia" cx="50%" cy="40%" r="60%">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.10"/>
+        <stop offset="100%" stop-color="#000000" stop-opacity="0.95"/>
+      </radialGradient>
+      <linearGradient id="skin_sophia" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#f5e6d8"/>
+        <stop offset="50%" stop-color="#d6bca8"/>
+        <stop offset="100%" stop-color="#806250"/>
+      </linearGradient>
+      <pattern id="grid_pattern_sophia" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1"/>
+      </pattern>
+    </defs>
+
+    <rect width="100%" height="100%" fill="url(#bg_grad_sophia)"/>
+    <rect width="100%" height="100%" fill="url(#grid_pattern_sophia)"/>
+    <rect width="100%" height="100%" fill="url(#vignette_sophia)"/>
+
+    <g stroke="#ffffff" stroke-opacity="0.12" stroke-width="1" font-family="monospace" font-size="11" fill="#ffffff" fill-opacity="0.3">
+      <line x1="30" y1="120" x2="470" y2="120" stroke-dasharray="4,4"/>
+      <text x="35" y="115">5'6" [168 cm]</text>
+      <line x1="30" y1="200" x2="470" y2="200" stroke-dasharray="4,4"/>
+      <text x="35" y="195">AGE: 26 // ARTIST</text>
+    </g>
+
+    <!-- Character Portrait Group -->
+    <g transform="translate(0, 25)">
+      <!-- Stylish Artist Sweater & Scarf -->
+      <path d="M 110 520 C 130 420, 180 390, 210 390 L 250 410 L 290 390 C 320 390, 370 420, 390 520 Z" fill="#1e1828" stroke="#48365e" stroke-width="2"/>
+      <path d="M 200 390 C 220 425, 280 425, 300 390 C 280 435, 220 435, 200 390 Z" fill="#6b3ba7" opacity="0.8"/>
+
+      <!-- Neck -->
+      <path d="M 225 330 L 225 395 L 275 395 L 275 330 Z" fill="#d6bca8" stroke="#3b2b20" stroke-width="2"/>
+
+      <!-- Face Shape -->
+      <path d="M 180 175 C 180 110, 320 110, 320 175 C 320 235, 300 330, 250 345 C 200 330, 180 235, 180 175 Z" fill="url(#skin_sophia)" stroke="#38281f" stroke-width="3"/>
+
+      <!-- Stylish Wavy Dark Bob Hair cut with Bangs -->
+      <path d="M 165 180 C 150 110, 200 60, 250 58 C 300 60, 350 110, 335 180 C 350 240, 330 310, 310 310 C 290 280, 280 110, 250 110 C 220 110, 210 280, 190 310 C 170 310, 150 240, 165 180 Z" fill="#18121e" stroke="#000000" stroke-width="3"/>
+      <!-- Soft Side Bangs -->
+      <path d="M 175 145 Q 220 175 245 155 Q 275 175 325 145 Z" fill="#18121e"/>
+
+      <!-- Round Artist Glasses Frames -->
+      <circle cx="215" cy="208" r="20" fill="none" stroke="#e0a96d" stroke-width="2.5"/>
+      <circle cx="285" cy="208" r="20" fill="none" stroke="#e0a96d" stroke-width="2.5"/>
+      <line x1="235" y1="208" x2="265" y2="208" stroke="#e0a96d" stroke-width="2.5"/>
+
+      <!-- Eyes Behind Glasses -->
+      <ellipse cx="215" cy="208" rx="12" ry="7" fill="#ffffff" stroke="#291a13" stroke-width="1.5"/>
+      <circle cx="215" cy="208" r="5" fill="#17100b"/>
+      <circle cx="213" cy="206" r="1.5" fill="#ffffff"/>
+
+      <ellipse cx="285" cy="208" rx="12" ry="7" fill="#ffffff" stroke="#291a13" stroke-width="1.5"/>
+      <circle cx="285" cy="208" r="5" fill="#17100b"/>
+      <circle cx="283" cy="206" r="1.5" fill="#ffffff"/>
+
+      <!-- Eyebrows -->
+      <path d="M 195 188 Q 215 180 232 192" fill="none" stroke="#1c1318" stroke-width="3" stroke-linecap="round"/>
+      <path d="M 305 188 Q 285 180 268 192" fill="none" stroke="#1c1318" stroke-width="3" stroke-linecap="round"/>
+
+      <!-- Nose -->
+      <path d="M 250 198 L 253 250 L 260 256 M 240 256 L 247 250" fill="none" stroke="#3b2b20" stroke-width="2" stroke-linecap="round"/>
+
+      <!-- Lips -->
+      <path d="M 228 296 Q 250 292 272 296" fill="none" stroke="#331c17" stroke-width="2"/>
+      <path d="M 228 296 Q 250 308 272 296 Z" fill="#7a3f33" stroke="#331c17" stroke-width="1.5"/>
+    </g>
+
+    <g transform="translate(25, 515)">
+      <rect width="450" height="65" rx="8" fill="#120e0c" stroke="#ec4899" stroke-width="1.5" opacity="0.95"/>
+      <text x="15" y="24" font-family="monospace" font-weight="bold" font-size="13" fill="#ec4899" letter-spacing="2">CLASSIFIED POLICE FORENSIC COMPOSITE</text>
+      <text x="15" y="45" font-family="monospace" font-size="11" fill="#f5e6d8">SUBJECT: SOPHIA LIN • FREELANCE ARTIST</text>
+      <text x="340" y="45" font-family="monospace" font-weight="bold" font-size="11" fill="#3b82f6">VICTIM / WITNESS</text>
+    </g>
+  </svg>`,
+
+  // 8. DR. ARIS THORNE - Compliance Director & Financial Expert
+  dr_thorne: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 600" width="100%" height="100%">
+    <defs>
+      <linearGradient id="bg_grad_thorne" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#141820"/>
+        <stop offset="50%" stop-color="#0d1118"/>
+        <stop offset="100%" stop-color="#06080c"/>
+      </linearGradient>
+      <radialGradient id="vignette_thorne" cx="50%" cy="40%" r="60%">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.10"/>
+        <stop offset="100%" stop-color="#000000" stop-opacity="0.95"/>
+      </radialGradient>
+      <linearGradient id="skin_thorne" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#e3d4c5"/>
+        <stop offset="50%" stop-color="#ba9f8a"/>
+        <stop offset="100%" stop-color="#695343"/>
+      </linearGradient>
+      <pattern id="grid_pattern_thorne" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1"/>
+      </pattern>
+    </defs>
+
+    <rect width="100%" height="100%" fill="url(#bg_grad_thorne)"/>
+    <rect width="100%" height="100%" fill="url(#grid_pattern_thorne)"/>
+    <rect width="100%" height="100%" fill="url(#vignette_thorne)"/>
+
+    <g stroke="#ffffff" stroke-opacity="0.12" stroke-width="1" font-family="monospace" font-size="11" fill="#ffffff" fill-opacity="0.3">
+      <line x1="30" y1="120" x2="470" y2="120" stroke-dasharray="4,4"/>
+      <text x="35" y="115">6'0" [183 cm]</text>
+      <line x1="30" y1="200" x2="470" y2="200" stroke-dasharray="4,4"/>
+      <text x="35" y="195">FINANCIAL CRIMES TASK FORCE</text>
+    </g>
+
+    <!-- Character Portrait Group -->
+    <g transform="translate(0, 25)">
+      <!-- Director Dark Suit & Tie -->
+      <path d="M 100 520 L 160 410 L 210 390 L 250 420 L 290 390 L 340 410 L 400 520 Z" fill="#0f141d" stroke="#2c3a52" stroke-width="2"/>
+      <polygon points="210,390 250,470 290,390" fill="#1e2838" stroke="#3b4d6b" stroke-width="1.5"/>
+      <polygon points="230,390 250,400 270,390 260,490 240,490" fill="#ffffff" stroke="#1f1a17" stroke-width="1.5"/>
+      <polygon points="245,400 255,400 258,485 242,485" fill="#2563eb"/>
+
+      <!-- Neck -->
+      <path d="M 215 340 L 215 400 L 285 400 L 285 340 Z" fill="#ba9f8a" stroke="#3a2a1e" stroke-width="2"/>
+
+      <!-- Head Structure -->
+      <path d="M 175 180 C 175 110, 325 110, 325 180 C 325 240, 310 330, 250 350 C 190 330, 175 240, 175 180 Z" fill="url(#skin_thorne)" stroke="#2d2017" stroke-width="3"/>
+
+      <!-- Salt and Pepper Hair -->
+      <path d="M 168 180 C 160 110, 200 80, 250 78 C 300 80, 340 110, 332 180 C 320 125, 290 100, 250 100 C 210 100, 180 125, 168 180 Z" fill="#3a3735" stroke="#000000" stroke-width="2.5"/>
+      <path d="M 175 140 Q 250 105 325 140 Q 250 120 175 140 Z" fill="#8c8580" opacity="0.6"/>
+
+      <!-- Rectangular Frameless Glasses -->
+      <rect x="190" y="196" width="48" height="28" rx="3" fill="none" stroke="#60a5fa" stroke-width="2"/>
+      <rect x="262" y="196" width="48" height="28" rx="3" fill="none" stroke="#60a5fa" stroke-width="2"/>
+      <line x1="238" y1="208" x2="262" y2="208" stroke="#60a5fa" stroke-width="2"/>
+
+      <!-- Perceptive Eyes -->
+      <ellipse cx="214" cy="210" rx="12" ry="7" fill="#ffffff" stroke="#241912" stroke-width="1.5"/>
+      <circle cx="214" cy="210" r="5" fill="#140d0a"/>
+
+      <ellipse cx="286" cy="210" rx="12" ry="7" fill="#ffffff" stroke="#241912" stroke-width="1.5"/>
+      <circle cx="286" cy="210" r="5" fill="#140d0a"/>
+
+      <!-- Eyebrows -->
+      <path d="M 195 190 Q 220 182 236 192" fill="none" stroke="#241912" stroke-width="3.5" stroke-linecap="round"/>
+      <path d="M 305 190 Q 280 182 264 192" fill="none" stroke="#241912" stroke-width="3.5" stroke-linecap="round"/>
+
+      <!-- Nose -->
+      <path d="M 250 200 L 253 252 L 260 258 M 240 258 L 247 252" fill="none" stroke="#38261b" stroke-width="2"/>
+
+      <!-- Firm Lip Line -->
+      <path d="M 222 302 Q 250 304 278 302" fill="none" stroke="#211610" stroke-width="2.5"/>
+    </g>
+
+    <g transform="translate(25, 515)">
+      <rect width="450" height="65" rx="8" fill="#120e0c" stroke="#3b82f6" stroke-width="1.5" opacity="0.95"/>
+      <text x="15" y="24" font-family="monospace" font-weight="bold" font-size="13" fill="#3b82f6" letter-spacing="2">CLASSIFIED POLICE FORENSIC COMPOSITE</text>
+      <text x="15" y="45" font-family="monospace" font-size="11" fill="#e3d4c5">SUBJECT: DR. ARIS THORNE • COMPLIANCE DIRECTOR</text>
+      <text x="340" y="45" font-family="monospace" font-weight="bold" font-size="11" fill="#10b981">EXPERT WITNESS</text>
+    </g>
+  </svg>`,
+
+  // 9. ELEANOR MILLER - Distressed Relative / Mother
+  eleanor_miller: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 600" width="100%" height="100%">
+    <defs>
+      <linearGradient id="bg_grad_eleanor" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#1c1618"/>
+        <stop offset="50%" stop-color="#120e10"/>
+        <stop offset="100%" stop-color="#080607"/>
+      </linearGradient>
+      <radialGradient id="vignette_eleanor" cx="50%" cy="40%" r="60%">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.10"/>
+        <stop offset="100%" stop-color="#000000" stop-opacity="0.95"/>
+      </radialGradient>
+      <linearGradient id="skin_eleanor" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#f0ded0"/>
+        <stop offset="50%" stop-color="#cfb4a0"/>
+        <stop offset="100%" stop-color="#806250"/>
+      </linearGradient>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#bg_grad_eleanor)"/>
+    <rect width="100%" height="100%" fill="url(#vignette_eleanor)"/>
+    <g stroke="#ffffff" stroke-opacity="0.12" stroke-width="1" font-family="monospace" font-size="11" fill="#ffffff" fill-opacity="0.3">
+      <line x1="30" y1="120" x2="470" y2="120" stroke-dasharray="4,4"/><text x="35" y="115">5'6" [168 cm]</text>
+      <line x1="30" y1="200" x2="470" y2="200" stroke-dasharray="4,4"/><text x="35" y="195">5'4" [162 cm]</text>
+    </g>
+    <g transform="translate(0, 25)">
+      <!-- Wool Cardigan & Blouse -->
+      <path d="M 120 520 L 170 410 L 220 390 L 250 420 L 280 390 L 330 410 L 380 520 Z" fill="#2d2226" stroke="#4a373f" stroke-width="2"/>
+      <polygon points="220,390 250,450 280,390" fill="#eed9cb" stroke="#695144" stroke-width="1.5"/>
+      <!-- Neck -->
+      <path d="M 225 330 L 225 400 L 275 400 L 275 330 Z" fill="#cfb4a0" stroke="#4a372d" stroke-width="2"/>
+      <!-- Head -->
+      <path d="M 180 180 C 180 115, 320 115, 320 180 C 320 240, 295 330, 250 345 C 205 330, 180 240, 180 180 Z" fill="url(#skin_eleanor)" stroke="#38281f" stroke-width="3"/>
+      <!-- Soft Wavy Hair -->
+      <path d="M 165 190 C 150 110, 200 70, 250 68 C 300 70, 350 110, 335 190 C 345 280, 325 330, 310 350 C 310 260, 330 170, 305 120 C 270 95, 230 95, 195 120 C 170 170, 190 260, 190 350 C 175 330, 155 280, 165 190 Z" fill="#42342c" stroke="#211712" stroke-width="2.5"/>
+      <!-- Eyes with worry lines -->
+      <ellipse cx="215" cy="216" rx="13" ry="8" fill="#ffffff" stroke="#241b14" stroke-width="1.5"/>
+      <circle cx="215" cy="216" r="5.5" fill="#2d1c14"/>
+      <circle cx="213" cy="214" r="1.8" fill="#ffffff"/>
+      <ellipse cx="285" cy="216" rx="13" ry="8" fill="#ffffff" stroke="#241b14" stroke-width="1.5"/>
+      <circle cx="285" cy="216" r="5.5" fill="#2d1c14"/>
+      <circle cx="283" cy="214" r="1.8" fill="#ffffff"/>
+      <!-- Worried arched Eyebrows -->
+      <path d="M 195 198 Q 215 186 235 194" fill="none" stroke="#291a10" stroke-width="3" stroke-linecap="round"/>
+      <path d="M 305 198 Q 285 186 265 194" fill="none" stroke="#291a10" stroke-width="3" stroke-linecap="round"/>
+      <!-- Tear / Distress lines -->
+      <path d="M 200 230 Q 215 238 230 230" fill="none" stroke="#856b5a" stroke-width="1" opacity="0.6"/>
+      <path d="M 270 230 Q 285 238 300 230" fill="none" stroke="#856b5a" stroke-width="1" opacity="0.6"/>
+      <!-- Gentle distressed mouth -->
+      <path d="M 225 304 Q 250 298 275 304" fill="none" stroke="#331e15" stroke-width="2.5" stroke-linecap="round"/>
+    </g>
+    <g transform="translate(25, 515)">
+      <rect width="450" height="65" rx="8" fill="#120e0c" stroke="#f59e0b" stroke-width="1.5" opacity="0.95"/>
+      <text x="15" y="24" font-family="monospace" font-weight="bold" font-size="13" fill="#f59e0b" letter-spacing="2">CLASSIFIED POLICE WITNESS DOSSIER</text>
+      <text x="15" y="45" font-family="monospace" font-size="11" fill="#e2d2be">SUBJECT: ELEANOR MILLER • DISTRESSED MOTHER</text>
+      <text x="340" y="45" font-family="monospace" font-weight="bold" font-size="11" fill="#38bdf8">WITNESS</text>
+    </g>
+  </svg>`,
+
+  // 10. LEO ROOMMATE - Informant & Casual Acquaintance
+  leo_roommate: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 600" width="100%" height="100%">
+    <defs>
+      <linearGradient id="bg_grad_leo" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#14181a"/>
+        <stop offset="50%" stop-color="#0e1214"/>
+        <stop offset="100%" stop-color="#06090a"/>
+      </linearGradient>
+      <radialGradient id="vignette_leo" cx="50%" cy="40%" r="60%">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.10"/>
+        <stop offset="100%" stop-color="#000000" stop-opacity="0.95"/>
+      </radialGradient>
+      <linearGradient id="skin_leo" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#eddac6"/>
+        <stop offset="50%" stop-color="#c7ab91"/>
+        <stop offset="100%" stop-color="#73573e"/>
+      </linearGradient>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#bg_grad_leo)"/>
+    <rect width="100%" height="100%" fill="url(#vignette_leo)"/>
+    <g stroke="#ffffff" stroke-opacity="0.12" stroke-width="1" font-family="monospace" font-size="11" fill="#ffffff" fill-opacity="0.3">
+      <line x1="30" y1="120" x2="470" y2="120" stroke-dasharray="4,4"/><text x="35" y="115">5'11" [180 cm]</text>
+    </g>
+    <g transform="translate(0, 25)">
+      <!-- Denim Jacket & T-Shirt -->
+      <path d="M 110 520 L 160 410 L 215 390 L 250 420 L 285 390 L 340 410 L 390 520 Z" fill="#1b2a38" stroke="#314e68" stroke-width="2"/>
+      <polygon points="215,390 250,440 285,390" fill="#2d3748" stroke="#4a5568" stroke-width="1.5"/>
+      <!-- Neck -->
+      <path d="M 220 330 L 220 400 L 280 400 L 280 330 Z" fill="#c7ab91" stroke="#38291d" stroke-width="2"/>
+      <!-- Head -->
+      <path d="M 175 180 C 175 115, 325 115, 325 180 C 325 245, 305 335, 250 350 C 195 335, 175 245, 175 180 Z" fill="url(#skin_leo)" stroke="#2b2018" stroke-width="3"/>
+      <!-- Messy Tousled Hair -->
+      <path d="M 160 170 C 150 110, 190 70, 250 68 C 310 70, 350 110, 340 170 C 330 130, 290 100, 250 100 C 210 100, 170 130, 160 170 Z" fill="#2b1d14" stroke="#120b06" stroke-width="3"/>
+      <path d="M 190 90 L 220 130 L 250 85 L 280 130 L 310 90" fill="none" stroke="#3d291c" stroke-width="3"/>
+      <!-- Eyes & Skeptical Brow -->
+      <ellipse cx="215" cy="216" rx="13" ry="7.5" fill="#ffffff" stroke="#241b14" stroke-width="1.5"/>
+      <circle cx="215" cy="216" r="5" fill="#1c241e"/>
+      <ellipse cx="285" cy="216" rx="13" ry="7.5" fill="#ffffff" stroke="#241b14" stroke-width="1.5"/>
+      <circle cx="285" cy="216" r="5" fill="#1c241e"/>
+      <path d="M 195 196 Q 220 190 235 200" fill="none" stroke="#21150e" stroke-width="3.5" stroke-linecap="round"/>
+      <path d="M 305 194 Q 280 188 265 198" fill="none" stroke="#21150e" stroke-width="3.5" stroke-linecap="round"/>
+      <path d="M 220 300 Q 250 306 280 300" fill="none" stroke="#241912" stroke-width="2.5" stroke-linecap="round"/>
+    </g>
+    <g transform="translate(25, 515)">
+      <rect width="450" height="65" rx="8" fill="#120e0c" stroke="#38bdf8" stroke-width="1.5" opacity="0.95"/>
+      <text x="15" y="24" font-family="monospace" font-weight="bold" font-size="13" fill="#38bdf8" letter-spacing="2">CLASSIFIED POLICE INFORMANT LOG</text>
+      <text x="15" y="45" font-family="monospace" font-size="11" fill="#e2d2be">SUBJECT: LEO • ROOMMATE &amp; WITNESS</text>
+      <text x="340" y="45" font-family="monospace" font-weight="bold" font-size="11" fill="#38bdf8">WITNESS</text>
+    </g>
+  </svg>`,
+
+  // 11. MAYA PENDELTON - Geology Student / AI Voice Clone Victim
+  maya_pendelton: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 600" width="100%" height="100%">
+    <defs>
+      <linearGradient id="bg_grad_maya" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#141a20"/>
+        <stop offset="50%" stop-color="#0e1318"/>
+        <stop offset="100%" stop-color="#06090c"/>
+      </linearGradient>
+      <radialGradient id="vignette_maya" cx="50%" cy="40%" r="60%">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.10"/>
+        <stop offset="100%" stop-color="#000000" stop-opacity="0.95"/>
+      </radialGradient>
+      <linearGradient id="skin_maya" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#f5e4d5"/>
+        <stop offset="50%" stop-color="#dabcb0"/>
+        <stop offset="100%" stop-color="#8c6c5e"/>
+      </linearGradient>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#bg_grad_maya)"/>
+    <rect width="100%" height="100%" fill="url(#vignette_maya)"/>
+    <!-- Voice Waveform Grid Overlay -->
+    <g stroke="#38bdf8" stroke-opacity="0.15" stroke-width="1.5">
+      <path d="M 40 100 Q 100 80 160 100 T 280 100 T 400 100 T 480 100" fill="none"/>
+      <path d="M 40 120 Q 80 70 140 120 T 260 120 T 380 120 T 480 120" fill="none"/>
+    </g>
+    <g transform="translate(0, 25)">
+      <!-- Campus Parka / Scarf -->
+      <path d="M 120 520 L 170 410 L 220 390 L 250 420 L 280 390 L 330 410 L 380 520 Z" fill="#13231e" stroke="#24453a" stroke-width="2"/>
+      <path d="M 180 390 C 210 430, 290 430, 320 390 Z" fill="#b45309" opacity="0.8"/>
+      <!-- Neck -->
+      <path d="M 225 330 L 225 400 L 275 400 L 275 330 Z" fill="#dabcb0" stroke="#3d2c23" stroke-width="2"/>
+      <!-- Head -->
+      <path d="M 180 175 C 180 110, 320 110, 320 175 C 320 235, 295 330, 250 345 C 205 330, 180 235, 180 175 Z" fill="url(#skin_maya)" stroke="#38281f" stroke-width="3"/>
+      <!-- Ponytail & Fringe -->
+      <path d="M 165 170 C 155 100, 200 65, 250 65 C 300 65, 345 100, 335 170 C 320 110, 290 90, 250 90 C 210 90, 180 110, 165 170 Z" fill="#1f140e" stroke="#000000" stroke-width="3"/>
+      <path d="M 330 160 C 370 180, 380 260, 360 300" fill="none" stroke="#1f140e" stroke-width="12" stroke-linecap="round"/>
+      <!-- Eyes with clear gaze -->
+      <ellipse cx="215" cy="214" rx="13" ry="8" fill="#ffffff" stroke="#241b14" stroke-width="1.5"/>
+      <circle cx="215" cy="214" r="5.5" fill="#1e293b"/>
+      <circle cx="213" cy="212" r="1.8" fill="#ffffff"/>
+      <ellipse cx="285" cy="214" rx="13" ry="8" fill="#ffffff" stroke="#241b14" stroke-width="1.5"/>
+      <circle cx="285" cy="214" r="5.5" fill="#1e293b"/>
+      <circle cx="283" cy="212" r="1.8" fill="#ffffff"/>
+      <!-- Eyebrows -->
+      <path d="M 195 195 Q 215 186 235 194" fill="none" stroke="#1f140e" stroke-width="3" stroke-linecap="round"/>
+      <path d="M 305 195 Q 285 186 265 194" fill="none" stroke="#1f140e" stroke-width="3" stroke-linecap="round"/>
+      <path d="M 225 300 Q 250 308 275 300" fill="none" stroke="#2e1b12" stroke-width="2.5" stroke-linecap="round"/>
+    </g>
+    <g transform="translate(25, 515)">
+      <rect width="450" height="65" rx="8" fill="#120e0c" stroke="#38bdf8" stroke-width="1.5" opacity="0.95"/>
+      <text x="15" y="24" font-family="monospace" font-weight="bold" font-size="13" fill="#38bdf8" letter-spacing="2">CLASSIFIED VICTIM BIOMETRIC FILE</text>
+      <text x="15" y="45" font-family="monospace" font-size="11" fill="#e2d2be">SUBJECT: MAYA PENDELTON • VOICE CLONE VICTIM</text>
+      <text x="340" y="45" font-family="monospace" font-weight="bold" font-size="11" fill="#38bdf8">VICTIM</text>
+    </g>
+  </svg>`,
+
+  // 12. CHIEF INVESTIGATOR VANCE - Digital Forensics Unit Lead
+  chief_vance: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 600" width="100%" height="100%">
+    <defs>
+      <linearGradient id="bg_grad_chief" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#141824"/>
+        <stop offset="50%" stop-color="#0d111c"/>
+        <stop offset="100%" stop-color="#06080e"/>
+      </linearGradient>
+      <radialGradient id="vignette_chief" cx="50%" cy="40%" r="60%">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.12"/>
+        <stop offset="100%" stop-color="#000000" stop-opacity="0.95"/>
+      </radialGradient>
+      <linearGradient id="skin_chief" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#e8d5c4"/>
+        <stop offset="50%" stop-color="#c2a48c"/>
+        <stop offset="100%" stop-color="#6e533e"/>
+      </linearGradient>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#bg_grad_chief)"/>
+    <rect width="100%" height="100%" fill="url(#vignette_chief)"/>
+    <g transform="translate(0, 25)">
+      <!-- Police Trenchcoat & Gold Badge -->
+      <path d="M 100 520 L 150 400 L 210 380 L 250 410 L 290 380 L 350 400 L 400 520 Z" fill="#0f172a" stroke="#1e293b" stroke-width="2"/>
+      <polygon points="210,380 250,460 290,380" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+      <polygon points="230,380 250,390 270,380 260,470 240,470" fill="#f8fafc" stroke="#0f172a" stroke-width="1.5"/>
+      <polygon points="245,390 255,390 257,465 243,465" fill="#e11d48"/>
+      <!-- Gold Shield Badge on Lapel -->
+      <path d="M 170 430 L 185 425 L 200 430 L 195 455 L 185 465 L 175 455 Z" fill="#f59e0b" stroke="#fbbf24" stroke-width="1.5"/>
+      <circle cx="185" cy="445" r="4" fill="#78350f"/>
+      <!-- Neck -->
+      <path d="M 215 330 L 215 390 L 285 390 L 285 330 Z" fill="#c2a48c" stroke="#3a2a1e" stroke-width="2"/>
+      <!-- Head Structure -->
+      <path d="M 175 175 C 175 110, 325 110, 325 175 C 325 240, 305 330, 250 345 C 195 330, 175 240, 175 175 Z" fill="url(#skin_chief)" stroke="#2b2018" stroke-width="3"/>
+      <!-- Silver Templed Hair -->
+      <path d="M 168 175 C 160 115, 200 85, 250 82 C 300 85, 340 115, 332 175 C 320 130, 290 105, 250 105 C 210 105, 180 130, 168 175 Z" fill="#334155" stroke="#0f172a" stroke-width="3"/>
+      <path d="M 172 170 Q 200 130 220 150 M 328 170 Q 300 130 280 150" fill="none" stroke="#94a3b8" stroke-width="4"/>
+      <!-- Determined Eyes -->
+      <ellipse cx="215" cy="214" rx="14" ry="8" fill="#ffffff" stroke="#1e293b" stroke-width="2"/>
+      <circle cx="215" cy="214" r="6" fill="#0f172a"/>
+      <circle cx="213" cy="212" r="2" fill="#ffffff"/>
+      <ellipse cx="285" cy="214" rx="14" ry="8" fill="#ffffff" stroke="#1e293b" stroke-width="2"/>
+      <circle cx="285" cy="214" r="6" fill="#0f172a"/>
+      <circle cx="283" cy="212" r="2" fill="#ffffff"/>
+      <!-- Eyebrows -->
+      <path d="M 195 196 Q 220 188 235 198" fill="none" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
+      <path d="M 305 196 Q 280 188 265 198" fill="none" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
+      <!-- Nose & Mouth -->
+      <path d="M 250 200 L 254 255 L 263 262 M 237 262 L 246 255" fill="none" stroke="#2e2118" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M 220 300 Q 250 302 280 300" fill="none" stroke="#1e293b" stroke-width="3" stroke-linecap="round"/>
+    </g>
+    <g transform="translate(25, 515)">
+      <rect width="450" height="65" rx="8" fill="#0f172a" stroke="#3b82f6" stroke-width="1.5" opacity="0.95"/>
+      <text x="15" y="24" font-family="monospace" font-weight="bold" font-size="13" fill="#38bdf8" letter-spacing="2">CYBER FORENSICS UNIT • LEAD DOSSIER</text>
+      <text x="15" y="45" font-family="monospace" font-size="11" fill="#f8fafc">SUBJECT: CHIEF INVESTIGATOR VANCE • FORENSICS DIRECTOR</text>
+      <text x="340" y="45" font-family="monospace" font-weight="bold" font-size="11" fill="#3b82f6">COMMAND</text>
+    </g>
+  </svg>`,
+
+  // 13. NOIR DETECTIVE TRAIN - Default High Quality Trenchcoat Silhouette
   noir_detective_train: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 600" width="100%" height="100%">
     <defs>
       <linearGradient id="bg_grad_noir" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -1589,20 +1978,30 @@ export function getSuspectSketchArt(nameOrId: string, avatarFallback?: string): 
   const clean = (nameOrId || '').toLowerCase();
   let result = SUSPECT_SKETCHES.noir_detective_train;
 
-  if (clean.includes('victor') || (clean.includes('sterling') && !clean.includes('david'))) {
+  if (clean.includes('eleanor')) {
+    result = SUSPECT_SKETCHES.eleanor_miller;
+  } else if (clean.includes('leo') || clean.includes('roommate')) {
+    result = SUSPECT_SKETCHES.leo_roommate;
+  } else if (clean.includes('maya')) {
+    result = SUSPECT_SKETCHES.maya_pendelton;
+  } else if (clean.includes('chief') || (clean.includes('vance') && clean.includes('investigator'))) {
+    result = SUSPECT_SKETCHES.chief_vance;
+  } else if (clean.includes('victor') || (clean.includes('sterling') && !clean.includes('david')) || clean.includes('operator')) {
     result = SUSPECT_SKETCHES.victor_sterling;
-  } else if (clean.includes('elena') || (clean.includes('vance') && !clean.includes('julian'))) {
+  } else if (clean.includes('elena') || (clean.includes('vance') && !clean.includes('julian') && !clean.includes('chief'))) {
     result = SUSPECT_SKETCHES.elena_vance;
-  } else if (clean.includes('kaelen') || clean.includes('miller')) {
+  } else if (clean.includes('kaelen') || (clean.includes('miller') && !clean.includes('eleanor'))) {
     result = SUSPECT_SKETCHES.kaelen_miller;
-  } else if (clean.includes('julian')) {
+  } else if (clean.includes('julian') || clean.includes('sam_coder')) {
     result = SUSPECT_SKETCHES.julian_vance;
   } else if (clean.includes('pendelton') || clean.includes('harrison') || clean.includes('arthur')) {
     result = SUSPECT_SKETCHES.dr_pendelton;
   } else if (clean.includes('david')) {
     result = SUSPECT_SKETCHES.david_sterling;
   } else if (clean.includes('sophia') || clean.includes('lin')) {
-    result = SUSPECT_SKETCHES.kaelen_miller;
+    result = SUSPECT_SKETCHES.sophia_lin;
+  } else if (clean.includes('thorne') || clean.includes('aris')) {
+    result = SUSPECT_SKETCHES.dr_thorne;
   } else if (avatarFallback?.trim()) {
     return encodeSvgDataUri(avatarFallback);
   }

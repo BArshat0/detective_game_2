@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { 
   Award, BookOpen, 
   ShieldCheck, Lock, CheckCircle2, ChevronRight, User, Star,
-  Compass, Pencil, Check, X
+  Compass, Pencil, Check, X, ShieldAlert, Cpu, Key, GitCommit,
+  Clock, MessageSquareCode, Fingerprint, Sparkles, Filter, Info
 } from 'lucide-react';
-import { Case, UserProfile } from '../types';
+import { Case, UserProfile, Achievement } from '../types';
 
 interface UserProfileSectionProps {
   userProfile: UserProfile;
@@ -20,6 +21,21 @@ interface UserProfileSectionProps {
   onUpdateProfileName?: (newName: string) => void;
 }
 
+const BADGE_ICONS: Record<string, typeof Award> = {
+  Compass,
+  ShieldAlert,
+  Cpu,
+  Key,
+  Award,
+  Star,
+  GitCommit,
+  Clock,
+  MessageSquareCode,
+  Fingerprint,
+  ShieldCheck,
+  Sparkles
+};
+
 export default function UserProfileSection({ 
   userProfile, 
   currentRank, 
@@ -30,6 +46,8 @@ export default function UserProfileSection({
 }: UserProfileSectionProps) {
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState(userProfile.name);
+  const [badgeFilter, setBadgeFilter] = useState<'All' | 'Directives' | 'Forensics' | 'Honours' | 'Creation'>('All');
+  const [selectedBadge, setSelectedBadge] = useState<Achievement | null>(null);
 
   useEffect(() => {
     setEditedName(userProfile.name);
@@ -58,6 +76,11 @@ export default function UserProfileSection({
   const unlockedCount = userProfile.achievements.filter(a => a.isUnlocked).length;
   const totalCount = userProfile.achievements.length;
   const completionRate = allCases.length > 0 ? Math.round((userProfile.solvedCaseIds.length / allCases.length) * 100) : 0;
+
+  const filteredBadges = userProfile.achievements.filter(badge => {
+    if (badgeFilter === 'All') return true;
+    return badge.category === badgeFilter;
+  });
 
   return (
     <div className="space-y-10 animate-fade-in pb-16 font-sans select-none text-white">
@@ -131,12 +154,6 @@ export default function UserProfileSection({
                   LEVEL {currentRank.level} DETECTIVE
                 </span>
               </div>
-
-              {userProfile.email && (
-                <p className="text-xs font-mono text-[#ffb829] font-semibold tracking-wide">
-                  {userProfile.email}
-                </p>
-              )}
 
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed pt-1 font-sans">
                 Active defender of social media integrity, specializing in algorithmic bias awareness, deepfake spoofing forensics, and media security economics.
@@ -218,37 +235,81 @@ export default function UserProfileSection({
           
           {/* Section 1: Honor Decorations */}
           <div className="space-y-5">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <h2 className="text-base font-mono font-black text-white uppercase tracking-widest flex items-center gap-2">
-                <Award className="h-5 w-5 text-[#ff8533]" />
-                ACADEMY HONOR DECORATIONS
-              </h2>
-              <span className="text-xs font-mono font-bold text-slate-400 bg-white/5 px-3 py-1 rounded-full border border-white/10">
-                {unlockedCount} of {totalCount} Badges
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
+              <div>
+                <h2 className="text-base font-mono font-black text-white uppercase tracking-widest flex items-center gap-2">
+                  <Award className="h-5 w-5 text-[#ff8533]" />
+                  ACADEMY HONOR DECORATIONS
+                </h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Decorations awarded for outstanding investigative technique and case resolutions.
+                </p>
+              </div>
+              <span className="text-xs font-mono font-bold text-slate-300 bg-white/5 px-3.5 py-1.5 rounded-full border border-white/10 self-start sm:self-auto">
+                <strong className="text-[#ff8533]">{unlockedCount}</strong> of {totalCount} Secured
               </span>
             </div>
 
+            {/* Category Filter Tabs */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs font-mono scrollbar-none">
+              {(['All', 'Directives', 'Forensics', 'Honours', 'Creation'] as const).map(cat => {
+                const count = cat === 'All' 
+                  ? userProfile.achievements.length 
+                  : userProfile.achievements.filter(a => a.category === cat).length;
+                const isActive = badgeFilter === cat;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setBadgeFilter(cat)}
+                    className={`px-3 py-1.5 rounded-lg border transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                      isActive 
+                        ? 'bg-[#ff8533] border-[#ff8533] text-[#1e110a] font-bold shadow-md' 
+                        : 'bg-white/5 border-white/10 text-slate-400 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <span>{cat}</span>
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                      isActive ? 'bg-black/20 text-[#1e110a]' : 'bg-white/10 text-slate-400'
+                    }`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-              {userProfile.achievements.map((badge) => {
+              {filteredBadges.map((badge) => {
                 const isUnlocked = badge.isUnlocked;
+                const IconComponent = (badge.iconName && BADGE_ICONS[badge.iconName]) || Award;
                 return (
                   <div
                     key={badge.id}
-                    className={`p-5 rounded-2xl border transition-all duration-300 relative flex flex-col justify-between space-y-3 ${
+                    onClick={() => setSelectedBadge(badge)}
+                    className={`p-5 rounded-2xl border transition-all duration-300 relative flex flex-col justify-between space-y-3 cursor-pointer group hover:scale-[1.02] ${
                       isUnlocked
-                        ? 'border-[#ff8533]/40 bg-[#ff8533]/10 text-white shadow-lg shadow-[#ff8533]/5'
-                        : 'border-white/5 bg-black/30 text-slate-500'
+                        ? 'border-[#ff8533]/50 bg-gradient-to-br from-[#ff8533]/15 via-slate-900/90 to-slate-950 text-white shadow-lg shadow-[#ff8533]/10'
+                        : 'border-white/10 bg-slate-950/60 text-slate-400 hover:border-white/20'
                     }`}
                   >
-                    {/* Top status tag */}
+                    {/* Top status tag & Icon */}
                     <div className="flex items-center justify-between">
-                      <span className={`text-[10px] font-mono font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-md ${
-                        isUnlocked 
-                          ? 'bg-[#ff8533] text-[#1e110a] font-black' 
-                          : 'bg-white/5 text-slate-500 border border-white/10'
-                      }`}>
-                        {isUnlocked ? 'DECORATION SECURED' : 'LOCKED'}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <div className={`p-2 rounded-xl border ${
+                          isUnlocked 
+                            ? 'bg-[#ff8533]/20 border-[#ff8533]/40 text-[#ff8533]' 
+                            : 'bg-white/5 border-white/10 text-slate-500'
+                        }`}>
+                          <IconComponent className="h-4 w-4" />
+                        </div>
+                        <span className={`text-[10px] font-mono font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                          isUnlocked 
+                            ? 'bg-[#ff8533] text-[#1e110a] font-black' 
+                            : 'bg-white/5 text-slate-400 border border-white/10'
+                        }`}>
+                          {isUnlocked ? 'SECURED' : 'LOCKED'}
+                        </span>
+                      </div>
 
                       {isUnlocked ? (
                         <ShieldCheck className="h-5 w-5 text-[#ff8533]" />
@@ -259,25 +320,110 @@ export default function UserProfileSection({
 
                     {/* Badge details */}
                     <div className="space-y-1.5">
-                      <h4 className="text-base font-serif font-bold text-white">
+                      <h4 className={`text-base font-serif font-bold ${isUnlocked ? 'text-white' : 'text-slate-300'}`}>
                         {badge.title}
                       </h4>
-                      <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                      <p className="text-xs text-slate-300/90 leading-relaxed font-sans line-clamp-3">
                         {badge.description}
                       </p>
                     </div>
 
-                    {/* Cleared timestamp footer */}
-                    {isUnlocked && badge.unlockedAt && (
-                      <div className="pt-2 mt-2 border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-[#ffb829] font-bold">
-                        <span>CLEARED</span>
-                        <span>{badge.unlockedAt}</span>
-                      </div>
-                    )}
+                    {/* Footer with Category & Cleared timestamp */}
+                    <div className="pt-2 mt-2 border-t border-white/10 flex items-center justify-between text-[10px] font-mono">
+                      <span className="text-slate-400 uppercase font-bold tracking-wider">
+                        {badge.category || 'ACADEMY'}
+                      </span>
+                      {isUnlocked && badge.unlockedAt ? (
+                        <span className="text-[#ffb829] font-bold flex items-center gap-1">
+                          ✓ {badge.unlockedAt}
+                        </span>
+                      ) : (
+                        <span className="text-slate-400 group-hover:text-slate-300 transition-colors">
+                          Click for intel →
+                        </span>
+                      )}
+                    </div>
                   </div>
                 );
               })}
             </div>
+
+            {/* Selected Badge Detail Modal */}
+            {selectedBadge && (
+              <div 
+                className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+                onClick={() => setSelectedBadge(null)}
+              >
+                <div 
+                  className="bg-slate-900 border-2 border-[#ff8533]/50 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl text-white space-y-6 relative"
+                  onClick={e => e.stopPropagation()}
+                >
+                  <button 
+                    onClick={() => setSelectedBadge(null)}
+                    className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+
+                  <div className="flex items-center gap-4">
+                    <div className={`w-16 h-16 rounded-2xl border-2 flex items-center justify-center ${
+                      selectedBadge.isUnlocked 
+                        ? 'bg-[#ff8533]/20 border-[#ff8533] text-[#ff8533] shadow-lg shadow-[#ff8533]/20' 
+                        : 'bg-white/5 border-white/15 text-slate-500'
+                    }`}>
+                      {(() => {
+                        const ModalIcon = (selectedBadge.iconName && BADGE_ICONS[selectedBadge.iconName]) || Award;
+                        return <ModalIcon className="w-8 h-8" />;
+                      })()}
+                    </div>
+                    <div>
+                      <span className={`text-[10px] font-mono font-black uppercase px-2.5 py-0.5 rounded-full ${
+                        selectedBadge.isUnlocked 
+                          ? 'bg-[#ff8533] text-[#1e110a]' 
+                          : 'bg-white/10 text-slate-400 border border-white/10'
+                      }`}>
+                        {selectedBadge.isUnlocked ? 'DECORATION SECURED' : 'LOCKED REQUIREMENT'}
+                      </span>
+                      <h3 className="text-xl font-serif font-extrabold text-white mt-1">
+                        {selectedBadge.title}
+                      </h3>
+                      <span className="text-xs font-mono text-[#ffb829]">
+                        CATEGORY // {selectedBadge.category || 'HONOURS'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-black/40 border border-white/10 rounded-2xl p-4 space-y-2">
+                    <span className="text-[10px] font-mono text-slate-400 uppercase font-bold tracking-wider block">
+                      DECORATION CITATION &amp; DIRECTIVE
+                    </span>
+                    <p className="text-sm text-slate-200 leading-relaxed font-sans">
+                      {selectedBadge.description}
+                    </p>
+                  </div>
+
+                  <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs font-mono">
+                    <span className="text-slate-400">
+                      STATUS: <strong className={selectedBadge.isUnlocked ? 'text-emerald-400' : 'text-amber-400'}>
+                        {selectedBadge.isUnlocked ? 'AWARDED' : 'IN PROGRESS'}
+                      </strong>
+                    </span>
+                    {selectedBadge.isUnlocked && selectedBadge.unlockedAt && (
+                      <span className="text-slate-400">
+                        DATE: <strong className="text-white">{selectedBadge.unlockedAt}</strong>
+                      </span>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => setSelectedBadge(null)}
+                    className="w-full py-3 rounded-full bg-[#ff8533] hover:bg-[#ff9955] text-[#1e110a] font-mono font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer shadow-lg"
+                  >
+                    CLOSE BRIEFING
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Section 2: Solved Investigations Registry */}

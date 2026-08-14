@@ -110,6 +110,24 @@ export const apiService = {
     return res.json();
   },
 
+  async sendMentorMessage(payload: {
+    caseTitle: string;
+    currentNotes: string;
+    unlockedEvidence: string[];
+    chatHistory: unknown[];
+    userQuestion: string;
+  }): Promise<{ text: string }> {
+    const res = await fetch('/api/mentor-chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      throw new Error(`Mentor chat error ${res.status}`);
+    }
+    return res.json();
+  },
+
   async judgeCase(payload: {
     caseTitle: string;
     topic: string;

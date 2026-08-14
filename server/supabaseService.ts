@@ -40,10 +40,10 @@ export function handleSupabaseError(res: unknown, error: { message?: string; cod
     };
   }
 
-  console.error(`[SUPABASE ERROR] ${contextMsg}:`, error);
+  console.error(`[DB ERROR] ${contextMsg}:`, error?.message || error);
   return {
     status: 500,
-    body: { error: error?.message || "Database operation failed." }
+    body: { error: "Database operation failed. Please try again later." }
   };
 }
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Lock, Mail, User, Loader2, Play } from 'lucide-react';
+import detectiveSquirrelLogo from '../assets/images/detective_squirrel_1784269041754.jpg';
 
 interface LoginSignupProps {
   onAuthSuccess: (token: string, userEmail: string, userName: string) => void;
@@ -104,7 +105,7 @@ export default function LoginSignup({ onAuthSuccess, supabaseConfigured, aiConfi
       <div className="text-center mb-6">
         <div className="inline-flex items-center justify-center w-12 h-12 bg-[#ff8533]/10 p-1 rounded-full border border-[#ff8533]/30 mb-3 overflow-hidden shadow-inner">
           <img 
-            src="/src/assets/images/detective_squirrel_1784269041754.jpg" 
+            src={detectiveSquirrelLogo} 
             alt="Detective Mascot Logo" 
             className="w-full h-full object-cover scale-110"
             referrerPolicy="no-referrer"

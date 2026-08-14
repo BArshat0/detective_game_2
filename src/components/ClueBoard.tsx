@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { Case, WallNode, WallConnection, Evidence } from '../types';
 import { getSuspectSketchArt } from '../utils/suspectSketches';
+import { dispatchHonorUnlock } from '../data/achievements';
 
 interface ClueBoardProps {
   caseData: Case;
@@ -410,6 +411,7 @@ export default function ClueBoard({
         msg: isValid ? 'Validated Case Deduction Link Established!' : 'Clue String Connection Placed' 
       }
     }));
+    dispatchHonorUnlock('badge_pinboard_tactician');
   };
 
   const handleRemoveConnection = (connId: string) => {

@@ -4,6 +4,7 @@ import { Case, Witness } from '../types';
 import { safeGet, safeSet } from '../lib/safeLookup';
 import { getSuspectSketchArt } from '../utils/suspectSketches';
 import { apiService } from '../services/apiService';
+import { dispatchHonorUnlock } from '../data/achievements';
 
 interface InterrogationTerminalProps {
   caseData: Case;
@@ -98,6 +99,7 @@ export default function InterrogationTerminal({
           window.dispatchEvent(new CustomEvent('mil-xp-earned', {
             detail: { xp: 150, msg: `Contradiction Discovered in ${activeWitness.name}'s Testimony!` }
           }));
+          dispatchHonorUnlock('badge_interrogation_ace');
         }, 1200);
         return;
       }

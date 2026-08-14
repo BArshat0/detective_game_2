@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Folder, FileText, Lock, Unlock, Eye, Copy, FileCode, MessageSquare, Mail, Key, Check, Search, Clock3, Fingerprint, Globe, Volume2, ArrowLeftRight, ShieldAlert, HelpCircle, Layers, Award, Brain, Lightbulb } from 'lucide-react';
 import { Case, Evidence } from '../types';
+import { dispatchHonorUnlock } from '../data/achievements';
+import { mysteryAudio } from '../utils/mysteryAudio';
 
 interface EvidenceViewerProps {
   caseData: Case;
@@ -167,6 +169,7 @@ export default function EvidenceViewer({
     });
 
     if (isSupported) {
+      mysteryAudio.playEvidenceInspectSound();
       setHypothesisEvaluation({
         success: true,
         title: 'Deduction Validated!',
@@ -176,6 +179,7 @@ export default function EvidenceViewer({
       window.dispatchEvent(new CustomEvent('mil-xp-earned', {
         detail: { xp: 75, msg: `Deduction Validated: +75 XP` }
       }));
+      dispatchHonorUnlock('badge_quantum_reasoner');
       if (onCompleteLeadByEvidence) {
         onCompleteLeadByEvidence(activeEvidence.id);
       }
@@ -190,6 +194,7 @@ export default function EvidenceViewer({
 
   const handleInspectPoint = (pointId: string, label: string, detail: string, revealsLeadId?: string) => {
     if (inspectedPointIds.includes(pointId)) return;
+    mysteryAudio.playEvidenceInspectSound();
     const nextInspected = [...inspectedPointIds, pointId];
     setInspectedPointIds(nextInspected);
     onCopyToNotebook(`Forensic Inspection — ${activeEvidence?.name || 'Evidence'}: ${label} (${detail})`);
@@ -197,6 +202,10 @@ export default function EvidenceViewer({
     window.dispatchEvent(new CustomEvent('mil-xp-earned', {
       detail: { xp: 25, msg: `Critical Detail Uncovered: ${label}` }
     }));
+
+    if (nextInspected.length >= 2) {
+      dispatchHonorUnlock('badge_forensic_eye');
+    }
 
     // Complete lead strictly when all inspectable points are examined or when lead is explicitly revealed
     const inspectableCount = activeEvidence?.inspectablePoints?.length || 0;

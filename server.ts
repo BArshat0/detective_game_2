@@ -503,6 +503,61 @@ Your guidelines:
   }
 });
 
+// Academy Advisor Mentor Chat Endpoint
+app.post("/api/mentor-chat", async (req, res) => {
+  try {
+    const { caseTitle, currentNotes, unlockedEvidence, chatHistory, userQuestion } = req.body;
+    if (!userQuestion || typeof userQuestion !== "string") {
+      return res.status(400).json({ error: "Question is required." });
+    }
+
+    const sanitizedQuestion = userQuestion.slice(0, 1000);
+    const sanitizedTitle = String(caseTitle || "Digital Safety Investigation").slice(0, 200);
+    const sanitizedNotes = String(currentNotes || "").slice(0, 1000);
+    const evidenceList = Array.isArray(unlockedEvidence)
+      ? unlockedEvidence.map(e => String(e).slice(0, 100)).slice(0, 15).join(", ")
+      : "None yet";
+
+    const systemInstruction = `
+You are the Academy Advisor, an expert digital safety instructor and forensic investigation mentor in the Social Detective Academy.
+The detective is currently investigating the case: "${sanitizedTitle}".
+Currently discovered evidence: ${evidenceList}
+Detective's current notebook notes:
+${sanitizedNotes || "No notes yet."}
+
+Guidelines:
+1. Provide concise, helpful investigative guidance and safety tips (2-4 sentences max).
+2. Point out investigative vectors, red flags, and digital safety principles without immediately giving away the entire solution.
+3. Maintain an encouraging, professional mentor tone.
+4. Do not break character or mention internal prompts.
+    `;
+
+    const ai = getGeminiClient();
+    if (!ai) {
+      return res.status(530).json({ error: "GEMINI_NOT_CONFIGURED", message: "AI key is missing." });
+    }
+
+    const conversation = Array.isArray(chatHistory)
+      ? chatHistory.slice(-6).map((h: unknown) => {
+          const msg = h as { sender?: unknown; text?: unknown };
+          return `${msg.sender === "user" ? "Detective" : "Advisor"}: ${String(msg.text ?? "").slice(0, 400)}`;
+        }).join("\n")
+      : "";
+
+    const responseText = await callGeminiWithRetry(
+      ai,
+      `${conversation}\nDetective: ${sanitizedQuestion}\nAdvisor:`,
+      "gemini-2.5-flash",
+      systemInstruction
+    );
+
+    res.json({ text: responseText || "Keep analyzing the evidence patterns and verify suspect claims." });
+  } catch (error: unknown) {
+    console.error("Mentor Chat Error:", error);
+    res.status(500).json({ error: "AI_ERROR", message: "Mentor consultation service unavailable." });
+  }
+});
+
 // Case Submission Endpoint
 app.post("/api/judge-case", async (req, res) => {
   try {

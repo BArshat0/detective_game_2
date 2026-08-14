@@ -197,19 +197,23 @@ export interface Case {
   };
 }
 
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  category?: 'Directives' | 'Forensics' | 'Honours' | 'Creation';
+  iconName?: string;
+  isUnlocked: boolean;
+  unlockedAt?: string;
+}
+
 export interface UserProfile {
   name: string;
   email: string;
   casesSolved: number;
   solvedCaseIds: string[];
   activeCaseId: string | null;
-  achievements: {
-    id: string;
-    title: string;
-    description: string;
-    isUnlocked: boolean;
-    unlockedAt?: string;
-  }[];
+  achievements: Achievement[];
   customCases: Case[];
   xp?: number;
 }

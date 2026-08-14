@@ -11,7 +11,7 @@ import LoadingScreen from './LoadingScreen';
 import anime from '../lib/animeHelper';
 import MysteryAudioControl from './MysteryAudioControl';
 import { mysteryAudio } from '../utils/mysteryAudio';
-import { getSceneSketchArt } from '../utils/suspectSketches';
+import { getSceneSketchArt } from '../utils/sceneSketches';
 
 interface StoryIntroViewProps {
   caseData: Case;

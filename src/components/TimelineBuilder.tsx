@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { Case, TimelineEvent } from '../types';
 import { safeGet, safeSet } from '../lib/safeLookup';
+import { dispatchHonorUnlock } from '../data/achievements';
 
 interface TimelineBuilderProps {
   caseData: Case;
@@ -389,6 +390,7 @@ export default function TimelineBuilder({
       window.dispatchEvent(new CustomEvent('mil-xp-earned', {
         detail: { xp: 150, msg: 'Master Detective: Case Reconstruction Complete!' }
       }));
+      dispatchHonorUnlock('badge_chronology_master');
     }
   };
 

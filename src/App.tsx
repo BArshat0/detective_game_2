@@ -30,14 +30,10 @@ import { mysteryAudio } from './utils/mysteryAudio';
 import { Case, UserProfile, CaseState, InvestigationLead, WallNode, WallConnection } from './types';
 import { HANDCRAFTED_CASES } from './data/cases';
 import { safeGet, safeSet } from './lib/safeLookup';
+import { ACADEMY_HONOR_DECORATIONS, mergeAchievements, dispatchHonorUnlock } from './data/achievements';
+import detectiveSquirrelLogo from './assets/images/detective_squirrel_1784269041754.jpg';
 
-const DEFAULT_ACHIEVEMENTS = [
-  { id: 'badge_first_case', title: 'First Contact', description: 'Initiated your first forensic investigation.', isUnlocked: false },
-  { id: 'badge_synthetic', title: 'Neural Forensics Pro', description: 'Proven Dr. Helen Vance testimony was deepfake.', isUnlocked: false },
-  { id: 'badge_sentinel', title: 'Scholarship Sentinel', description: 'Dismantled the Shadow Syndicate baiting ring.', isUnlocked: false },
-  { id: 'badge_supply_chain', title: 'Hardware Guardian', description: 'Neutralized the Sector 7 relay sabotage.', isUnlocked: false },
-  { id: 'badge_creator', title: 'Quantum Architect', description: 'Synthesized your first custom learning case.', isUnlocked: false }
-];
+const DEFAULT_ACHIEVEMENTS = ACADEMY_HONOR_DECORATIONS;
 
 const DEFAULT_USER_PROFILE: UserProfile = {
   name: localStorage.getItem('detective_user_name') || 'Investigator',
@@ -45,7 +41,7 @@ const DEFAULT_USER_PROFILE: UserProfile = {
   casesSolved: 0,
   solvedCaseIds: [],
   activeCaseId: null,
-  achievements: DEFAULT_ACHIEVEMENTS,
+  achievements: ACADEMY_HONOR_DECORATIONS,
   customCases: []
 };
 
@@ -235,7 +231,7 @@ export default function App() {
         casesSolved: profileData.cases_solved || 0,
         solvedCaseIds: Array.isArray(profileData.solved_case_ids) ? profileData.solved_case_ids : [],
         activeCaseId: null,
-        achievements: Array.isArray(profileData.achievements) && profileData.achievements.length > 0 ? profileData.achievements : DEFAULT_ACHIEVEMENTS,
+        achievements: mergeAchievements(profileData.achievements),
         customCases: customCasesData
       };
 
@@ -260,14 +256,15 @@ export default function App() {
     }
   };
 
-  const syncProfileToSupabase = async (token: string, profile: UserProfile) => {
+  const syncProfileToSupabase = async (token: string, profile: UserProfile, explicitXp?: number) => {
     try {
+      const currentXp = explicitXp !== undefined ? explicitXp : (Number(localStorage.getItem('mil_xp')) || xp);
       await apiService.updateUserProfile(token, {
         name: profile.name,
         cases_solved: profile.casesSolved,
         solved_case_ids: profile.solvedCaseIds,
         achievements: profile.achievements,
-        xp: xp
+        xp: currentXp
       });
     } catch (err) {
       console.error("Failed to sync profile:", err);
@@ -387,6 +384,9 @@ export default function App() {
         setXp(prev => {
           const next = prev + earnedXp;
           localStorage.setItem('mil_xp', next.toString());
+          if (next >= 350) {
+            dispatchHonorUnlock('badge_mil_master');
+          }
           return next;
         });
         setXpToast({ xp: earnedXp, msg });
@@ -395,6 +395,47 @@ export default function App() {
     window.addEventListener('mil-xp-earned', handleXpEarned);
     return () => { window.removeEventListener('mil-xp-earned', handleXpEarned); };
   }, []);
+
+  // Listen for global achievement unlock events
+  useEffect(() => {
+    const handleUnlockAchievement = (e: Event) => {
+      const customEvent = e as CustomEvent<{ badgeId: string; customMessage?: string }>;
+      if (!customEvent.detail?.badgeId) return;
+
+      const badgeId = customEvent.detail.badgeId;
+      setUserProfile(prev => {
+        const existing = prev.achievements.find(a => a.id === badgeId);
+        if (!existing || existing.isUnlocked) return prev; // Already unlocked or invalid
+
+        mysteryAudio.playHonorUnlockedSound();
+
+        const updatedAchievements = prev.achievements.map(a =>
+          a.id === badgeId ? { ...a, isUnlocked: true, unlockedAt: new Date().toLocaleDateString() } : a
+        );
+
+        notify({
+          kind: 'success',
+          title: '🎖️ ACADEMY HONOR SECURED!',
+          message: customEvent.detail.customMessage || `Decoration Awarded: "${existing.title}". Citation archived in profile.`
+        });
+
+        // Award bonus XP for earning honors
+        const currentXpVal = Number(localStorage.getItem('mil_xp')) || xp;
+        const nextXp = currentXpVal + 100;
+        localStorage.setItem('mil_xp', nextXp.toString());
+        setXp(nextXp);
+
+        const updated = { ...prev, achievements: updatedAchievements };
+        if (authToken) {
+          void syncProfileToSupabase(authToken, updated, nextXp);
+        }
+        return updated;
+      });
+    };
+
+    window.addEventListener('unlock-achievement', handleUnlockAchievement);
+    return () => { window.removeEventListener('unlock-achievement', handleUnlockAchievement); };
+  }, [authToken]);
 
   // Clear XP Toast after delay
   useEffect(() => {
@@ -431,16 +472,7 @@ export default function App() {
     setSelectedEvidenceId(null);
 
     // Unlock "First Contact" achievement on starting any case
-    setUserProfile(prev => {
-      const achievements = prev.achievements.map(a => 
-        a.id === 'badge_first_case' ? { ...a, isUnlocked: true, unlockedAt: new Date().toLocaleDateString() } : a
-      );
-      const updated = { ...prev, achievements };
-      if (authToken) {
-        syncProfileToSupabase(authToken, updated);
-      }
-      return updated;
-    });
+    dispatchHonorUnlock('badge_first_contact');
 
     const targetCase = allCases.find(c => c.id === caseId);
     if (targetCase) {
@@ -478,16 +510,7 @@ export default function App() {
     setPendingCaseId(null);
 
     // Ensure First Contact achievement is unlocked
-    setUserProfile(prev => {
-      const achievements = prev.achievements.map(a => 
-        a.id === 'badge_first_case' ? { ...a, isUnlocked: true, unlockedAt: new Date().toLocaleDateString() } : a
-      );
-      const updated = { ...prev, achievements };
-      if (authToken) {
-        syncProfileToSupabase(authToken, updated);
-      }
-      return updated;
-    });
+    dispatchHonorUnlock('badge_first_contact');
   };
 
   // Restart investigation from beginning with story prologue
@@ -963,43 +986,57 @@ export default function App() {
       setEvaluationResult(evaluation);
 
       // Update case states as completed & solve counter
-      setCasesState(prev => {
-        const existing = safeGet(prev, activeCaseId);
-        return safeSet(prev, activeCaseId, {
-          ...existing,
-          isCompleted: true,
-          score: evaluation.score,
-          feedback: evaluation.verdict
-        } as CaseState);
-      });
+      const existingState = safeGet(casesState, activeCaseId) || currentCaseState;
+      const updatedCaseState: CaseState = {
+        ...existingState,
+        isCompleted: true,
+        score: evaluation.score,
+        feedback: evaluation.verdict
+      };
+      setCasesState(prev => safeSet(prev, activeCaseId, updatedCaseState));
+      if (authToken) {
+        void syncCaseStateToSupabase(authToken, activeCaseId, updatedCaseState);
+      }
 
-      // Update User Profile solved registry and unlock achievements
+      // Update User Profile solved registry
       setUserProfile(prev => {
         const newlySolved = prev.solvedCaseIds.includes(activeCaseId) 
           ? prev.solvedCaseIds 
           : [...prev.solvedCaseIds, activeCaseId];
         
-        // Unlock badges
-        const updatedAchievements = prev.achievements.map(a => {
-          if (activeCaseId === 'case_synthetic_witness' && a.id === 'badge_synthetic' && evaluation.score >= 80) {
-            return { ...a, isUnlocked: true, unlockedAt: new Date().toLocaleDateString() };
-          }
-          if (activeCaseId === 'case_silent_spring' && a.id === 'badge_sentinel' && evaluation.score >= 80) {
-            return { ...a, isUnlocked: true, unlockedAt: new Date().toLocaleDateString() };
-          }
-          if (activeCaseId === 'case_hardware_sabotage' && a.id === 'badge_supply_chain' && evaluation.score >= 80) {
-            return { ...a, isUnlocked: true, unlockedAt: new Date().toLocaleDateString() };
-          }
-          return a;
-        });
-
-        return {
+        const updated = {
           ...prev,
           solvedCaseIds: newlySolved,
-          casesSolved: newlySolved.length,
-          achievements: updatedAchievements
+          casesSolved: newlySolved.length
         };
+        if (authToken) {
+          void syncProfileToSupabase(authToken, updated);
+        }
+        return updated;
       });
+
+      // Dispatch specific Case Directives & Honours
+      if (evaluation.score >= 70) {
+        if (activeCaseId.includes('border') || activeCase.title.toLowerCase().includes('border')) {
+          dispatchHonorUnlock('badge_border_promise');
+        } else if (activeCaseId.includes('voice') || activeCaseId.includes('echo') || activeCase.title.toLowerCase().includes('static') || activeCase.title.toLowerCase().includes('echoes')) {
+          dispatchHonorUnlock('badge_echoes_static');
+        } else if (activeCaseId.includes('ledger') || activeCaseId.includes('ghost') || activeCase.title.toLowerCase().includes('ghost') || activeCase.title.toLowerCase().includes('ledger')) {
+          dispatchHonorUnlock('badge_ghost_ledger');
+        }
+      }
+
+      if (evaluation.score >= 90) {
+        dispatchHonorUnlock('badge_flawless_verdict');
+      }
+
+      // Check if all handcrafted cases solved
+      const allThreeSolved = ['case_border_promise', 'case_echoes_static', 'case_ghost_ledger'].every(
+        cid => userProfile.solvedCaseIds.includes(cid) || activeCaseId === cid
+      );
+      if (allThreeSolved) {
+        dispatchHonorUnlock('badge_grandmaster');
+      }
 
       // Award XP for solving case if it wasn't already solved
       if (!userProfile.solvedCaseIds.includes(activeCaseId)) {
@@ -1042,8 +1079,8 @@ export default function App() {
           <div className="flex items-center gap-3 mb-12 self-start animate-fade-in glass-panel bg-slate-900/50 backdrop-blur-md px-5 py-2.5 rounded-full border border-white/20">
             <div className="w-8 h-8 bg-white p-0.5 rounded-full flex items-center justify-center shadow-md border border-[#ff8533]/30 overflow-hidden">
               <img 
-                src="/src/assets/images/detective_squirrel_1784269041754.jpg" 
-                alt="Detective Fox Mascot Logo" 
+                src={detectiveSquirrelLogo} 
+                alt="Detective Mascot Logo" 
                 className="w-full h-full object-cover scale-110"
                 referrerPolicy="no-referrer"
               />
@@ -1061,7 +1098,7 @@ export default function App() {
                 
                 {/* Cute Generated Detective Squirrel */}
                 <img 
-                  src="/src/assets/images/detective_squirrel_1784269041754.jpg" 
+                  src={detectiveSquirrelLogo} 
                   alt="Sherlock Squirrel Detective Mascot" 
                   className="w-full h-full object-contain rounded-[32px] border-2 border-white/30 shadow-2xl relative z-10 backdrop-blur-md"
                   referrerPolicy="no-referrer"
@@ -1176,8 +1213,8 @@ export default function App() {
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-white p-0.5 rounded-full flex items-center justify-center shadow-sm border border-[#ff8533]/30 overflow-hidden">
                 <img 
-                  src="/src/assets/images/detective_squirrel_1784269041754.jpg" 
-                  alt="Detective Fox Mascot Logo" 
+                  src={detectiveSquirrelLogo} 
+                  alt="Detective Squirrel Mascot Logo" 
                   className="w-full h-full object-cover scale-110"
                   referrerPolicy="no-referrer"
                 />
@@ -1228,14 +1265,13 @@ export default function App() {
                       <span>{userProfile.name}</span>
                       <User className="h-3 w-3 text-[#ff8533]" />
                     </div>
-                    <div className="text-slate-300 text-[9px] mt-0.5">{userProfile.email}</div>
                   </div>
                 </button>
                 
                 <button
                   onClick={handleLogout}
                   className="px-3.5 py-1.5 border border-white/20 hover:border-white rounded-full bg-white/10 hover:bg-white/20 transition-all cursor-pointer font-mono text-[10px] font-bold text-slate-200 hover:text-white flex items-center gap-1.5"
-                  title="Log Out from Supabase"
+                  title="Log Out"
                 >
                   <LogOut className="h-3 w-3 shrink-0 text-[#ff8533]" />
                   <span className="hidden sm:inline">LOGOUT</span>
@@ -1249,13 +1285,10 @@ export default function App() {
             {supabaseTableMissing && (
               <div className="mb-8 p-6 bg-red-950/40 border border-red-500/30 rounded-[24px] text-red-200 text-xs font-mono leading-relaxed space-y-3 animate-fade-in">
                 <div className="flex items-center gap-2 font-bold text-red-400 uppercase tracking-wider">
-                  <span>🚨 SYSTEM SYNC CONFLICT: DATABASE TABLES MISSING</span>
+                  <span>🚨 SYSTEM NOTICE: CLOUD ARCHIVES UNAVAILABLE</span>
                 </div>
                 <p>
-                  Connected to Supabase, but required tables (<code className="text-white font-semibold">profiles</code>, <code className="text-white font-semibold">custom_cases</code>, or <code className="text-white font-semibold">cases_state</code>) are missing. User saves and configurations will fail to sync.
-                </p>
-                <p>
-                  Please copy the SQL schema script from <code className="text-white font-semibold">SUPABASE_SCHEMA.sql</code> in your project repository and run it in your Supabase SQL Editor (New Query) to initialize the database tables.
+                  Cloud archives are temporarily offline. Your investigative dossier and case progress will be saved locally to this session.
                 </p>
               </div>
             )}
@@ -1263,13 +1296,10 @@ export default function App() {
             {supabaseError && !supabaseTableMissing && (
               <div className="mb-8 p-6 bg-yellow-950/40 border border-yellow-500/30 rounded-[24px] text-yellow-200 text-xs font-mono leading-relaxed space-y-3 animate-fade-in">
                 <div className="flex items-center gap-2 font-bold text-yellow-400 uppercase tracking-wider">
-                  <span>⚠️ DATABASE SYNC NOTIFICATION</span>
+                  <span>⚠️ CLOUD STORAGE NOTICE</span>
                 </div>
                 <p>
-                  {supabaseError}
-                </p>
-                <p>
-                  Your current progress will be stored in your local browser session cache instead. Check your server logs and Supabase keys if this error persists.
+                  Progress is currently cached locally in this browser.
                 </p>
               </div>
             )}
