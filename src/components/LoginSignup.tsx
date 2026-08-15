@@ -85,7 +85,7 @@ export default function LoginSignup({ onAuthSuccess, supabaseConfigured, aiConfi
           setIsLoading(false);
           return;
         }
-        setSuccessMessage('Sign-in completed. Access granted; retrieving your security archives...');
+        setSuccessMessage('Sign-in completed. Wait for a moment...');
         setTimeout(() => {
           onAuthSuccess(session.access_token, user?.email || email, user?.user_metadata?.name || name);
         }, 1500);
